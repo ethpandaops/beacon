@@ -1,14 +1,14 @@
 package beacon
 
 import (
-	"errors"
 	"time"
 )
 
 type Health struct {
 	healthy bool
 
-	responses responses
+	failures  int
+	successes int
 
 	failThreshold    int
 	successThreshold int
@@ -16,29 +16,10 @@ type Health struct {
 	lastCheck time.Time
 }
 
-type responses []error
-
-func (r responses) LastN(n int) responses {
-	if len(r) < n {
-		return r
-	}
-
-	return r[len(r)-n:]
-}
-
-func (r responses) AllNil() bool {
-	for _, e := range r {
-		if e == nil {
-			return false
-		}
-	}
-
-	return true
-}
-
-func NewHealth(successThreshold, failThreshold int) Health {
-	return Health{
-		responses: make([]error, 0),
+func NewHealth(successThreshold, failThreshold int) *Health {
+	return &Health{
+		failures:  0,
+		successes: 0,
 
 		failThreshold:    failThreshold,
 		successThreshold: successThreshold,
@@ -47,46 +28,26 @@ func NewHealth(successThreshold, failThreshold int) Health {
 	}
 }
 
-func (n Health) RecordFail() {
-	n.responses = append(n.responses, errors.New("e"))
+func (n *Health) RecordFail(err error) {
+	n.lastCheck = time.Now()
+	n.failures++
+	n.successes = 0
 
-	if len(n.responses) < n.failThreshold {
-		return
-	}
-
-	lastX := n.responses.LastN(n.failThreshold)
-	if !lastX.AllNil() {
+	if n.failures >= n.failThreshold {
 		n.healthy = false
 	}
-
-	n.lastCheck = time.Now()
-	n.trimResponses()
 }
 
-func (n Health) RecordSuccess() {
-	n.responses = append(n.responses, errors.New("e"))
+func (n *Health) RecordSuccess() {
+	n.lastCheck = time.Now()
+	n.successes++
+	n.failures = 0
 
-	if len(n.responses) < n.successThreshold {
-		return
-	}
-
-	lastX := n.responses.LastN(n.successThreshold)
-	if lastX.AllNil() {
+	if n.successes >= n.successThreshold {
 		n.healthy = true
 	}
-
-	n.lastCheck = time.Now()
-	n.trimResponses()
 }
 
 func (n Health) Healthy() bool {
 	return n.healthy
-}
-
-func (n Health) trimResponses() {
-	maxSize := 100
-
-	if len(n.responses) > maxSize {
-		n.responses = n.responses[len(n.responses)-maxSize:]
-	}
 }

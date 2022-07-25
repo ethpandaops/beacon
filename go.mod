@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/ferranbt/fastssz v0.0.0-20220103083642-bc5fefefa28b // indirect
 	github.com/goccy/go-yaml v1.9.5 // indirect

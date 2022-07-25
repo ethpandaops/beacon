@@ -38,6 +38,10 @@ type Node interface {
 	GetGenesis(ctx context.Context) (*v1.Genesis, error)
 	// GetNodeVersion returns the node version.
 	GetNodeVersion(ctx context.Context) (string, error)
+	// GetStatus returns the status of the ndoe.
+	GetStatus(ctx context.Context) *Status
+	// GetFinality returns the finality checkpoint for the node.
+	GetFinality(ctx context.Context) (*v1.Finality, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
@@ -98,11 +102,12 @@ type node struct {
 	lastEventTime time.Time
 	nodeVersion   string
 	peers         types.Peers
+	finality      *v1.Finality
 
-	status Status
+	status *Status
 }
 
-func NewNode(ctx context.Context, log logrus.FieldLogger, config *Config) Node {
+func NewNode(log logrus.FieldLogger, config *Config) Node {
 	return &node{
 		log: log.WithField("module", "consensus/beacon"),
 
@@ -153,6 +158,14 @@ func (n *node) Start(ctx context.Context) error {
 	if _, err := s.Every("15s").Do(func() {
 		if err := n.fetchPeers(ctx); err != nil {
 			n.log.WithError(err).Error("Failed to fetch peers")
+		}
+	}); err != nil {
+		return err
+	}
+
+	if _, err := s.Every("30s").Do(func() {
+		if err := n.fetchFinality(ctx); err != nil {
+			n.log.WithError(err).Error("Failed to fetch finality")
 		}
 	}); err != nil {
 		return err
@@ -217,6 +230,18 @@ func (n *node) GetGenesis(ctx context.Context) (*v1.Genesis, error) {
 
 func (n *node) GetNodeVersion(ctx context.Context) (string, error) {
 	return n.nodeVersion, nil
+}
+
+func (n *node) GetStatus(ctx context.Context) *Status {
+	return n.status
+}
+
+func (n *node) GetFinality(ctx context.Context) (*v1.Finality, error) {
+	if n.finality == nil {
+		return nil, errors.New("finality not available")
+	}
+
+	return n.finality, nil
 }
 
 func (n *node) bootstrap(ctx context.Context) error {
@@ -355,7 +380,7 @@ func (n *node) fetchHealthy(ctx context.Context) error {
 func (n *node) runHealthcheck(ctx context.Context) {
 	err := n.fetchHealthy(ctx)
 	if err != nil {
-		n.status.Health().RecordFail()
+		n.status.Health().RecordFail(err)
 
 		return
 	}
@@ -383,7 +408,7 @@ func (n *node) handleStateEpochSlotChanged(ctx context.Context, epochNumber phas
 	n.log.WithFields(logrus.Fields{
 		"epoch": epochNumber,
 		"slot":  slot,
-	}).Debug("Current epoch/slot changed")
+	}).Trace("Wall clock epoch/slot changed")
 
 	for i := epochNumber; i < epochNumber+1; i++ {
 		epoch, err := n.state.GetEpoch(ctx, i)
@@ -420,6 +445,23 @@ func (n *node) fetchEpochProposerDuties(ctx context.Context, epoch phase0.Epoch)
 	if err := n.state.SetProposerDuties(ctx, epoch, duties); err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (n *node) fetchFinality(ctx context.Context) error {
+	n.log.Debug("Fetching finality checkpoints")
+	provider, isProvider := n.client.(eth2client.FinalityProvider)
+	if !isProvider {
+		return errors.New("client does not implement eth2client.FinalityProvider")
+	}
+
+	finality, err := provider.Finality(ctx, "head")
+	if err != nil {
+		return err
+	}
+
+	n.finality = finality
 
 	return nil
 }
@@ -498,7 +540,7 @@ func (n *node) getBlock(ctx context.Context, blockID string) (*spec.VersionedSig
 	return signedBeaconBlock, nil
 }
 
-func (n *node) Status() Status {
+func (n *node) Status() *Status {
 	return n.status
 }
 
@@ -508,14 +550,4 @@ func (n *node) Healthy() bool {
 
 func (n *node) NetworkID() uint64 {
 	return n.status.NetworkID()
-}
-
-func (n *node) Finality() (*v1.Finality, error) {
-	finality := n.status.finality
-
-	if finality == nil {
-		return nil, errors.New("finality not established")
-	}
-
-	return finality, nil
 }
