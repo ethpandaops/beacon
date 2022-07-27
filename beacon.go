@@ -43,6 +43,11 @@ type Node interface {
 	// GetFinality returns the finality checkpoint for the node.
 	GetFinality(ctx context.Context) (*v1.Finality, error)
 
+	// FetchBlock returns the block for the given state id.
+	FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error)
+	// FetchBeaconState returns the beacon state for the given state id.
+	FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error)
+
 	// Subscriptions
 	// - Proxied Beacon events
 	// OnEvent is called when a beacon event is received.
@@ -377,6 +382,24 @@ func (n *node) fetchHealthy(ctx context.Context) error {
 	return nil
 }
 
+func (n *node) FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error) {
+	return n.getBlock(ctx, stateID)
+}
+
+func (n *node) FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
+	provider, isProvider := n.client.(eth2client.BeaconStateProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.NodeVersionProvider")
+	}
+
+	beaconState, err := provider.BeaconState(ctx, stateID)
+	if err != nil {
+		return nil, err
+	}
+
+	return beaconState, nil
+}
+
 func (n *node) runHealthcheck(ctx context.Context) {
 	err := n.fetchHealthy(ctx)
 	if err != nil {
@@ -450,7 +473,6 @@ func (n *node) fetchEpochProposerDuties(ctx context.Context, epoch phase0.Epoch)
 }
 
 func (n *node) fetchFinality(ctx context.Context) error {
-	n.log.Debug("Fetching finality checkpoints")
 	provider, isProvider := n.client.(eth2client.FinalityProvider)
 	if !isProvider {
 		return errors.New("client does not implement eth2client.FinalityProvider")

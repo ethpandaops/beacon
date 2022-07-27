@@ -28,6 +28,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 			client, err := http.New(ctx,
 				http.WithAddress(n.config.Addr),
 				http.WithLogLevel(zerolog.Disabled),
+				http.WithTimeout(90*time.Second),
 			)
 			if err != nil {
 				failures++
@@ -39,7 +40,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 					sleepFor = time.Minute * 5
 				}
 
-				n.log.WithError(err).Error("failed to bootstrap node.. will retry in %s", sleepFor.String())
+				n.log.WithError(err).Errorf("failed to bootstrap node.. will retry in %s", sleepFor.String())
 
 				time.Sleep(sleepFor)
 
