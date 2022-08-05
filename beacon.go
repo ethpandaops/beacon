@@ -47,6 +47,8 @@ type Node interface {
 	FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error)
 	// FetchBeaconState returns the beacon state for the given state id.
 	FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error)
+	// FetchRawBeaconState returns the raw, unparsed beacon state for the given state id.
+	FetchRawBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
@@ -398,6 +400,10 @@ func (n *node) FetchBeaconState(ctx context.Context, stateID string) (*spec.Vers
 	}
 
 	return beaconState, nil
+}
+
+func (n *node) FetchRawBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error) {
+	return n.api.RawDebugBeaconState(ctx, stateID, contentType)
 }
 
 func (n *node) runHealthcheck(ctx context.Context) {

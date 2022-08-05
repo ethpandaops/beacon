@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/samcm/beacon/api/types"
@@ -18,6 +19,7 @@ type ConsensusClient interface {
 	NodePeer(ctx context.Context, peerID string) (types.Peer, error)
 	NodePeers(ctx context.Context) (types.Peers, error)
 	NodePeerCount(ctx context.Context) (types.PeerCount, error)
+	RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
 }
 
 type consensusClient struct {
@@ -100,6 +102,36 @@ func (c *consensusClient) get(ctx context.Context, path string) (json.RawMessage
 	return resp.Data, nil
 }
 
+//nolint:unparam // ctx will probably be used in the future
+func (c *consensusClient) getRaw(ctx context.Context, path string, contentType string) ([]byte, error) {
+	if contentType == "" {
+		contentType = "application/json"
+	}
+	u, err := url.Parse(c.url + path)
+	if err != nil {
+		return nil, err
+	}
+
+	rsp, err := c.client.Do(&http.Request{
+		Method: "GET",
+		URL:    u,
+		Header: map[string][]string{
+			"Accept": {contentType},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	defer rsp.Body.Close()
+
+	if rsp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("status code: %d", rsp.StatusCode)
+	}
+
+	return io.ReadAll(rsp.Body)
+}
+
 func (c *consensusClient) NodePeers(ctx context.Context) (types.Peers, error) {
 	data, err := c.get(ctx, "/eth/v1/node/peers")
 	if err != nil {
@@ -140,4 +172,13 @@ func (c *consensusClient) NodePeerCount(ctx context.Context) (types.PeerCount, e
 	}
 
 	return rsp, nil
+}
+
+func (c *consensusClient) RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error) {
+	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v2/debug/beacon/states/%s", stateID), contentType)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
