@@ -116,3 +116,21 @@ func (n *node) OnEmptySlot(ctx context.Context, handler func(ctx context.Context
 		n.handleSubscriberError(handler(ctx, event), topicEmptySlot)
 	})
 }
+
+func (n *node) OnHealthCheckFailed(ctx context.Context, handler func(ctx context.Context, event *HealthCheckFailedEvent) error) {
+	n.broker.On(topicHealthCheckFailed, func(event *HealthCheckFailedEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicHealthCheckFailed)
+	})
+}
+
+func (n *node) OnHealthCheckSucceeded(ctx context.Context, handler func(ctx context.Context, event *HealthCheckSucceededEvent) error) {
+	n.broker.On(topicHealthCheckSucceeded, func(event *HealthCheckSucceededEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicHealthCheckSucceeded)
+	})
+}
+
+func (n *node) OnFinalityCheckpointUpdated(ctx context.Context, handler func(ctx context.Context, event *FinalityCheckpointUpdated) error) {
+	n.broker.On(topicFinalityCheckpointUpdated, func(event *FinalityCheckpointUpdated) {
+		n.handleSubscriberError(handler(ctx, event), topicFinalityCheckpointUpdated)
+	})
+}

@@ -17,7 +17,7 @@ func (n *node) ensureBeaconSubscription(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-time.After(time.Second * 5):
-			if len(n.config.EventTopics) == 0 {
+			if len(n.options.BeaconSubscription.Topics) == 0 {
 				continue
 			}
 
@@ -25,8 +25,12 @@ func (n *node) ensureBeaconSubscription(ctx context.Context) error {
 				continue
 			}
 
-			// Only resubscribe if we haven't received an event after 5 minutes.
-			if time.Since(n.lastEventTime) < (5 * time.Minute) {
+			if !n.options.BeaconSubscription.Enabled {
+				continue
+			}
+
+			// Only resubscribe if we haven't received an event after our inactivity period threshold.
+			if time.Since(n.lastEventTime) < n.options.BeaconSubscription.InactivityResubscribeInterval.Duration {
 				continue
 			}
 
@@ -74,7 +78,7 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 			continue
 		}
 
-		if !n.config.EventTopics.Exists(key) {
+		if !n.options.BeaconSubscription.Topics.Exists(key) {
 			continue
 		}
 

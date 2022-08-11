@@ -2,6 +2,7 @@ package beacon
 
 import (
 	"context"
+	"time"
 
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
@@ -95,5 +96,23 @@ func (n *node) publishSpecUpdated(ctx context.Context, spec *state.Spec) {
 func (n *node) publishEmptySlot(ctx context.Context, slot phase0.Slot) {
 	n.broker.Emit(topicEmptySlot, &EmptySlotEvent{
 		Slot: slot,
+	})
+}
+
+func (n *node) publishHealthCheckSucceeded(ctx context.Context, duration time.Duration) {
+	n.broker.Emit(topicHealthCheckSucceeded, &HealthCheckSucceededEvent{
+		Duration: duration,
+	})
+}
+
+func (n *node) publishHealthCheckFailed(ctx context.Context, duration time.Duration) {
+	n.broker.Emit(topicHealthCheckFailed, &HealthCheckFailedEvent{
+		Duration: duration,
+	})
+}
+
+func (n *node) publishFinalityCheckpointUpdated(ctx context.Context, finality *v1.Finality) {
+	n.broker.Emit(topicFinalityCheckpointUpdated, &FinalityCheckpointUpdated{
+		Finality: finality,
 	})
 }

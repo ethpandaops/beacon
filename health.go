@@ -14,6 +14,9 @@ type Health struct {
 	successThreshold int
 
 	lastCheck time.Time
+
+	failTotal    uint64
+	successTotal uint64
 }
 
 func NewHealth(successThreshold, failThreshold int) *Health {
@@ -25,10 +28,14 @@ func NewHealth(successThreshold, failThreshold int) *Health {
 		successThreshold: successThreshold,
 
 		lastCheck: time.Time{},
+
+		failTotal:    0,
+		successTotal: 0,
 	}
 }
 
 func (n *Health) RecordFail(err error) {
+	n.failTotal++
 	n.lastCheck = time.Now()
 	n.failures++
 	n.successes = 0
@@ -39,6 +46,7 @@ func (n *Health) RecordFail(err error) {
 }
 
 func (n *Health) RecordSuccess() {
+	n.successTotal++
 	n.lastCheck = time.Now()
 	n.successes++
 	n.failures = 0
@@ -50,4 +58,12 @@ func (n *Health) RecordSuccess() {
 
 func (n Health) Healthy() bool {
 	return n.healthy
+}
+
+func (n Health) FailedTotal() uint64 {
+	return n.failTotal
+}
+
+func (n Health) SuccessTotal() uint64 {
+	return n.successTotal
 }

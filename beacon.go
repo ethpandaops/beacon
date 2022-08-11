@@ -26,6 +26,9 @@ type Node interface {
 	StartAsync(ctx context.Context)
 
 	// Getters
+	// Options returns the options for the node.
+	Options() *Options
+	// Eth getters
 	// GetEpoch returns the epoch for the given epoch.
 	GetEpoch(ctx context.Context, epoch phase0.Epoch) (*state.Epoch, error)
 	// GetSlot returns the slot for the given slot.
@@ -88,6 +91,12 @@ type Node interface {
 	OnSpecUpdated(ctx context.Context, handler func(ctx context.Context, event *SpecUpdatedEvent) error)
 	// OnEmptySlot is called when an empty slot is detected.
 	OnEmptySlot(ctx context.Context, handler func(ctx context.Context, event *EmptySlotEvent) error)
+	// OnHealthCheckFailed is called when a health check fails.
+	OnHealthCheckFailed(ctx context.Context, handler func(ctx context.Context, event *HealthCheckFailedEvent) error)
+	// OnHealthCheckSucceeded is called when a health check succeeds.
+	OnHealthCheckSucceeded(ctx context.Context, handler func(ctx context.Context, event *HealthCheckSucceededEvent) error)
+	// OnFinalityCheckpointUpdated is called when a the head finality checkpoint is updated.
+	OnFinalityCheckpointUpdated(ctx context.Context, handler func(ctx context.Context, event *FinalityCheckpointUpdated) error)
 }
 
 // Node represents an Ethereum beacon node. It computes values based on the spec.
@@ -96,7 +105,10 @@ type node struct {
 	log logrus.FieldLogger
 
 	// Configuration
+	// Config should roughly be driven by end users.
 	config *Config
+	// Options should be driven by code.
+	options *Options
 
 	// Clients
 	api    api.ConsensusClient
@@ -112,20 +124,32 @@ type node struct {
 	finality      *v1.Finality
 
 	status *Status
+
+	metrics *Metrics
 }
 
-func NewNode(log logrus.FieldLogger, config *Config) Node {
-	return &node{
+func NewNode(log logrus.FieldLogger, config *Config, namespace string, options Options) Node {
+	n := &node{
 		log: log.WithField("module", "consensus/beacon"),
 
-		config: config,
+		config:  config,
+		options: &options,
+
 		broker: emission.NewEmitter(),
 
-		status: NewStatus(config.HealthCheckConfig.SuccessfulResponses, config.HealthCheckConfig.FailedResponses),
+		status: NewStatus(options.HealthCheck.SuccessfulResponses, options.HealthCheck.FailedResponses),
 	}
+
+	n.metrics = NewMetrics(n.log, namespace, config.Name, n)
+
+	return n
 }
 
 func (n *node) Start(ctx context.Context) error {
+	if err := n.metrics.Start(ctx); err != nil {
+		return err
+	}
+
 	if err := n.ensureClients(ctx); err != nil {
 		return err
 	}
@@ -140,7 +164,7 @@ func (n *node) Start(ctx context.Context) error {
 
 	s := gocron.NewScheduler(time.Local)
 
-	if _, err := s.Every(n.config.HealthCheckConfig.Interval.String()).Do(func() {
+	if _, err := s.Every(n.options.HealthCheck.Interval.String()).Do(func() {
 		n.runHealthcheck(ctx)
 	}); err != nil {
 		return err
@@ -189,6 +213,10 @@ func (n *node) StartAsync(ctx context.Context) {
 			n.log.WithError(err).Error("Failed to start beacon node")
 		}
 	}()
+}
+
+func (n *node) Options() *Options {
+	return n.options
 }
 
 func (n *node) GetEpoch(ctx context.Context, epoch phase0.Epoch) (*state.Epoch, error) {
@@ -407,14 +435,20 @@ func (n *node) FetchRawBeaconState(ctx context.Context, stateID string, contentT
 }
 
 func (n *node) runHealthcheck(ctx context.Context) {
+	start := time.Now()
+
 	err := n.fetchHealthy(ctx)
 	if err != nil {
 		n.status.Health().RecordFail(err)
+
+		n.publishHealthCheckFailed(ctx, time.Since(start))
 
 		return
 	}
 
 	n.status.Health().RecordSuccess()
+
+	n.publishHealthCheckSucceeded(ctx, time.Since(start))
 }
 
 func (n *node) handleDownstreamBlockInserted(ctx context.Context, epoch phase0.Epoch, slot state.Slot) error {
@@ -489,7 +523,22 @@ func (n *node) fetchFinality(ctx context.Context) error {
 		return err
 	}
 
+	changed := false
+	if n.finality == nil ||
+		finality.Finalized.Root != n.finality.Finalized.Root ||
+		finality.Finalized.Epoch != n.finality.Finalized.Epoch ||
+		finality.Justified.Root != n.finality.Justified.Root ||
+		finality.Justified.Epoch != n.finality.Justified.Epoch ||
+		finality.PreviousJustified.Epoch != n.finality.PreviousJustified.Epoch ||
+		finality.PreviousJustified.Root != n.finality.PreviousJustified.Root {
+		changed = true
+	}
+
 	n.finality = finality
+
+	if changed {
+		n.publishFinalityCheckpointUpdated(ctx, finality)
+	}
 
 	return nil
 }
