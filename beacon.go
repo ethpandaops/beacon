@@ -140,7 +140,7 @@ func NewNode(log logrus.FieldLogger, config *Config, namespace string, options O
 		status: NewStatus(options.HealthCheck.SuccessfulResponses, options.HealthCheck.FailedResponses),
 	}
 
-	n.metrics = NewMetrics(n.log, namespace, config.Name, n)
+	n.metrics = NewMetrics(n.log, namespace+"_beacon", config.Name, n)
 
 	return n
 }

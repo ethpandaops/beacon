@@ -27,6 +27,7 @@ func NewMetrics(log logrus.FieldLogger, namespace, nodeName string, beacon Node)
 	forks := NewForksJob(beacon, log, namespace, constLabels)
 	spec := NewSpecJob(beacon, log, namespace, constLabels)
 	sync := NewSyncJob(beacon, log, namespace, constLabels)
+	health := NewHealthMetrics(beacon, log, namespace, constLabels)
 
 	jobs := map[string]MetricsJob{
 		general.Name(): general,
@@ -34,6 +35,7 @@ func NewMetrics(log logrus.FieldLogger, namespace, nodeName string, beacon Node)
 		forks.Name():   forks,
 		spec.Name():    spec,
 		sync.Name():    sync,
+		health.Name():  health,
 	}
 
 	m := &Metrics{jobs}
