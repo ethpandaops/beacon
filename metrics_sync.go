@@ -22,8 +22,8 @@ const (
 	NameSync = "sync"
 )
 
-// NewSyncJob returns a new Sync instance.
-func NewSyncJob(beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *SyncMetrics {
+// NewSyncMetrics returns a new Sync metrics instance.
+func NewSyncMetrics(beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *SyncMetrics {
 	constLabels["module"] = NameSync
 
 	namespace += "_sync"

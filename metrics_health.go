@@ -54,7 +54,7 @@ func NewHealthMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 }
 
 func (h *HealthMetrics) Name() string {
-	return NameSync
+	return NameHealth
 }
 
 func (h *HealthMetrics) Start(ctx context.Context) error {

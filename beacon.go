@@ -172,7 +172,7 @@ func (n *node) Start(ctx context.Context) error {
 
 	if _, err := s.Every("15s").Do(func() {
 		if err := n.fetchSyncStatus(ctx); err != nil {
-			n.log.WithError(err).Error("Failed to fetch sync status")
+			n.log.WithError(err).Debug("Failed to fetch sync status")
 		}
 	}); err != nil {
 		return err
@@ -180,7 +180,7 @@ func (n *node) Start(ctx context.Context) error {
 
 	if _, err := s.Every("15m").Do(func() {
 		if err := n.fetchNodeVersion(ctx); err != nil {
-			n.log.WithError(err).Error("Failed to fetch node version")
+			n.log.WithError(err).Debug("Failed to fetch node version")
 		}
 	}); err != nil {
 		return err
@@ -188,7 +188,7 @@ func (n *node) Start(ctx context.Context) error {
 
 	if _, err := s.Every("15s").Do(func() {
 		if err := n.fetchPeers(ctx); err != nil {
-			n.log.WithError(err).Error("Failed to fetch peers")
+			n.log.WithError(err).Debug("Failed to fetch peers")
 		}
 	}); err != nil {
 		return err
@@ -196,7 +196,7 @@ func (n *node) Start(ctx context.Context) error {
 
 	if _, err := s.Every("30s").Do(func() {
 		if err := n.fetchFinality(ctx); err != nil {
-			n.log.WithError(err).Error("Failed to fetch finality")
+			n.log.WithError(err).Debug("Failed to fetch finality")
 		}
 	}); err != nil {
 		return err

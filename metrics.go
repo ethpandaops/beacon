@@ -10,6 +10,7 @@ import (
 
 type Metrics struct {
 	jobs map[string]MetricsJob
+	log  logrus.FieldLogger
 }
 
 type MetricsJob interface {
@@ -26,19 +27,22 @@ func NewMetrics(log logrus.FieldLogger, namespace, nodeName string, beacon Node)
 	event := NewEventJob(beacon, log, namespace, constLabels)
 	forks := NewForksJob(beacon, log, namespace, constLabels)
 	spec := NewSpecJob(beacon, log, namespace, constLabels)
-	sync := NewSyncJob(beacon, log, namespace, constLabels)
+	sync := NewSyncMetrics(beacon, log, namespace, constLabels)
 	health := NewHealthMetrics(beacon, log, namespace, constLabels)
 
 	jobs := map[string]MetricsJob{
+		sync.Name():    sync,
 		general.Name(): general,
 		event.Name():   event,
 		forks.Name():   forks,
 		spec.Name():    spec,
-		sync.Name():    sync,
 		health.Name():  health,
 	}
 
-	m := &Metrics{jobs}
+	m := &Metrics{
+		jobs,
+		log,
+	}
 
 	return m
 }
