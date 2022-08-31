@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/samcm/beacon/api/types"
 	"github.com/sirupsen/logrus"
@@ -29,11 +28,7 @@ type consensusClient struct {
 }
 
 // NewConsensusClient creates a new ConsensusClient.
-func NewConsensusClient(ctx context.Context, log logrus.FieldLogger, url string) ConsensusClient {
-	client := http.Client{
-		Timeout: time.Second * 10,
-	}
-
+func NewConsensusClient(ctx context.Context, log logrus.FieldLogger, url string, client http.Client) ConsensusClient {
 	return &consensusClient{
 		url:    url,
 		log:    log,

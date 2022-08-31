@@ -2,10 +2,11 @@ package beacon
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	eth2client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/http"
+	ehttp "github.com/attestantio/go-eth2-client/http"
 	"github.com/rs/zerolog"
 	"github.com/samcm/beacon/api"
 )
@@ -25,10 +26,12 @@ func (n *node) ensureClients(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			client, err := http.New(ctx,
-				http.WithAddress(n.config.Addr),
-				http.WithLogLevel(zerolog.Disabled),
-				http.WithTimeout(90*time.Second),
+			timeout := 90 * time.Second
+
+			client, err := ehttp.New(ctx,
+				ehttp.WithAddress(n.config.Addr),
+				ehttp.WithLogLevel(zerolog.Disabled),
+				ehttp.WithTimeout(timeout),
 			)
 			if err != nil {
 				failures++
@@ -48,7 +51,12 @@ func (n *node) ensureClients(ctx context.Context) error {
 			}
 
 			n.client = client
-			n.api = api.NewConsensusClient(ctx, n.log, n.config.Addr)
+
+			httpClient := http.Client{
+				Timeout: timeout,
+			}
+
+			n.api = api.NewConsensusClient(ctx, n.log, n.config.Addr, httpClient)
 
 			break
 		}
