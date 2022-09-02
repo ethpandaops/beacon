@@ -3,25 +3,25 @@ package beacon
 import v1 "github.com/attestantio/go-eth2-client/api/v1"
 
 type Status struct {
-	healthy   *Health
+	health    *Health
 	networkID uint64
 	syncstate *v1.SyncState
 }
 
 func NewStatus(successThreshold, failThreshold int) *Status {
 	return &Status{
-		healthy:   NewHealth(successThreshold, failThreshold),
+		health:    NewHealth(successThreshold, failThreshold),
 		networkID: 0,
 		syncstate: nil,
 	}
 }
 
 func (s *Status) Healthy() bool {
-	return s.healthy.Healthy()
+	return s.health.Healthy()
 }
 
 func (s *Status) Health() *Health {
-	return s.healthy
+	return s.health
 }
 
 func (s *Status) NetworkID() uint64 {

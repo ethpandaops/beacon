@@ -406,12 +406,12 @@ func (n *node) fetchNodeVersion(ctx context.Context) error {
 }
 
 func (n *node) fetchHealthy(ctx context.Context) error {
-	provider, isProvider := n.client.(eth2client.NodeVersionProvider)
+	provider, isProvider := n.client.(eth2client.NodeSyncingProvider)
 	if !isProvider {
-		return errors.New("client does not implement eth2client.NodeVersionProvider")
+		return errors.New("client does not implement eth2client.NodeSyncingProvider")
 	}
 
-	_, err := provider.NodeVersion(ctx)
+	_, err := provider.NodeSyncing(ctx)
 	if err != nil {
 		return err
 	}
