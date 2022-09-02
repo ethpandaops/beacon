@@ -377,6 +377,13 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 		return err
 	}
 
+	if err := n.state.OnEpochChanged(ctx, func(ctx context.Context, epoch phase0.Epoch) error {
+		// Sleep for 3s to give the beacon node time to update its state/finalization checkpoints.
+		return n.fetchFinality(ctx)
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
