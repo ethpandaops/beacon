@@ -1,7 +1,6 @@
 package state
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"strings"
@@ -189,10 +188,4 @@ func NewSpec(data map[string]interface{}) Spec {
 // Validate performs basic validation of the spec.
 func (s *Spec) Validate() error {
 	return nil
-}
-
-func (s *Spec) MarshalJSON() ([]byte, error) {
-	copy := *s
-
-	return json.Marshal(copy)
 }
