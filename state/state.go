@@ -94,7 +94,7 @@ func (c *Container) currentSlotLoop(ctx context.Context) error {
 	for {
 		currentSlot := c.currentSlot
 
-		nextSlotStartsAt := c.genesis.GenesisTime.Add(c.spec.SecondsPerSlot * time.Duration(currentSlot+1))
+		nextSlotStartsAt := c.genesis.GenesisTime.Add(c.spec.SecondsPerSlot.AsDuration() * time.Duration(currentSlot+1))
 
 		select {
 		case <-ctx.Done():
@@ -205,7 +205,7 @@ func (c *Container) getCurrentEpochAndSlot() (phase0.Epoch, phase0.Slot, error) 
 	// Calculate the current epoch based on genesis time.
 	genesis := c.genesis.GenesisTime
 
-	currentSlot := phase0.Slot(time.Since(genesis).Seconds() / c.spec.SecondsPerSlot.Seconds())
+	currentSlot := phase0.Slot(time.Since(genesis).Seconds() / c.spec.SecondsPerSlot.AsDuration().Seconds())
 	currentEpoch := phase0.Epoch(currentSlot / c.spec.SlotsPerEpoch)
 
 	return currentEpoch, currentSlot, nil
@@ -281,7 +281,7 @@ func (c *Container) checkForNewCurrentEpochAndSlot(ctx context.Context) error {
 		// We can't safely check if the previous slot was missed if
 		// we potentially started up _after_ the slot had started.
 		// So we'll just not bother checking in that case.
-		if time.Since(c.startedAt) > (c.spec.SecondsPerSlot * 3) {
+		if time.Since(c.startedAt) > (c.spec.SecondsPerSlot.AsDuration() * 3) {
 			if err := c.checkForEmptySlot(ctx, previousSlot); err != nil {
 				c.log.WithError(err).Error("Failed to check for empty slot")
 			}
