@@ -23,7 +23,7 @@ func NewEpochs(spec *Spec, genesis *v1.Genesis) Epochs {
 		genesis: genesis,
 		bundle: BlockTimeCalculatorBundle{
 			Genesis:        genesis,
-			SecondsPerSlot: spec.SecondsPerSlot,
+			SecondsPerSlot: spec.SecondsPerSlot.AsDuration(),
 		},
 		mu: &sync.Mutex{},
 	}

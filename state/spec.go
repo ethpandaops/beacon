@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
-	"time"
 
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/spf13/cast"
@@ -12,37 +11,38 @@ import (
 
 // Spec represents the state of the spec.
 type Spec struct {
-	PresetBase string
-	ConfigName string
+	PresetBase string `json:"PRESET_BASE"`
+	ConfigName string `json:"CONFIG_NAME"`
 
-	DepositChainID uint64
+	DepositChainID         uint64 `json:"DEPOSIT_CHAIN_ID,string"`
+	DepositContractAddress string `json:"DEPOSIT_CONTRACT_ADDRESS"`
 
-	SafeSlotsToUpdateJustified phase0.Slot
-	SlotsPerEpoch              phase0.Slot
+	SafeSlotsToUpdateJustified phase0.Slot `json:"SAFE_SLOTS_TO_UPDATE_JUSTIFIED,string"`
+	SlotsPerEpoch              phase0.Slot `json:"SLOTS_PER_EPOCH,string"`
 
-	EpochsPerSyncCommitteePeriod phase0.Epoch
-	MinSyncCommitteeParticipants uint64
-	TargetCommitteeSize          uint64
-	SyncCommitteeSize            uint64
+	EpochsPerSyncCommitteePeriod phase0.Epoch `json:"EPOCHS_PER_SYNC_COMMITTEE_PERIOD,string"`
+	MinSyncCommitteeParticipants uint64       `json:"MIN_SYNC_COMMITTEE_PARTICIPANTS,string"`
+	TargetCommitteeSize          uint64       `json:"TARGET_COMMITTEE_SIZE,string"`
+	SyncCommitteeSize            uint64       `json:"SYNC_COMMITTEE_SIZE,string"`
 
-	TerminalBlockHashActivationEpoch phase0.Epoch
-	TerminalTotalDifficulty          big.Int
+	TerminalBlockHashActivationEpoch phase0.Epoch `json:"TERMINAL_BLOCK_HASH_ACTIVATION_EPOCH,string"`
+	TerminalTotalDifficulty          big.Int      `json:"-"`
 
-	MaxValidatorsPerCommittee uint64
-	BaseRewardFactor          uint64
-	EffectiveBalanceIncrement phase0.Gwei
-	MaxEffectiveBalance       phase0.Gwei
-	MinDepositAmount          phase0.Gwei
-	MaxAttestations           uint64
+	MaxValidatorsPerCommittee uint64      `json:"MAX_VALIDATORS_PER_COMMITTEE,string"`
+	BaseRewardFactor          uint64      `json:"BASE_REWARD_FACTOR,string"`
+	EffectiveBalanceIncrement phase0.Gwei `json:"EFFECTIVE_BALANCE_INCREMENT,string"`
+	MaxEffectiveBalance       phase0.Gwei `json:"MAX_EFFECTIVE_BALANCE,string"`
+	MinDepositAmount          phase0.Gwei `json:"MIN_DEPOSIT_AMOUNT,string"`
+	MaxAttestations           uint64      `json:"MAX_ATTESTATIONS,string"`
 
-	SecondsPerEth1Block            time.Duration
-	GenesisDelay                   time.Duration
-	SecondsPerSlot                 time.Duration
-	MaxDeposits                    uint64
-	MinGenesisActiveValidatorCount uint64
-	Eth1FollowDistance             uint64
+	SecondsPerEth1Block            StringerDuration `json:"SECONDS_PER_ETH1_BLOCK,string"`
+	GenesisDelay                   StringerDuration `json:"GENESIS_DELAY,string"`
+	SecondsPerSlot                 StringerDuration `json:"SECONDS_PER_SLOT,string"`
+	MaxDeposits                    uint64           `json:"MAX_DEPOSITS,string"`
+	MinGenesisActiveValidatorCount uint64           `json:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT,string"`
+	Eth1FollowDistance             uint64           `json:"ETH1_FOLLOW_DISTANCE,string"`
 
-	ForkEpochs ForkEpochs
+	ForkEpochs ForkEpochs `json:"-"`
 }
 
 // NewSpec creates a new spec instance.
@@ -59,6 +59,10 @@ func NewSpec(data map[string]interface{}) Spec {
 		spec.DepositChainID = cast.ToUint64(depositChainID)
 	}
 
+	if depositContractAddress, exists := data["DEPOSIT_CONTRACT_ADDRESS"]; exists {
+		spec.DepositContractAddress = fmt.Sprintf("%#x", cast.ToString(depositContractAddress))
+	}
+
 	if configName, exists := data["CONFIG_NAME"]; exists {
 		spec.ConfigName = cast.ToString(configName)
 	}
@@ -68,7 +72,7 @@ func NewSpec(data map[string]interface{}) Spec {
 	}
 
 	if secondsPerEth1Block, exists := data["SECONDS_PER_ETH1_BLOCK"]; exists {
-		spec.SecondsPerEth1Block = cast.ToDuration(secondsPerEth1Block)
+		spec.SecondsPerEth1Block = StringerDuration(cast.ToDuration(secondsPerEth1Block))
 	}
 
 	if baseRewardFactor, exists := data["BASE_REWARD_FACTOR"]; exists {
@@ -92,11 +96,11 @@ func NewSpec(data map[string]interface{}) Spec {
 	}
 
 	if genesisDelay, exists := data["GENESIS_DELAY"]; exists {
-		spec.GenesisDelay = cast.ToDuration(genesisDelay)
+		spec.GenesisDelay = StringerDuration(cast.ToDuration(genesisDelay))
 	}
 
 	if secondsPerSlot, exists := data["SECONDS_PER_SLOT"]; exists {
-		spec.SecondsPerSlot = cast.ToDuration(secondsPerSlot)
+		spec.SecondsPerSlot = StringerDuration(cast.ToDuration(secondsPerSlot))
 	}
 
 	if maxEffectiveBalance, exists := data["MAX_EFFECTIVE_BALANCE"]; exists {
@@ -146,15 +150,36 @@ func NewSpec(data map[string]interface{}) Spec {
 		spec.PresetBase = cast.ToString(presetBase)
 	}
 
+	forkEpochs := make(map[string]phase0.Epoch)
+	forkVersions := make(map[string]string)
+
+	forkEpochs["GENESIS"] = 0
+
 	for k, v := range data {
 		if strings.Contains(k, "_FORK_EPOCH") {
 			forkName := strings.ReplaceAll(k, "_FORK_EPOCH", "")
 
-			spec.ForkEpochs = append(spec.ForkEpochs, ForkEpoch{
-				Epoch: phase0.Epoch(cast.ToUint64(v)),
-				Name:  forkName,
-			})
+			forkEpochs[forkName] = phase0.Epoch(cast.ToUint64(v))
 		}
+
+		if strings.Contains(k, "_FORK_VERSION") {
+			forkName := strings.ReplaceAll(k, "_FORK_VERSION", "")
+
+			forkVersions[forkName] = fmt.Sprintf("%#x", v)
+		}
+	}
+
+	for k, v := range forkEpochs {
+		version := ""
+		if v, exists := forkVersions[k]; exists {
+			version = v
+		}
+
+		spec.ForkEpochs = append(spec.ForkEpochs, &ForkEpoch{
+			Epoch:   v,
+			Name:    k,
+			Version: version,
+		})
 	}
 
 	return spec

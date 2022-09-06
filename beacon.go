@@ -186,7 +186,7 @@ func (n *node) Start(ctx context.Context) error {
 		return err
 	}
 
-	if _, err := s.Every("15s").Do(func() {
+	if _, err := s.Every("60s").Do(func() {
 		if err := n.fetchPeers(ctx); err != nil {
 			n.log.WithError(err).Debug("Failed to fetch peers")
 		}
