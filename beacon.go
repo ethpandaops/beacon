@@ -9,6 +9,7 @@ import (
 	eth2client "github.com/attestantio/go-eth2-client"
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/chuckpreslar/emission"
 	"github.com/go-co-op/gocron"
@@ -69,6 +70,8 @@ type Node interface {
 	OnChainReOrg(ctx context.Context, handler func(ctx context.Context, ev *v1.ChainReorgEvent) error)
 	// OnVoluntaryExit is called when a voluntary exit is received.
 	OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, ev *phase0.VoluntaryExit) error)
+	// OnContributionAndProof is called when a contribution and proof is received.
+	OnContributionAndProof(ctx context.Context, handler func(ctx context.Context, ev *altair.SignedContributionAndProof) error)
 
 	// - Custom events
 	// OnReady is called when the node is ready.

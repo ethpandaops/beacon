@@ -51,8 +51,8 @@ func (n *node) OnVoluntaryExit(ctx context.Context, handler func(ctx context.Con
 	})
 }
 
-func (n *node) OnContributionAndProof(ctx context.Context, handler func(ctx context.Context, event *altair.ContributionAndProof) error) {
-	n.broker.On(topicContributionAndProof, func(event *altair.ContributionAndProof) {
+func (n *node) OnContributionAndProof(ctx context.Context, handler func(ctx context.Context, event *altair.SignedContributionAndProof) error) {
+	n.broker.On(topicContributionAndProof, func(event *altair.SignedContributionAndProof) {
 		n.handleSubscriberError(handler(ctx, event), topicContributionAndProof)
 	})
 }

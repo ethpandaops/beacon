@@ -195,7 +195,7 @@ func (n *node) handleVoluntaryExit(ctx context.Context, event *v1.Event) error {
 }
 
 func (n *node) handleContributionAndProof(ctx context.Context, event *v1.Event) error {
-	contributionAndProof, valid := event.Data.(*altair.ContributionAndProof)
+	contributionAndProof, valid := event.Data.(*altair.SignedContributionAndProof)
 	if !valid {
 		return errors.New("invalid contribution and proof event")
 	}

@@ -36,7 +36,7 @@ func (n *node) publishVoluntaryExit(ctx context.Context, event *phase0.Voluntary
 	n.broker.Emit(topicVoluntaryExit, event)
 }
 
-func (n *node) publishContributionAndProof(ctx context.Context, event *altair.ContributionAndProof) {
+func (n *node) publishContributionAndProof(ctx context.Context, event *altair.SignedContributionAndProof) {
 	n.broker.Emit(topicContributionAndProof, event)
 }
 
