@@ -7,14 +7,28 @@ import (
 )
 
 type Options struct {
-	BeaconSubscription BeaconSubscriptionOptions
-	HealthCheck        HealthCheckOptions
+	BeaconSubscription  BeaconSubscriptionOptions
+	HealthCheck         HealthCheckOptions
+	FetchProposerDuties bool
+}
+
+func (o *Options) EnableFetchingProposerDuties() *Options {
+	o.FetchProposerDuties = true
+
+	return o
+}
+
+func (o *Options) DisableFetchingProposerDuties() *Options {
+	o.FetchProposerDuties = false
+
+	return o
 }
 
 func DefaultOptions() *Options {
 	return &Options{
-		BeaconSubscription: DefaultDisabledBeaconSubscriptionOptions(),
-		HealthCheck:        DefaultHealthCheckOptions(),
+		BeaconSubscription:  DefaultDisabledBeaconSubscriptionOptions(),
+		HealthCheck:         DefaultHealthCheckOptions(),
+		FetchProposerDuties: true,
 	}
 }
 
@@ -46,7 +60,7 @@ func DefaultDisabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 
 func DefaultEnabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 	return BeaconSubscriptionOptions{
-		Enabled:                       false,
+		Enabled:                       true,
 		InactivityResubscribeInterval: human.Duration{Duration: 15 * time.Minute},
 		Topics: []string{
 			topicAttestation,

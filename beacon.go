@@ -494,13 +494,12 @@ func (n *node) handleStateEpochSlotChanged(ctx context.Context, epochNumber phas
 			continue
 		}
 
-		// Disabled for now
-		// TODO(sam.calder-mason): Move "fetch proposer duties" to a beacon.Opt
-		continue
+		if n.Options().FetchProposerDuties {
+			if err := n.fetchEpochProposerDuties(ctx, i); err != nil {
+				return err
+			}
+		}
 
-		// if err := n.fetchEpochProposerDuties(ctx, i); err != nil {
-		// 	return err
-		// }
 	}
 
 	return nil

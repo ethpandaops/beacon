@@ -48,7 +48,7 @@ func (n *node) ensureBeaconSubscription(ctx context.Context) error {
 
 			n.log.
 				WithField("last_event_time", n.lastEventTime.Local().String()).
-				Info("Haven't received any events for 5 minutes, re-subscribing")
+				Info(fmt.Sprintf("Haven't received any events for %v minutes, re-subscribing", n.options.BeaconSubscription.InactivityResubscribeInterval.Duration.Minutes()))
 
 			if time.Since(n.lastEventTime) > time.Minute*5 {
 				if err := n.subscribeToBeaconEvents(ctx); err != nil {

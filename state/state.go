@@ -159,7 +159,7 @@ func (c *Container) AddBeaconBlock(ctx context.Context, beaconBlock *spec.Versio
 	if err == nil {
 		proposer = fmt.Sprintf("%v", proposerDuty.ValidatorIndex)
 	} else {
-		c.log.WithError(err).WithField("slot", slot).Warn("Failed to get slot proposer")
+		c.log.WithError(err).WithField("slot", slot).Debug("Failed to get slot proposer")
 	}
 
 	c.log.WithFields(logrus.Fields{
