@@ -8,6 +8,7 @@ import (
 
 	eth2client "github.com/attestantio/go-eth2-client"
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -70,10 +71,6 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 	topics := []string{}
 
 	for key, supported := range v1.SupportedEventTopics {
-		if key == "contribution_and_proof" {
-			continue
-		}
-
 		if !supported {
 			continue
 		}
@@ -198,6 +195,12 @@ func (n *node) handleVoluntaryExit(ctx context.Context, event *v1.Event) error {
 }
 
 func (n *node) handleContributionAndProof(ctx context.Context, event *v1.Event) error {
-	// Do nothing for now
+	contributionAndProof, valid := event.Data.(*altair.ContributionAndProof)
+	if !valid {
+		return errors.New("invalid contribution and proof event")
+	}
+
+	n.publishContributionAndProof(ctx, contributionAndProof)
+
 	return nil
 }

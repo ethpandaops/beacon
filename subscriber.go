@@ -4,6 +4,7 @@ import (
 	"context"
 
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -47,6 +48,12 @@ func (n *node) OnHead(ctx context.Context, handler func(ctx context.Context, eve
 func (n *node) OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, event *phase0.VoluntaryExit) error) {
 	n.broker.On(topicVoluntaryExit, func(event *phase0.VoluntaryExit) {
 		n.handleSubscriberError(handler(ctx, event), topicVoluntaryExit)
+	})
+}
+
+func (n *node) OnContributionAndProof(ctx context.Context, handler func(ctx context.Context, event *altair.ContributionAndProof) error) {
+	n.broker.On(topicContributionAndProof, func(event *altair.ContributionAndProof) {
+		n.handleSubscriberError(handler(ctx, event), topicContributionAndProof)
 	})
 }
 

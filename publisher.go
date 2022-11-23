@@ -5,6 +5,7 @@ import (
 	"time"
 
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/samcm/beacon/api/types"
 	"github.com/samcm/beacon/state"
@@ -33,6 +34,10 @@ func (n *node) publishHead(ctx context.Context, event *v1.HeadEvent) {
 
 func (n *node) publishVoluntaryExit(ctx context.Context, event *phase0.VoluntaryExit) {
 	n.broker.Emit(topicVoluntaryExit, event)
+}
+
+func (n *node) publishContributionAndProof(ctx context.Context, event *altair.ContributionAndProof) {
+	n.broker.Emit(topicContributionAndProof, event)
 }
 
 func (n *node) publishEvent(ctx context.Context, event *v1.Event) {
