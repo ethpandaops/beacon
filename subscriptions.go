@@ -100,14 +100,6 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 	n.publishEvent(ctx, event)
 
-	// If we are syncing, only forward on "head" and "block" events
-	// TODO(sam.calder-mason): Revisit this - was only added for the metrics-exporter use-case.
-	if n.status.Syncing() {
-		if event.Topic != topicBlock && event.Topic != topicHead {
-			return nil
-		}
-	}
-
 	switch event.Topic {
 	case topicAttestation:
 		return n.handleAttestation(ctx, event)
