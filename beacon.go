@@ -143,14 +143,18 @@ func NewNode(log logrus.FieldLogger, config *Config, namespace string, options O
 		status: NewStatus(options.HealthCheck.SuccessfulResponses, options.HealthCheck.FailedResponses),
 	}
 
-	n.metrics = NewMetrics(n.log, namespace+"_beacon", config.Name, n)
+	if options.PrometheusMetrics {
+		n.metrics = NewMetrics(n.log, namespace+"_beacon", config.Name, n)
+	}
 
 	return n
 }
 
 func (n *node) Start(ctx context.Context) error {
-	if err := n.metrics.Start(ctx); err != nil {
-		return err
+	if n.options.PrometheusMetrics {
+		if err := n.metrics.Start(ctx); err != nil {
+			return err
+		}
 	}
 
 	if err := n.ensureClients(ctx); err != nil {

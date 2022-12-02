@@ -10,6 +10,7 @@ type Options struct {
 	BeaconSubscription  BeaconSubscriptionOptions
 	HealthCheck         HealthCheckOptions
 	FetchProposerDuties bool
+	PrometheusMetrics   bool
 }
 
 func (o *Options) EnableFetchingProposerDuties() *Options {
@@ -24,11 +25,24 @@ func (o *Options) DisableFetchingProposerDuties() *Options {
 	return o
 }
 
+func (o *Options) EnablePrometheusMetrics() *Options {
+	o.PrometheusMetrics = true
+
+	return o
+}
+
+func (o *Options) DisablePrometheusMetrics() *Options {
+	o.PrometheusMetrics = false
+
+	return o
+}
+
 func DefaultOptions() *Options {
 	return &Options{
 		BeaconSubscription:  DefaultDisabledBeaconSubscriptionOptions(),
 		HealthCheck:         DefaultHealthCheckOptions(),
 		FetchProposerDuties: true,
+		PrometheusMetrics:   true,
 	}
 }
 
