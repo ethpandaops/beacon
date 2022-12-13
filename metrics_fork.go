@@ -3,6 +3,7 @@ package beacon
 import (
 	"context"
 
+	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -78,7 +79,7 @@ func (f *ForkMetrics) Name() string {
 
 func (f *ForkMetrics) Start(ctx context.Context) error {
 	// TODO(sam.calder-mason): Update this to use the wall clock instead.
-	f.beacon.OnBlockInserted(ctx, func(ctx context.Context, event *BlockInsertedEvent) error {
+	f.beacon.OnBlock(ctx, func(ctx context.Context, event *v1.BlockEvent) error {
 		return f.calculateCurrent(ctx, event.Slot)
 	})
 

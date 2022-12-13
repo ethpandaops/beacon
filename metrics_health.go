@@ -76,7 +76,7 @@ func (h *HealthMetrics) Start(ctx context.Context) error {
 }
 
 func (h *HealthMetrics) ObserveFailure() {
-	h.CheckResultsTotal.WithLabelValues("fai").Inc()
+	h.CheckResultsTotal.WithLabelValues("fail").Inc()
 }
 
 func (h *HealthMetrics) ObserveSuccess() {

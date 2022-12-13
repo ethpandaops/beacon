@@ -49,31 +49,6 @@ func (n *node) publishReady(ctx context.Context) {
 	n.broker.Emit(topicReady, nil)
 }
 
-func (n *node) publishEpochChanged(ctx context.Context, epoch phase0.Epoch) {
-	n.broker.Emit(topicEpochChanged, &EpochChangedEvent{
-		Epoch: epoch,
-	})
-}
-
-func (n *node) publishSlotChanged(ctx context.Context, slot phase0.Slot) {
-	n.broker.Emit(topicSlotChanged, &SlotChangedEvent{
-		Slot: slot,
-	})
-}
-
-func (n *node) publishEpochSlotChanged(ctx context.Context, epoch phase0.Epoch, slot phase0.Slot) {
-	n.broker.Emit(topicEpochSlotChanged, &EpochSlotChangedEvent{
-		Epoch: epoch,
-		Slot:  slot,
-	})
-}
-
-func (n *node) publishBlockInserted(ctx context.Context, slot phase0.Slot) {
-	n.broker.Emit(topicBlockInserted, &BlockInsertedEvent{
-		Slot: slot,
-	})
-}
-
 func (n *node) publishSyncStatus(ctx context.Context, st *v1.SyncState) {
 	n.broker.Emit(topicSyncStatus, &SyncStatusEvent{
 		State: st,

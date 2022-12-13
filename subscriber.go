@@ -64,30 +64,6 @@ func (n *node) OnEvent(ctx context.Context, handler func(ctx context.Context, ev
 }
 
 // Custom Events
-func (n *node) OnEpochChanged(ctx context.Context, handler func(ctx context.Context, event *EpochChangedEvent) error) {
-	n.broker.On(topicEpochChanged, func(event *EpochChangedEvent) {
-		n.handleSubscriberError(handler(ctx, event), topicEpochChanged)
-	})
-}
-
-func (n *node) OnSlotChanged(ctx context.Context, handler func(ctx context.Context, event *SlotChangedEvent) error) {
-	n.broker.On(topicSlotChanged, func(event *SlotChangedEvent) {
-		n.handleSubscriberError(handler(ctx, event), topicSlotChanged)
-	})
-}
-
-func (n *node) OnEpochSlotChanged(ctx context.Context, handler func(ctx context.Context, event *EpochSlotChangedEvent) error) {
-	n.broker.On(topicEpochSlotChanged, func(event *EpochSlotChangedEvent) {
-		n.handleSubscriberError(handler(ctx, event), topicEpochSlotChanged)
-	})
-}
-
-func (n *node) OnBlockInserted(ctx context.Context, handler func(ctx context.Context, event *BlockInsertedEvent) error) {
-	n.broker.On(topicBlockInserted, func(event *BlockInsertedEvent) {
-		n.handleSubscriberError(handler(ctx, event), topicBlockInserted)
-	})
-}
-
 func (n *node) OnReady(ctx context.Context, handler func(ctx context.Context, event *ReadyEvent) error) {
 	n.broker.On(topicReady, func(event *ReadyEvent) {
 		n.handleSubscriberError(handler(ctx, event), topicReady)
