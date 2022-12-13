@@ -75,7 +75,7 @@ func NewSpecJob(bc Node, log logrus.FieldLogger, namespace string, constLabels m
 				Help:        "The name of the config.",
 				ConstLabels: constLabels,
 			},
-			[]string{"config"},
+			[]string{"name"},
 		),
 		MaxValidatorsPerCommittee: prometheus.NewGauge(
 			prometheus.GaugeOpts{

@@ -7,17 +7,14 @@ import (
 	"math"
 	"time"
 
-	eth2client "github.com/attestantio/go-eth2-client"
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/samcm/beacon/api"
 	"github.com/sirupsen/logrus"
 )
 
 // Beacon reports Beacon information about the beacon chain.
 type BeaconMetrics struct {
-	client              eth2client.Service
 	log                 logrus.FieldLogger
 	beaconNode          Node
 	Slot                prometheus.GaugeVec
@@ -43,12 +40,11 @@ const (
 )
 
 // NewBeaconMetrics creates a new BeaconMetrics instance.
-func NewBeaconMetrics(client eth2client.Service, ap api.ConsensusClient, beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) BeaconMetrics {
+func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *BeaconMetrics {
 	constLabels["module"] = NameBeacon
 	namespace += "_beacon"
 
-	return BeaconMetrics{
-		client:     client,
+	b := &BeaconMetrics{
 		beaconNode: beac,
 		log:        log,
 		Slot: *prometheus.NewGaugeVec(
@@ -218,6 +214,24 @@ func NewBeaconMetrics(client eth2client.Service, ap api.ConsensusClient, beac No
 			},
 		),
 	}
+
+	prometheus.MustRegister(b.Attestations)
+	prometheus.MustRegister(b.Deposits)
+	prometheus.MustRegister(b.Slashings)
+	prometheus.MustRegister(b.Transactions)
+	prometheus.MustRegister(b.VoluntaryExits)
+	prometheus.MustRegister(b.Slot)
+	prometheus.MustRegister(b.FinalityCheckpoints)
+	prometheus.MustRegister(b.ReOrgs)
+	prometheus.MustRegister(b.ReOrgDepth)
+	prometheus.MustRegister(b.ProposerDelay)
+	prometheus.MustRegister(b.EmptySlots)
+	prometheus.MustRegister(b.Withdrawals)
+	prometheus.MustRegister(b.WithdrawalsAmount)
+	prometheus.MustRegister(b.WithdrawalsIndexMax)
+	prometheus.MustRegister(b.WithdrawalsIndexMin)
+
+	return b
 }
 
 func (b *BeaconMetrics) Name() string {
@@ -225,20 +239,30 @@ func (b *BeaconMetrics) Name() string {
 }
 
 func (b *BeaconMetrics) Start(ctx context.Context) error {
-	b.tick(ctx)
+	b.beaconNode.OnReady(ctx, func(ctx context.Context, event *ReadyEvent) error {
+		time.Sleep(3 * time.Second)
+
+		b.updateFinalizedCheckpoint(ctx)
+
+		return nil
+	})
 
 	if err := b.setupSubscriptions(ctx); err != nil {
 		return err
 	}
 
-	for {
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(time.Second * 60):
-			b.tick(ctx)
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(time.Second * 60):
+				b.tick(ctx)
+			}
 		}
-	}
+	}()
+
+	return nil
 }
 
 func (b *BeaconMetrics) tick(ctx context.Context) {
@@ -365,17 +389,12 @@ func (b *BeaconMetrics) updateFinalizedCheckpoint(ctx context.Context) {
 }
 
 func (b *BeaconMetrics) GetSignedBeaconBlock(ctx context.Context, blockID string) error {
-	provider, isProvider := b.client.(eth2client.SignedBeaconBlockProvider)
-	if !isProvider {
-		return errors.New("client does not implement eth2client.SignedBeaconBlockProvider")
-	}
-
-	signedBeaconBlock, err := provider.SignedBeaconBlock(ctx, blockID)
+	block, err := b.beaconNode.FetchBlock(ctx, blockID)
 	if err != nil {
 		return err
 	}
 
-	if err := b.handleSingleBlock(blockID, signedBeaconBlock); err != nil {
+	if err := b.handleSingleBlock(blockID, block); err != nil {
 		return err
 	}
 
@@ -383,12 +402,7 @@ func (b *BeaconMetrics) GetSignedBeaconBlock(ctx context.Context, blockID string
 }
 
 func (b *BeaconMetrics) GetFinality(ctx context.Context, stateID string) error {
-	provider, isProvider := b.client.(eth2client.FinalityProvider)
-	if !isProvider {
-		return errors.New("client does not implement eth2client.FinalityProvider")
-	}
-
-	finality, err := provider.Finality(ctx, stateID)
+	finality, err := b.beaconNode.FetchFinality(ctx, stateID)
 	if err != nil {
 		return err
 	}
