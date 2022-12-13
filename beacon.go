@@ -34,6 +34,7 @@ type Node interface {
 
 	// Wallclock returns the EthWallclock instance
 	Wallclock() *ethwallclock.EthereumBeaconChain
+
 	// Eth getters
 	// GetSpec returns the spec for the node.
 	GetSpec(ctx context.Context) (*state.Spec, error)
@@ -54,6 +55,8 @@ type Node interface {
 	FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error)
 	// FetchRawBeaconState returns the raw, unparsed beacon state for the given state id.
 	FetchRawBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	// FetchFinality returns the finality checkpoint for the state id.
+	FetchFinality(ctx context.Context, stateID string) (*v1.Finality, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
@@ -138,7 +141,11 @@ func NewNode(log logrus.FieldLogger, config *Config, namespace string, options O
 	}
 
 	if options.PrometheusMetrics {
-		n.metrics = NewMetrics(n.log, namespace+"_beacon", config.Name, n)
+		if namespace == "" {
+			namespace = "eth"
+		}
+
+		n.metrics = NewMetrics(n.log, namespace, config.Name, n)
 	}
 
 	return n
@@ -196,8 +203,8 @@ func (n *node) Start(ctx context.Context) error {
 	}
 
 	if _, err := s.Every("30s").Do(func() {
-		if err := n.fetchFinality(ctx); err != nil {
-			n.log.WithError(err).Debug("Failed to fetch finality")
+		if _, err := n.FetchFinality(ctx, "head"); err != nil {
+			n.log.WithError(err).Debug("Failed to fetch finality for head state")
 		}
 	}); err != nil {
 		return err
@@ -314,7 +321,7 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 	n.wallclock.OnEpochChanged(func(epoch ethwallclock.Epoch) {
 		time.Sleep(time.Second * 3)
 
-		if err := n.fetchFinality(ctx); err != nil {
+		if _, err := n.FetchFinality(ctx, "head"); err != nil {
 			n.log.WithError(err).Debug("Failed to fetch finality")
 		}
 	})
@@ -412,35 +419,37 @@ func (n *node) runHealthcheck(ctx context.Context) {
 	n.publishHealthCheckSucceeded(ctx, time.Since(start))
 }
 
-func (n *node) fetchFinality(ctx context.Context) error {
+func (n *node) FetchFinality(ctx context.Context, stateID string) (*v1.Finality, error) {
 	provider, isProvider := n.client.(eth2client.FinalityProvider)
 	if !isProvider {
-		return errors.New("client does not implement eth2client.FinalityProvider")
+		return nil, errors.New("client does not implement eth2client.FinalityProvider")
 	}
 
-	finality, err := provider.Finality(ctx, "head")
+	finality, err := provider.Finality(ctx, stateID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	changed := false
-	if n.finality == nil ||
-		finality.Finalized.Root != n.finality.Finalized.Root ||
-		finality.Finalized.Epoch != n.finality.Finalized.Epoch ||
-		finality.Justified.Root != n.finality.Justified.Root ||
-		finality.Justified.Epoch != n.finality.Justified.Epoch ||
-		finality.PreviousJustified.Epoch != n.finality.PreviousJustified.Epoch ||
-		finality.PreviousJustified.Root != n.finality.PreviousJustified.Root {
-		changed = true
+	if stateID == "head" {
+		changed := false
+		if n.finality == nil ||
+			finality.Finalized.Root != n.finality.Finalized.Root ||
+			finality.Finalized.Epoch != n.finality.Finalized.Epoch ||
+			finality.Justified.Root != n.finality.Justified.Root ||
+			finality.Justified.Epoch != n.finality.Justified.Epoch ||
+			finality.PreviousJustified.Epoch != n.finality.PreviousJustified.Epoch ||
+			finality.PreviousJustified.Root != n.finality.PreviousJustified.Root {
+			changed = true
+		}
+
+		n.finality = finality
+
+		if changed {
+			n.publishFinalityCheckpointUpdated(ctx, finality)
+		}
 	}
 
-	n.finality = finality
-
-	if changed {
-		n.publishFinalityCheckpointUpdated(ctx, finality)
-	}
-
-	return nil
+	return finality, nil
 }
 
 func (n *node) initializeState(ctx context.Context) error {

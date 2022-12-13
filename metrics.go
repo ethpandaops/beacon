@@ -20,9 +20,10 @@ type MetricsJob interface {
 
 func NewMetrics(log logrus.FieldLogger, namespace, nodeName string, beacon Node) *Metrics {
 	constLabels := prometheus.Labels{
-		"name": nodeName,
+		"node": nodeName,
 	}
 
+	beac := NewBeaconMetrics(beacon, log, namespace, constLabels)
 	general := NewGeneralJob(beacon, log, namespace, constLabels)
 	event := NewEventJob(beacon, log, namespace, constLabels)
 	forks := NewForksJob(beacon, log, namespace, constLabels)
@@ -37,6 +38,7 @@ func NewMetrics(log logrus.FieldLogger, namespace, nodeName string, beacon Node)
 		forks.Name():   forks,
 		spec.Name():    spec,
 		health.Name():  health,
+		beac.Name():    beac,
 	}
 
 	m := &Metrics{
@@ -79,4 +81,8 @@ func (m *Metrics) Sync() *SyncMetrics {
 
 func (m *Metrics) Health() *HealthMetrics {
 	return m.jobs[NameHealth].(*HealthMetrics)
+}
+
+func (m *Metrics) Beacon() *BeaconMetrics {
+	return m.jobs[NameBeacon].(*BeaconMetrics)
 }
