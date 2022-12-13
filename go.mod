@@ -3,7 +3,7 @@ module github.com/samcm/beacon
 go 1.17
 
 require (
-	github.com/attestantio/go-eth2-client v0.11.7
+	github.com/attestantio/go-eth2-client v0.14.5
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/go-co-op/gocron v1.16.2
 	github.com/rs/zerolog v1.27.0
