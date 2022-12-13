@@ -26,7 +26,6 @@ const (
 	topicEpochChanged              = "epoch_changed"
 	topicSlotChanged               = "slot_changed"
 	topicEpochSlotChanged          = "epoch_slot_changed"
-	topicBlockInserted             = "block_inserted"
 	topicReady                     = "ready"
 	topicSyncStatus                = "sync_status"
 	topicNodeVersionUpdated        = "node_version_updated"
@@ -47,19 +46,6 @@ const (
 	topicContributionAndProof = "contribution_and_proof"
 	topicEvent                = "raw_event"
 )
-
-type EpochChangedEvent struct {
-	Epoch phase0.Epoch
-}
-
-type SlotChangedEvent struct {
-	Slot phase0.Slot
-}
-
-type EpochSlotChangedEvent struct {
-	Epoch phase0.Epoch
-	Slot  phase0.Slot
-}
 
 type BlockInsertedEvent struct {
 	Slot phase0.Slot

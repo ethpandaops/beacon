@@ -11,6 +11,7 @@ type Options struct {
 	HealthCheck         HealthCheckOptions
 	FetchProposerDuties bool
 	PrometheusMetrics   bool
+	DetectEmptySlots    bool
 }
 
 func (o *Options) EnableFetchingProposerDuties() *Options {
@@ -37,12 +38,25 @@ func (o *Options) DisablePrometheusMetrics() *Options {
 	return o
 }
 
+func (o *Options) EnableEmptySlotDetection() *Options {
+	o.DetectEmptySlots = true
+
+	return o
+}
+
+func (o *Options) DisableEmptySlotDetection() *Options {
+	o.DetectEmptySlots = false
+
+	return o
+}
+
 func DefaultOptions() *Options {
 	return &Options{
 		BeaconSubscription:  DefaultDisabledBeaconSubscriptionOptions(),
 		HealthCheck:         DefaultHealthCheckOptions(),
 		FetchProposerDuties: true,
 		PrometheusMetrics:   true,
+		DetectEmptySlots:    false,
 	}
 }
 
