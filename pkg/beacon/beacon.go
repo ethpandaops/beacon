@@ -15,9 +15,9 @@ import (
 	"github.com/chuckpreslar/emission"
 	"github.com/ethpandaops/ethwallclock"
 	"github.com/go-co-op/gocron"
-	"github.com/samcm/beacon/api"
-	"github.com/samcm/beacon/api/types"
-	"github.com/samcm/beacon/state"
+	"github.com/samcm/beacon/pkg/beacon/api"
+	"github.com/samcm/beacon/pkg/beacon/api/types"
+	"github.com/samcm/beacon/pkg/beacon/state"
 	"github.com/sirupsen/logrus"
 )
 

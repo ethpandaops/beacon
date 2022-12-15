@@ -5,7 +5,7 @@ import (
 	"math/big"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/samcm/beacon/state"
+	"github.com/samcm/beacon/pkg/beacon/state"
 	"github.com/sirupsen/logrus"
 )
 

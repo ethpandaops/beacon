@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/samcm/beacon/api/types"
+	"github.com/samcm/beacon/pkg/beacon/api/types"
 	"github.com/sirupsen/logrus"
 )
 
