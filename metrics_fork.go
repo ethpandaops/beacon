@@ -19,12 +19,12 @@ type ForkMetrics struct {
 }
 
 const (
-	NameFork = "fork"
+	metricsJobNameFork = "fork"
 )
 
 // NewForksJob returns a new Forks instance.
 func NewForksJob(beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *ForkMetrics {
-	constLabels["module"] = NameFork
+	constLabels["module"] = metricsJobNameFork
 
 	namespace += "_fork"
 
@@ -75,7 +75,7 @@ func NewForksJob(beac Node, log logrus.FieldLogger, namespace string, constLabel
 
 // Name returns the name of the job.
 func (f *ForkMetrics) Name() string {
-	return NameFork
+	return metricsJobNameFork
 }
 
 // Start starts the job.

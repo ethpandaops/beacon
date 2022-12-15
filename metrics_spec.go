@@ -40,12 +40,12 @@ type SpecMetrics struct {
 }
 
 const (
-	NameSpec = "spec"
+	metricsJobNameSpec = "spec"
 )
 
 // NewSpecJob returns a new Spec instance.
 func NewSpecJob(bc Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *SpecMetrics {
-	constLabels["module"] = NameSpec
+	constLabels["module"] = metricsJobNameSpec
 
 	namespace += "_spec"
 
@@ -278,7 +278,7 @@ func NewSpecJob(bc Node, log logrus.FieldLogger, namespace string, constLabels m
 
 // Name returns the name of the job.
 func (s *SpecMetrics) Name() string {
-	return NameSpec
+	return metricsJobNameSpec
 }
 
 // Start starts the job.

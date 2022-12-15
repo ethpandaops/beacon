@@ -18,12 +18,12 @@ type GeneralMetrics struct {
 }
 
 const (
-	NameGeneral = "general"
+	metricsJobNameGeneral = "general"
 )
 
 // NewGeneral creates a new General instance.
 func NewGeneralJob(beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *GeneralMetrics {
-	constLabels["module"] = NameGeneral
+	constLabels["module"] = metricsJobNameGeneral
 
 	g := &GeneralMetrics{
 		beacon: beac,
@@ -61,7 +61,7 @@ func NewGeneralJob(beac Node, log logrus.FieldLogger, namespace string, constLab
 
 // Name returns the name of the job.
 func (g *GeneralMetrics) Name() string {
-	return NameGeneral
+	return metricsJobNameGeneral
 }
 
 // Start starts the job.

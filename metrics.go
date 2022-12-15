@@ -65,35 +65,35 @@ func (m *Metrics) Start(ctx context.Context) error {
 
 // General returns the general metrics job.
 func (m *Metrics) General() *GeneralMetrics {
-	return m.jobs[NameGeneral].(*GeneralMetrics)
+	return m.jobs[metricsJobNameGeneral].(*GeneralMetrics)
 }
 
 // Events returns the events metrics job.
 func (m *Metrics) Events() *EventMetrics {
-	return m.jobs[NameEvent].(*EventMetrics)
+	return m.jobs[metricsJobNameEvent].(*EventMetrics)
 }
 
 // Forks returns the forks metrics job.
 func (m *Metrics) Forks() *ForkMetrics {
-	return m.jobs[NameFork].(*ForkMetrics)
+	return m.jobs[metricsJobNameFork].(*ForkMetrics)
 }
 
 // Spec returns the spec metrics job.
 func (m *Metrics) Spec() *SpecMetrics {
-	return m.jobs[NameSpec].(*SpecMetrics)
+	return m.jobs[metricsJobNameSpec].(*SpecMetrics)
 }
 
 // Sync returns the sync metrics job.
 func (m *Metrics) Sync() *SyncMetrics {
-	return m.jobs[NameSync].(*SyncMetrics)
+	return m.jobs[metricsJobNameSync].(*SyncMetrics)
 }
 
 // Health returns the health metrics job.
 func (m *Metrics) Health() *HealthMetrics {
-	return m.jobs[NameHealth].(*HealthMetrics)
+	return m.jobs[metricsJobNameHealth].(*HealthMetrics)
 }
 
 // Beacon returns the beacon metrics job.
 func (m *Metrics) Beacon() *BeaconMetrics {
-	return m.jobs[NameBeacon].(*BeaconMetrics)
+	return m.jobs[metricsJobNameBeacon].(*BeaconMetrics)
 }

@@ -19,12 +19,12 @@ type SyncMetrics struct {
 }
 
 const (
-	NameSync = "sync"
+	metricsJobNameSync = "sync"
 )
 
 // NewSyncMetrics returns a new Sync metrics instance.
 func NewSyncMetrics(beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *SyncMetrics {
-	constLabels["module"] = NameSync
+	constLabels["module"] = metricsJobNameSync
 
 	namespace += "_sync"
 
@@ -84,7 +84,7 @@ func NewSyncMetrics(beac Node, log logrus.FieldLogger, namespace string, constLa
 
 // Name returns the name of the job.
 func (s *SyncMetrics) Name() string {
-	return NameSync
+	return metricsJobNameSync
 }
 
 // Start starts the job.

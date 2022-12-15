@@ -36,12 +36,12 @@ type BeaconMetrics struct {
 }
 
 const (
-	NameBeacon = "beacon"
+	metricsJobNameBeacon = "beacon"
 )
 
 // NewBeaconMetrics creates a new BeaconMetrics instance.
 func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *BeaconMetrics {
-	constLabels["module"] = NameBeacon
+	constLabels["module"] = metricsJobNameBeacon
 	namespace += "_beacon"
 
 	b := &BeaconMetrics{
@@ -236,7 +236,7 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 
 // Name returns the name of the job.
 func (b *BeaconMetrics) Name() string {
-	return NameBeacon
+	return metricsJobNameBeacon
 }
 
 // Start starts the job.

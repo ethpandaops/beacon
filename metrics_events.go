@@ -21,12 +21,12 @@ type EventMetrics struct {
 }
 
 const (
-	NameEvent = "event"
+	metricsJobNameEvent = "event"
 )
 
 // NewEvent creates a new Event instance.
 func NewEventJob(bc Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *EventMetrics {
-	constLabels["module"] = NameEvent
+	constLabels["module"] = metricsJobNameEvent
 	namespace += "_event"
 
 	e := &EventMetrics{
@@ -62,7 +62,7 @@ func NewEventJob(bc Node, log logrus.FieldLogger, namespace string, constLabels 
 
 // Name returns the name of the job.
 func (e *EventMetrics) Name() string {
-	return NameEvent
+	return metricsJobNameEvent
 }
 
 // Start starts the job.

@@ -16,12 +16,12 @@ type HealthMetrics struct {
 }
 
 const (
-	NameHealth = "health"
+	metricsJobNameHealth = "health"
 )
 
 // NewHealthMetrics returns a new HealthMetrics instance.
 func NewHealthMetrics(beac Node, log logrus.FieldLogger, namespace string, constLabels map[string]string) *HealthMetrics {
-	constLabels["module"] = NameHealth
+	constLabels["module"] = metricsJobNameHealth
 
 	namespace += "_health"
 
@@ -55,7 +55,7 @@ func NewHealthMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 
 // Name returns the name of the job.
 func (h *HealthMetrics) Name() string {
-	return NameHealth
+	return metricsJobNameHealth
 }
 
 // Start starts the job.
