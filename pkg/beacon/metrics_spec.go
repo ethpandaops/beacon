@@ -290,12 +290,6 @@ func (s *SpecMetrics) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *SpecMetrics) tick(ctx context.Context) {
-	if err := s.getSpec(ctx); err != nil {
-		s.log.WithError(err).Error("Failed to fetch spec")
-	}
-}
-
 func (s *SpecMetrics) observeSpec(ctx context.Context, spec *state.Spec) error {
 	s.ConfigName.Reset()
 	s.ConfigName.WithLabelValues(spec.ConfigName).Set(1)
@@ -334,13 +328,4 @@ func (s *SpecMetrics) observeSpec(ctx context.Context, spec *state.Spec) error {
 	s.TerminalTotalDifficulty.Set(float64(spec.TerminalTotalDifficulty.Uint64()))
 
 	return nil
-}
-
-func (s *SpecMetrics) getSpec(ctx context.Context) error {
-	spec, err := s.beacon.Spec()
-	if err != nil {
-		return err
-	}
-
-	return s.observeSpec(ctx, spec)
 }

@@ -374,12 +374,6 @@ func (b *BeaconMetrics) handleChainReorg(ctx context.Context, event *v1.ChainReo
 	return nil
 }
 
-func (b *BeaconMetrics) handleFinalizedCheckpointEvent(ctx context.Context, event *v1.FinalizedCheckpointEvent) error {
-	b.updateFinalizedCheckpoint(ctx)
-
-	return nil
-}
-
 func (b *BeaconMetrics) updateFinalizedCheckpoint(ctx context.Context) {
 	if err := b.getFinality(ctx, "head"); err != nil {
 		b.log.WithError(err).Error("Failed to get finality")
