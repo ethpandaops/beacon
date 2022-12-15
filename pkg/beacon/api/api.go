@@ -40,7 +40,7 @@ type apiResponse struct {
 	Data json.RawMessage `json:"data"`
 }
 
-//nolint:unparam // ctx will probably be used in the future
+//nolint:unused // this is used in the future
 func (c *consensusClient) post(ctx context.Context, path string, body map[string]interface{}) (json.RawMessage, error) {
 	jsonData, err := json.Marshal(body)
 	if err != nil {
