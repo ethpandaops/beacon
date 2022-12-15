@@ -1,4 +1,4 @@
-module github.com/samcm/beacon
+module github.com/ethpandaops/beacon
 
 go 1.17
 

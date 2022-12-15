@@ -3,8 +3,8 @@ package beacon
 import (
 	"context"
 
+	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/samcm/beacon/pkg/beacon/api/types"
 	"github.com/sirupsen/logrus"
 )
 

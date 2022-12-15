@@ -13,11 +13,11 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/chuckpreslar/emission"
+	"github.com/ethpandaops/beacon/pkg/beacon/api"
+	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
+	"github.com/ethpandaops/beacon/pkg/beacon/state"
 	"github.com/ethpandaops/ethwallclock"
 	"github.com/go-co-op/gocron"
-	"github.com/samcm/beacon/pkg/beacon/api"
-	"github.com/samcm/beacon/pkg/beacon/api/types"
-	"github.com/samcm/beacon/pkg/beacon/state"
 	"github.com/sirupsen/logrus"
 )
 

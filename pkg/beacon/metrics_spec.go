@@ -4,8 +4,8 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/ethpandaops/beacon/pkg/beacon/state"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/samcm/beacon/pkg/beacon/state"
 	"github.com/sirupsen/logrus"
 )
 
