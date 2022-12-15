@@ -17,7 +17,7 @@ func (n *node) ensureBeaconSubscription(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case <-time.After(time.Second * 5):
+		case <-time.After(time.Second * 2):
 			if len(n.options.BeaconSubscription.Topics) == 0 {
 				continue
 			}
@@ -30,34 +30,13 @@ func (n *node) ensureBeaconSubscription(ctx context.Context) error {
 				continue
 			}
 
-			// Only resubscribe if we haven't received an event after our inactivity period threshold.
-			if time.Since(n.lastEventTime) < n.options.BeaconSubscription.InactivityResubscribeInterval.Duration {
+			if err := n.subscribeToBeaconEvents(ctx); err != nil {
+				n.log.WithError(err).Error("Failed to subscribe to beacon")
+
 				continue
 			}
 
-			// Don't resubscribe if we are pre-genesis.
-			if n.genesis == nil {
-				continue
-			}
-
-			timeTillGenesis := time.Until(n.genesis.GenesisTime)
-			if timeTillGenesis > 0 {
-				n.log.WithField("time_until_genesis", timeTillGenesis.String()).Info("We are pre-genesis, not subscribing upstream yet...")
-
-				time.Sleep(timeTillGenesis)
-			}
-
-			n.log.
-				WithField("last_event_time", n.lastEventTime.Local().String()).
-				Info(fmt.Sprintf("Haven't received any events for %v minutes, re-subscribing", n.options.BeaconSubscription.InactivityResubscribeInterval.Duration.Minutes()))
-
-			if time.Since(n.lastEventTime) > time.Minute*5 {
-				if err := n.subscribeToBeaconEvents(ctx); err != nil {
-					n.log.WithError(err).Error("Failed to subscribe to beacon")
-				}
-
-				time.Sleep(time.Minute * 15)
-			}
+			return nil
 		}
 	}
 }
