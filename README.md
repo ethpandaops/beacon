@@ -2,6 +2,8 @@
 
 `beacon` is a Go package that can be used to interact with an Ethereum Beacon Node. It provides functions for interacting with a beacon node, and fetches/caches some data from the beacon node to make it easier to use.
 
+As a general rule, any function that starts with `Fetch` will fetch data from the beacon node and cache it. All other functions will use the cached data.
+
 ## Features
 
 - Configurable health checks
