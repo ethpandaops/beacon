@@ -8,25 +8,10 @@ import (
 
 // Options holds the options for a beacon node.
 type Options struct {
-	BeaconSubscription  BeaconSubscriptionOptions
-	HealthCheck         HealthCheckOptions
-	FetchProposerDuties bool
-	PrometheusMetrics   bool
-	DetectEmptySlots    bool
-}
-
-// EnableFetchingProposerDuties enables fetching proposer duties.
-func (o *Options) EnableFetchingProposerDuties() *Options {
-	o.FetchProposerDuties = true
-
-	return o
-}
-
-// DisableFetchingProposerDuties disables fetching proposer duties.
-func (o *Options) DisableFetchingProposerDuties() *Options {
-	o.FetchProposerDuties = false
-
-	return o
+	BeaconSubscription BeaconSubscriptionOptions
+	HealthCheck        HealthCheckOptions
+	PrometheusMetrics  bool
+	DetectEmptySlots   bool
 }
 
 // EnablePrometheusMetrics enables Prometheus metrics.
@@ -60,11 +45,10 @@ func (o *Options) DisableEmptySlotDetection() *Options {
 // DefaultOptions returns the default options.
 func DefaultOptions() *Options {
 	return &Options{
-		BeaconSubscription:  DefaultDisabledBeaconSubscriptionOptions(),
-		HealthCheck:         DefaultHealthCheckOptions(),
-		FetchProposerDuties: true,
-		PrometheusMetrics:   true,
-		DetectEmptySlots:    false,
+		BeaconSubscription: DefaultDisabledBeaconSubscriptionOptions(),
+		HealthCheck:        DefaultHealthCheckOptions(),
+		PrometheusMetrics:  true,
+		DetectEmptySlots:   false,
 	}
 }
 
