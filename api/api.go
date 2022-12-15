@@ -127,6 +127,7 @@ func (c *consensusClient) getRaw(ctx context.Context, path string, contentType s
 	return io.ReadAll(rsp.Body)
 }
 
+// NodePeers returns the list of peers connected to the node.
 func (c *consensusClient) NodePeers(ctx context.Context) (types.Peers, error) {
 	data, err := c.get(ctx, "/eth/v1/node/peers")
 	if err != nil {
@@ -141,6 +142,7 @@ func (c *consensusClient) NodePeers(ctx context.Context) (types.Peers, error) {
 	return rsp, nil
 }
 
+// NodePeer returns the peer with the given peer ID.
 func (c *consensusClient) NodePeer(ctx context.Context, peerID string) (types.Peer, error) {
 	data, err := c.get(ctx, fmt.Sprintf("/eth/v1/node/peers/%s", peerID))
 	if err != nil {
@@ -155,6 +157,7 @@ func (c *consensusClient) NodePeer(ctx context.Context, peerID string) (types.Pe
 	return rsp, nil
 }
 
+// NodePeerCount returns the number of peers connected to the node.
 func (c *consensusClient) NodePeerCount(ctx context.Context) (types.PeerCount, error) {
 	data, err := c.get(ctx, "/eth/v1/node/peer_count")
 	if err != nil {
@@ -169,6 +172,7 @@ func (c *consensusClient) NodePeerCount(ctx context.Context) (types.PeerCount, e
 	return rsp, nil
 }
 
+// RawDebugBeaconState returns the beacon state in the requested format.
 func (c *consensusClient) RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error) {
 	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v2/debug/beacon/states/%s", stateID), contentType)
 	if err != nil {

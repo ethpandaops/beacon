@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+// Duration is a time.Duration that can be marshalled to JSON as a string.
 type Duration struct {
 	time.Duration
 }

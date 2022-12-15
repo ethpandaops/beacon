@@ -4,17 +4,25 @@ import (
 	"strings"
 )
 
+// Agent is a peer's agent.
 type Agent string
 
 const (
-	AgentUnknown    Agent = "unknown"
+	// AgentUnknown is an unknown agent.
+	AgentUnknown Agent = "unknown"
+	// AgentLighthouse is a Lighthouse agent.
 	AgentLighthouse Agent = "lighthouse"
-	AgentNimbus     Agent = "nimbus"
-	AgentTeku       Agent = "teku"
-	AgentPrysm      Agent = "prysm"
-	AgentLodestar   Agent = "lodestar"
+	// AgentNimbus is a Nimbus agent.
+	AgentNimbus Agent = "nimbus"
+	// AgentTeku is a Teku agent.
+	AgentTeku Agent = "teku"
+	// AgentPrysm is a Prysm agent.
+	AgentPrysm Agent = "prysm"
+	// AgentLodestar is a Lodestar agent.
+	AgentLodestar Agent = "lodestar"
 )
 
+// AllAgents is a list of all agents.
 var AllAgents = []Agent{
 	AgentUnknown,
 	AgentLighthouse,
@@ -24,6 +32,7 @@ var AllAgents = []Agent{
 	AgentLodestar,
 }
 
+// AgentCount represents the number of peers with each agent.
 type AgentCount struct {
 	Unknown    int `json:"unknown"`
 	Lighthouse int `json:"lighthouse"`
@@ -33,6 +42,7 @@ type AgentCount struct {
 	Lodestar   int `json:"lodestar"`
 }
 
+// AgentFromString returns the agent from the given string.
 func AgentFromString(agent string) Agent {
 	asLower := strings.ToLower(agent)
 

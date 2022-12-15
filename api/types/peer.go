@@ -1,5 +1,6 @@
 package types
 
+// PeerStates represents all possible peer states.
 var PeerStates = []string{
 	"disconnected",
 	"connected",
@@ -7,11 +8,13 @@ var PeerStates = []string{
 	"disconnecting",
 }
 
+// PeerDirections represents all possible peer directions.
 var PeerDirections = []string{
 	"inbound",
 	"outbound",
 }
 
+// Peer represents a peer.
 type Peer struct {
 	PeerID             string `json:"peer_id"`
 	ENR                string `json:"enr"`
@@ -21,12 +24,15 @@ type Peer struct {
 	Agent              string `json:"agent"`
 }
 
+// DeriveAgent returns the agent of the peer.
 func (p *Peer) DeriveAgent() Agent {
 	return AgentFromString(p.Agent)
 }
 
+// Peers represents a list of peers.
 type Peers []Peer
 
+// PeerCount represents the number of peers in each state.
 type PeerCount struct {
 	Disconnected  string `json:"disconnected"`
 	Connected     string `json:"connected"`
@@ -34,6 +40,7 @@ type PeerCount struct {
 	Disconnecting string `json:"disconnecting"`
 }
 
+// ByState returns the peers with the given state.
 func (p *Peers) ByState(state string) Peers {
 	var peers []Peer
 
@@ -46,6 +53,7 @@ func (p *Peers) ByState(state string) Peers {
 	return peers
 }
 
+// ByDirection returns the peers with the given direction.
 func (p *Peers) ByDirection(direction string) Peers {
 	var peers []Peer
 
@@ -58,6 +66,7 @@ func (p *Peers) ByDirection(direction string) Peers {
 	return peers
 }
 
+// ByStateAndDirection returns the peers with the given state and direction.
 func (p *Peers) ByStateAndDirection(state, direction string) Peers {
 	var peers []Peer
 
@@ -70,6 +79,7 @@ func (p *Peers) ByStateAndDirection(state, direction string) Peers {
 	return peers
 }
 
+// ByAgent returns the peers with the given agent.
 func (p *Peers) ByAgent(agent Agent) Peers {
 	var peers []Peer
 
@@ -82,6 +92,7 @@ func (p *Peers) ByAgent(agent Agent) Peers {
 	return peers
 }
 
+// AgentCount represents the number of peers with each agent.
 func (p *Peers) AgentCount() AgentCount {
 	count := AgentCount{}
 

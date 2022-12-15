@@ -11,6 +11,7 @@ import (
 	"github.com/samcm/beacon/api"
 )
 
+// ensureClients ensures that the node has a client and an API client.
 func (n *node) ensureClients(ctx context.Context) error {
 	failures := 0
 

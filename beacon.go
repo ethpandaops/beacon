@@ -35,28 +35,43 @@ type Node interface {
 	// Wallclock returns the EthWallclock instance
 	Wallclock() *ethwallclock.EthereumBeaconChain
 
-	// Eth getters
-	// GetSpec returns the spec for the node.
-	GetSpec(ctx context.Context) (*state.Spec, error)
-	// GetSyncState returns the sync state for the node.
-	GetSyncState(ctx context.Context) (*v1.SyncState, error)
-	// GetGenesis returns the genesis for the node.
-	GetGenesis(ctx context.Context) (*v1.Genesis, error)
-	// GetNodeVersion returns the node version.
-	GetNodeVersion(ctx context.Context) (string, error)
-	// GetStatus returns the status of the ndoe.
-	GetStatus(ctx context.Context) *Status
-	// GetFinality returns the finality checkpoint for the node.
-	GetFinality(ctx context.Context) (*v1.Finality, error)
+	// Eth getters. These are all cached.
+	// Spec returns the spec for the node.
+	Spec() (*state.Spec, error)
+	// SyncState returns the sync state for the node.
+	SyncState() (*v1.SyncState, error)
+	// Genesis returns the genesis for the node.
+	Genesis() (*v1.Genesis, error)
+	// NodeVersion returns the node version.
+	NodeVersion() (string, error)
+	// Status returns the status of the ndoe.
+	Status() *Status
+	// Finality returns the finality checkpoint for the node.
+	Finality() (*v1.Finality, error)
+	// Healthy returns true if the node is healthy.
+	Healthy() bool
 
-	// FetchBlock returns the block for the given state id.
+	// Fetchers - these are not cached and will always fetch from the node.
+	// FetchBlock fetches the block for the given state id.
 	FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error)
-	// FetchBeaconState returns the beacon state for the given state id.
+	// FetchBeaconState fetches the beacon state for the given state id.
 	FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error)
-	// FetchRawBeaconState returns the raw, unparsed beacon state for the given state id.
+	// FetchRawBeaconState fetches the raw, unparsed beacon state for the given state id.
 	FetchRawBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
-	// FetchFinality returns the finality checkpoint for the state id.
+	// FetchFinality fetches the finality checkpoint for the state id.
 	FetchFinality(ctx context.Context, stateID string) (*v1.Finality, error)
+	// FetchGenesis fetches the genesis configuration.
+	FetchGenesis(ctx context.Context) (*v1.Genesis, error)
+	// FetchPeers fetches the peers from the beacon node.
+	FetchPeers(ctx context.Context) (*types.Peers, error)
+	// FetchSyncStatus fetches the sync status from the beacon node.
+	FetchSyncStatus(ctx context.Context) (*v1.SyncState, error)
+	// FetchNodeVersion fetches the node version from the beacon node.
+	FetchNodeVersion(ctx context.Context) (string, error)
+	// FetchSpec fetches the spec from the beacon node.
+	FetchSpec(ctx context.Context) (*state.Spec, error)
+	// FetchProposerDuties fetches the proposer duties from the beacon node.
+	FetchProposerDuties(ctx context.Context, epoch phase0.Epoch) ([]*v1.ProposerDuty, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
@@ -123,11 +138,12 @@ type node struct {
 	spec          *state.Spec
 	wallclock     *ethwallclock.EthereumBeaconChain
 
-	status *Status
+	stat *Status
 
 	metrics *Metrics
 }
 
+// NewNode creates a new beacon node.
 func NewNode(log logrus.FieldLogger, config *Config, namespace string, options Options) Node {
 	n := &node{
 		log: log.WithField("module", "consensus/beacon"),
@@ -137,7 +153,7 @@ func NewNode(log logrus.FieldLogger, config *Config, namespace string, options O
 
 		broker: emission.NewEmitter(),
 
-		status: NewStatus(options.HealthCheck.SuccessfulResponses, options.HealthCheck.FailedResponses),
+		stat: NewStatus(options.HealthCheck.SuccessfulResponses, options.HealthCheck.FailedResponses),
 	}
 
 	if options.PrometheusMetrics {
@@ -166,7 +182,7 @@ func (n *node) Start(ctx context.Context) error {
 		return err
 	}
 
-	if err := n.fetchSyncStatus(ctx); err != nil {
+	if _, err := n.FetchSyncStatus(ctx); err != nil {
 		return err
 	}
 
@@ -179,7 +195,7 @@ func (n *node) Start(ctx context.Context) error {
 	}
 
 	if _, err := s.Every("15s").Do(func() {
-		if err := n.fetchSyncStatus(ctx); err != nil {
+		if _, err := n.FetchSyncStatus(ctx); err != nil {
 			n.log.WithError(err).Debug("Failed to fetch sync status")
 		}
 	}); err != nil {
@@ -187,7 +203,7 @@ func (n *node) Start(ctx context.Context) error {
 	}
 
 	if _, err := s.Every("15m").Do(func() {
-		if err := n.fetchNodeVersion(ctx); err != nil {
+		if _, err := n.FetchNodeVersion(ctx); err != nil {
 			n.log.WithError(err).Debug("Failed to fetch node version")
 		}
 	}); err != nil {
@@ -195,7 +211,7 @@ func (n *node) Start(ctx context.Context) error {
 	}
 
 	if _, err := s.Every("60s").Do(func() {
-		if err := n.fetchPeers(ctx); err != nil {
+		if _, err := n.FetchPeers(ctx); err != nil {
 			n.log.WithError(err).Debug("Failed to fetch peers")
 		}
 	}); err != nil {
@@ -231,7 +247,7 @@ func (n *node) Wallclock() *ethwallclock.EthereumBeaconChain {
 	return n.wallclock
 }
 
-func (n *node) GetSpec(ctx context.Context) (*state.Spec, error) {
+func (n *node) Spec() (*state.Spec, error) {
 	if n.spec == nil {
 		return nil, errors.New("spec is not available")
 	}
@@ -239,8 +255,8 @@ func (n *node) GetSpec(ctx context.Context) (*state.Spec, error) {
 	return n.spec, nil
 }
 
-func (n *node) GetSyncState(ctx context.Context) (*v1.SyncState, error) {
-	state := n.status.SyncState()
+func (n *node) SyncState() (*v1.SyncState, error) {
+	state := n.stat.SyncState()
 
 	if state == nil {
 		return nil, errors.New("sync state not available")
@@ -249,19 +265,19 @@ func (n *node) GetSyncState(ctx context.Context) (*v1.SyncState, error) {
 	return state, nil
 }
 
-func (n *node) GetGenesis(ctx context.Context) (*v1.Genesis, error) {
+func (n *node) Genesis() (*v1.Genesis, error) {
 	return n.genesis, nil
 }
 
-func (n *node) GetNodeVersion(ctx context.Context) (string, error) {
+func (n *node) NodeVersion() (string, error) {
 	return n.nodeVersion, nil
 }
 
-func (n *node) GetStatus(ctx context.Context) *Status {
-	return n.status
+func (n *node) Status() *Status {
+	return n.stat
 }
 
-func (n *node) GetFinality(ctx context.Context) (*v1.Finality, error) {
+func (n *node) Finality() (*v1.Finality, error) {
 	if n.finality == nil {
 		return nil, errors.New("finality not available")
 	}
@@ -286,37 +302,6 @@ func (n *node) bootstrap(ctx context.Context) error {
 	return nil
 }
 
-func (n *node) fetchSyncStatus(ctx context.Context) error {
-	provider, isProvider := n.client.(eth2client.NodeSyncingProvider)
-	if !isProvider {
-		return errors.New("client does not implement eth2client.NodeSyncingProvider")
-	}
-
-	status, err := provider.NodeSyncing(ctx)
-	if err != nil {
-		return err
-	}
-
-	n.status.UpdateSyncState(status)
-
-	n.publishSyncStatus(ctx, status)
-
-	return nil
-}
-
-func (n *node) fetchPeers(ctx context.Context) error {
-	peers, err := n.api.NodePeers(ctx)
-	if err != nil {
-		return err
-	}
-
-	n.peers = peers
-
-	n.publishPeersUpdated(ctx, peers)
-
-	return nil
-}
-
 func (n *node) subscribeDownstream(ctx context.Context) error {
 	n.wallclock.OnEpochChanged(func(epoch ethwallclock.Epoch) {
 		time.Sleep(time.Second * 3)
@@ -331,7 +316,7 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 			return
 		}
 
-		if n.status.Syncing() {
+		if n.stat.Syncing() {
 			return
 		}
 
@@ -348,25 +333,7 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 	return nil
 }
 
-func (n *node) fetchNodeVersion(ctx context.Context) error {
-	provider, isProvider := n.client.(eth2client.NodeVersionProvider)
-	if !isProvider {
-		return errors.New("client does not implement eth2client.NodeVersionProvider")
-	}
-
-	version, err := provider.NodeVersion(ctx)
-	if err != nil {
-		return err
-	}
-
-	n.nodeVersion = version
-
-	n.publishNodeVersionUpdated(ctx, version)
-
-	return nil
-}
-
-func (n *node) fetchHealthy(ctx context.Context) error {
+func (n *node) fetchIsHealthy(ctx context.Context) error {
 	provider, isProvider := n.client.(eth2client.NodeSyncingProvider)
 	if !isProvider {
 		return errors.New("client does not implement eth2client.NodeSyncingProvider")
@@ -380,87 +347,32 @@ func (n *node) fetchHealthy(ctx context.Context) error {
 	return nil
 }
 
-func (n *node) FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error) {
-	return n.getBlock(ctx, stateID)
-}
-
-func (n *node) FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
-	provider, isProvider := n.client.(eth2client.BeaconStateProvider)
-	if !isProvider {
-		return nil, errors.New("client does not implement eth2client.NodeVersionProvider")
-	}
-
-	beaconState, err := provider.BeaconState(ctx, stateID)
-	if err != nil {
-		return nil, err
-	}
-
-	return beaconState, nil
-}
-
-func (n *node) FetchRawBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error) {
-	return n.api.RawDebugBeaconState(ctx, stateID, contentType)
-}
-
 func (n *node) runHealthcheck(ctx context.Context) {
 	start := time.Now()
 
-	err := n.fetchHealthy(ctx)
+	err := n.fetchIsHealthy(ctx)
 	if err != nil {
-		n.status.Health().RecordFail(err)
+		n.stat.Health().RecordFail(err)
 
 		n.publishHealthCheckFailed(ctx, time.Since(start))
 
 		return
 	}
 
-	n.status.Health().RecordSuccess()
+	n.stat.Health().RecordSuccess()
 
 	n.publishHealthCheckSucceeded(ctx, time.Since(start))
-}
-
-func (n *node) FetchFinality(ctx context.Context, stateID string) (*v1.Finality, error) {
-	provider, isProvider := n.client.(eth2client.FinalityProvider)
-	if !isProvider {
-		return nil, errors.New("client does not implement eth2client.FinalityProvider")
-	}
-
-	finality, err := provider.Finality(ctx, stateID)
-	if err != nil {
-		return nil, err
-	}
-
-	if stateID == "head" {
-		changed := false
-		if n.finality == nil ||
-			finality.Finalized.Root != n.finality.Finalized.Root ||
-			finality.Finalized.Epoch != n.finality.Finalized.Epoch ||
-			finality.Justified.Root != n.finality.Justified.Root ||
-			finality.Justified.Epoch != n.finality.Justified.Epoch ||
-			finality.PreviousJustified.Epoch != n.finality.PreviousJustified.Epoch ||
-			finality.PreviousJustified.Root != n.finality.PreviousJustified.Root {
-			changed = true
-		}
-
-		n.finality = finality
-
-		if changed {
-			n.publishFinalityCheckpointUpdated(ctx, finality)
-		}
-	}
-
-	return finality, nil
 }
 
 func (n *node) initializeState(ctx context.Context) error {
 	n.log.Info("Initializing beacon state")
 
-	spec, err := n.fetchSpec(ctx)
+	spec, err := n.FetchSpec(ctx)
 	if err != nil {
 		return err
 	}
 
-	genesis, err := n.fetchGenesis(ctx)
+	genesis, err := n.FetchGenesis(ctx)
 	if err != nil {
 		return err
 	}
@@ -470,42 +382,6 @@ func (n *node) initializeState(ctx context.Context) error {
 	n.log.Info("Beacon state initialized! Ready to serve requests...")
 
 	return nil
-}
-
-func (n *node) fetchSpec(ctx context.Context) (*state.Spec, error) {
-	provider, isProvider := n.client.(eth2client.SpecProvider)
-	if !isProvider {
-		return nil, errors.New("client does not implement eth2client.SpecProvider")
-	}
-
-	data, err := provider.Spec(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	sp := state.NewSpec(data)
-
-	n.spec = &sp
-
-	n.publishSpecUpdated(ctx, &sp)
-
-	return &sp, nil
-}
-
-func (n *node) getProserDuties(ctx context.Context, epoch phase0.Epoch) ([]*v1.ProposerDuty, error) {
-	n.log.WithField("epoch", epoch).Debug("Fetching proposer duties")
-
-	provider, isProvider := n.client.(eth2client.ProposerDutiesProvider)
-	if !isProvider {
-		return nil, errors.New("client does not implement eth2client.ProposerDutiesProvider")
-	}
-
-	duties, err := provider.ProposerDuties(ctx, epoch, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return duties, nil
 }
 
 func (n *node) getBlock(ctx context.Context, blockID string) (*spec.VersionedSignedBeaconBlock, error) {
@@ -522,14 +398,6 @@ func (n *node) getBlock(ctx context.Context, blockID string) (*spec.VersionedSig
 	return signedBeaconBlock, nil
 }
 
-func (n *node) Status() *Status {
-	return n.status
-}
-
 func (n *node) Healthy() bool {
-	return n.status.Healthy()
-}
-
-func (n *node) NetworkID() uint64 {
-	return n.status.NetworkID()
+	return n.stat.Healthy()
 }

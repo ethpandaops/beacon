@@ -5,12 +5,14 @@ import (
 	"sort"
 )
 
+// ScheduledFork is an upcoming fork.
 type ScheduledFork struct {
 	CurrentVersion  string `json:"current_version"`
 	Epoch           string `json:"epoch"`
 	PreviousVersion string `json:"previous_version"`
 }
 
+// ForkScheduleFromForkEpochs returns a fork schedule from a list of forks.
 func ForkScheduleFromForkEpochs(forks ForkEpochs) ([]*ScheduledFork, error) {
 	// Sort them by Epoch.
 	sort.Slice(forks, func(i, j int) bool {
