@@ -37,7 +37,7 @@ import (
   "fmt"
   "log"
 
-  "github.com/ethpandaops/beacon"
+  "github.com/ethpandaops/beacon/pkg/beacon"
 )
 
 func main() {
@@ -74,7 +74,7 @@ import (
   "fmt"
   "log"
 
-  "github.com/ethpandaops/beacon"
+  "github.com/ethpandaops/beacon/pkg/beacon"
 )
 
 func main() {
@@ -116,7 +116,7 @@ import (
   "fmt"
   "log"
 
-  "github.com/ethpandaops/beacon"
+  "github.com/ethpandaops/beacon/pkg/beacon"
 )
 
 func main() {
