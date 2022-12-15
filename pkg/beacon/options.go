@@ -3,7 +3,7 @@ package beacon
 import (
 	"time"
 
-	"github.com/samcm/beacon/human"
+	"github.com/samcm/beacon/pkg/human"
 )
 
 // Options holds the options for a beacon node.

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/samcm/beacon/api/types"
+	"github.com/samcm/beacon/pkg/beacon/api/types"
 	"github.com/sirupsen/logrus"
 )
 

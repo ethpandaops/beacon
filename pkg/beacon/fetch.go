@@ -8,8 +8,8 @@ import (
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
-	"github.com/samcm/beacon/api/types"
-	"github.com/samcm/beacon/state"
+	"github.com/samcm/beacon/pkg/beacon/api/types"
+	"github.com/samcm/beacon/pkg/beacon/state"
 )
 
 func (n *node) FetchSyncStatus(ctx context.Context) (*v1.SyncState, error) {
