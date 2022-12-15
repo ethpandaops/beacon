@@ -7,8 +7,8 @@ import (
 
 	eth2client "github.com/attestantio/go-eth2-client"
 	ehttp "github.com/attestantio/go-eth2-client/http"
+	"github.com/ethpandaops/beacon/pkg/beacon/api"
 	"github.com/rs/zerolog"
-	"github.com/samcm/beacon/pkg/beacon/api"
 )
 
 // ensureClients ensures that the node has a client and an API client.
