@@ -4,6 +4,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec"
 )
 
+// GetDepositCountsFromBeaconBlock returns the number of deposits in a beacon block
 func GetDepositCountsFromBeaconBlock(block *spec.VersionedSignedBeaconBlock) int {
 	switch block.Version {
 	case spec.DataVersionPhase0:
@@ -19,6 +20,7 @@ func GetDepositCountsFromBeaconBlock(block *spec.VersionedSignedBeaconBlock) int
 	}
 }
 
+// GetVoluntaryExitsFromBeaconBlock returns the number of voluntary exits in a beacon block
 func GetVoluntaryExitsFromBeaconBlock(block *spec.VersionedSignedBeaconBlock) int {
 	switch block.Version {
 	case spec.DataVersionPhase0:
@@ -34,6 +36,7 @@ func GetVoluntaryExitsFromBeaconBlock(block *spec.VersionedSignedBeaconBlock) in
 	}
 }
 
+// GetTransactionsCountFromBeaconBlock returns the number of transactions in a beacon block
 func GetTransactionsCountFromBeaconBlock(block *spec.VersionedSignedBeaconBlock) int {
 	switch block.Version {
 	case spec.DataVersionPhase0:

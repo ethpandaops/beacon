@@ -82,17 +82,19 @@ func NewSyncMetrics(beac Node, log logrus.FieldLogger, namespace string, constLa
 	return s
 }
 
+// Name returns the name of the job.
 func (s *SyncMetrics) Name() string {
 	return NameSync
 }
 
+// Start starts the job.
 func (s *SyncMetrics) Start(ctx context.Context) error {
 	s.beacon.OnSyncStatus(ctx, func(ctx context.Context, event *SyncStatusEvent) error {
 		status := event.State
 
 		s.Distance.Set(float64(status.SyncDistance))
 		s.HeadSlot.Set(float64(status.HeadSlot))
-		s.ObserveSyncIsSyncing(status.IsSyncing)
+		s.observeSyncIsSyncing(status.IsSyncing)
 
 		estimatedHighestHeadSlot := status.SyncDistance + status.HeadSlot
 		s.EstimatedHighestSlot.Set(float64(estimatedHighestHeadSlot))
@@ -110,7 +112,7 @@ func (s *SyncMetrics) Start(ctx context.Context) error {
 	return nil
 }
 
-func (s *SyncMetrics) ObserveSyncIsSyncing(syncing bool) {
+func (s *SyncMetrics) observeSyncIsSyncing(syncing bool) {
 	if syncing {
 		s.IsSyncing.Set(1)
 		return

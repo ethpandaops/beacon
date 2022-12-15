@@ -234,10 +234,12 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 	return b
 }
 
+// Name returns the name of the job.
 func (b *BeaconMetrics) Name() string {
 	return NameBeacon
 }
 
+// Start starts the job.
 func (b *BeaconMetrics) Start(ctx context.Context) error {
 	b.beaconNode.OnReady(ctx, func(ctx context.Context, event *ReadyEvent) error {
 		time.Sleep(3 * time.Second)
@@ -273,7 +275,7 @@ func (b *BeaconMetrics) setupSubscriptions(ctx context.Context) error {
 	b.beaconNode.OnBlock(ctx, b.handleBlock)
 
 	b.beaconNode.OnBlock(ctx, func(ctx context.Context, event *v1.BlockEvent) error {
-		syncState, err := b.beaconNode.GetSyncState(ctx)
+		syncState, err := b.beaconNode.SyncState()
 		if err != nil {
 			return err
 		}
@@ -299,7 +301,7 @@ func (b *BeaconMetrics) setupSubscriptions(ctx context.Context) error {
 	b.beaconNode.OnEmptySlot(ctx, b.handleEmptySlot)
 
 	b.beaconNode.OnFinalizedCheckpoint(ctx, func(ctx context.Context, ev *v1.FinalizedCheckpointEvent) error {
-		syncState, err := b.beaconNode.GetSyncState(ctx)
+		syncState, err := b.beaconNode.SyncState()
 		if err != nil {
 			return err
 		}
@@ -320,7 +322,7 @@ func (b *BeaconMetrics) setupSubscriptions(ctx context.Context) error {
 }
 
 func (b *BeaconMetrics) handleEmptySlot(ctx context.Context, event *EmptySlotEvent) error {
-	syncState, err := b.beaconNode.GetSyncState(ctx)
+	syncState, err := b.beaconNode.SyncState()
 	if err != nil {
 		return err
 	}
@@ -337,7 +339,7 @@ func (b *BeaconMetrics) handleEmptySlot(ctx context.Context, event *EmptySlotEve
 }
 
 func (b *BeaconMetrics) handleBlock(ctx context.Context, event *v1.BlockEvent) error {
-	syncState, err := b.beaconNode.GetSyncState(ctx)
+	syncState, err := b.beaconNode.SyncState()
 	if err != nil {
 		return nil
 	}
@@ -379,7 +381,7 @@ func (b *BeaconMetrics) handleFinalizedCheckpointEvent(ctx context.Context, even
 }
 
 func (b *BeaconMetrics) updateFinalizedCheckpoint(ctx context.Context) {
-	if err := b.GetFinality(ctx, "head"); err != nil {
+	if err := b.getFinality(ctx, "head"); err != nil {
 		b.log.WithError(err).Error("Failed to get finality")
 	}
 
@@ -401,7 +403,8 @@ func (b *BeaconMetrics) GetSignedBeaconBlock(ctx context.Context, blockID string
 	return nil
 }
 
-func (b *BeaconMetrics) GetFinality(ctx context.Context, stateID string) error {
+// GetFinality fetches the finality checkpoints for the given state ID and records them as metrics.
+func (b *BeaconMetrics) getFinality(ctx context.Context, stateID string) error {
 	finality, err := b.beaconNode.FetchFinality(ctx, stateID)
 	if err != nil {
 		return err

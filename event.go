@@ -9,8 +9,10 @@ import (
 	"github.com/samcm/beacon/state"
 )
 
+// EventTopics is a list of topics that can be subscribed to
 type EventTopics []string
 
+// Exists returns true if the topic exists in the list
 func (e EventTopics) Exists(topic string) bool {
 	for _, t := range e {
 		if t == topic {
@@ -47,41 +49,45 @@ const (
 	topicEvent                = "raw_event"
 )
 
-type BlockInsertedEvent struct {
-	Slot phase0.Slot
-}
-
 type ReadyEvent struct {
 }
 
+// SyncStatusEvent is emitted when the sync status is refreshed.
 type SyncStatusEvent struct {
 	State *v1.SyncState
 }
 
+// NodeVersionUpdatedEvent is emitted when the node version is updated.
 type NodeVersionUpdatedEvent struct {
 	Version string
 }
 
+// PeersUpdatedEvent is emitted when the peer list is updated.
 type PeersUpdatedEvent struct {
 	Peers types.Peers
 }
 
+// SpecUpdatedEvent is emitted when the spec is updated.
 type SpecUpdatedEvent struct {
 	Spec *state.Spec
 }
 
+// EmptySlotEvent is emitted when an empty slot is detected.
 type EmptySlotEvent struct {
 	Slot phase0.Slot
 }
 
+// HealthCheckSucceededEvent is emitted when a health check succeeds.
 type HealthCheckSucceededEvent struct {
 	Duration time.Duration
 }
 
+// HealthCheckFailedEvent is emitted when a health check fails.
 type HealthCheckFailedEvent struct {
 	Duration time.Duration
 }
 
+// FinalityCheckpointUpdated is emitted when the finality checkpoint is updated.
 type FinalityCheckpointUpdated struct {
 	Finality *v1.Finality
 }

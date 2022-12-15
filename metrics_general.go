@@ -59,10 +59,12 @@ func NewGeneralJob(beac Node, log logrus.FieldLogger, namespace string, constLab
 	return g
 }
 
+// Name returns the name of the job.
 func (g *GeneralMetrics) Name() string {
 	return NameGeneral
 }
 
+// Start starts the job.
 func (g *GeneralMetrics) Start(ctx context.Context) error {
 	g.beacon.OnNodeVersionUpdated(ctx, func(ctx context.Context, event *NodeVersionUpdatedEvent) error {
 		g.observeNodeVersion(ctx, event.Version)
@@ -90,7 +92,7 @@ func (g *GeneralMetrics) Start(ctx context.Context) error {
 }
 
 func (g *GeneralMetrics) initialFetch(ctx context.Context) error {
-	version, err := g.beacon.GetNodeVersion(ctx)
+	version, err := g.beacon.NodeVersion()
 	if err != nil {
 		return err
 	}

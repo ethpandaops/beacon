@@ -53,20 +53,22 @@ func NewHealthMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 	return h
 }
 
+// Name returns the name of the job.
 func (h *HealthMetrics) Name() string {
 	return NameHealth
 }
 
+// Start starts the job.
 func (h *HealthMetrics) Start(ctx context.Context) error {
 	h.beacon.OnHealthCheckFailed(ctx, func(ctx context.Context, event *HealthCheckFailedEvent) error {
-		h.ObserveFailure()
+		h.observeFailure()
 		h.checkUp(ctx)
 
 		return nil
 	})
 
 	h.beacon.OnHealthCheckSucceeded(ctx, func(ctx context.Context, event *HealthCheckSucceededEvent) error {
-		h.ObserveSuccess()
+		h.observeSuccess()
 		h.checkUp(ctx)
 
 		return nil
@@ -75,16 +77,16 @@ func (h *HealthMetrics) Start(ctx context.Context) error {
 	return nil
 }
 
-func (h *HealthMetrics) ObserveFailure() {
+func (h *HealthMetrics) observeFailure() {
 	h.CheckResultsTotal.WithLabelValues("fail").Inc()
 }
 
-func (h *HealthMetrics) ObserveSuccess() {
+func (h *HealthMetrics) observeSuccess() {
 	h.CheckResultsTotal.WithLabelValues("success").Inc()
 }
 
 func (h *HealthMetrics) checkUp(ctx context.Context) {
-	status := h.beacon.GetStatus(ctx)
+	status := h.beacon.Status()
 
 	if status.Healthy() {
 		h.Up.Set(1)

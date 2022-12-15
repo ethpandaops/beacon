@@ -276,10 +276,12 @@ func NewSpecJob(bc Node, log logrus.FieldLogger, namespace string, constLabels m
 	return s
 }
 
+// Name returns the name of the job.
 func (s *SpecMetrics) Name() string {
 	return NameSpec
 }
 
+// Start starts the job.
 func (s *SpecMetrics) Start(ctx context.Context) error {
 	s.beacon.OnSpecUpdated(ctx, func(ctx context.Context, event *SpecUpdatedEvent) error {
 		return s.observeSpec(ctx, event.Spec)
@@ -335,7 +337,7 @@ func (s *SpecMetrics) observeSpec(ctx context.Context, spec *state.Spec) error {
 }
 
 func (s *SpecMetrics) getSpec(ctx context.Context) error {
-	spec, err := s.beacon.GetSpec(ctx)
+	spec, err := s.beacon.Spec()
 	if err != nil {
 		return err
 	}

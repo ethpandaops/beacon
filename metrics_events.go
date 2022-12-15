@@ -60,10 +60,12 @@ func NewEventJob(bc Node, log logrus.FieldLogger, namespace string, constLabels 
 	return e
 }
 
+// Name returns the name of the job.
 func (e *EventMetrics) Name() string {
 	return NameEvent
 }
 
+// Start starts the job.
 func (e *EventMetrics) Start(ctx context.Context) error {
 	e.beacon.OnEvent(ctx, e.HandleEvent)
 
@@ -86,6 +88,7 @@ func (e *EventMetrics) tick(ctx context.Context) {
 	e.TimeSinceLastEvent.Set(float64(time.Since(e.LastEventTime).Milliseconds()))
 }
 
+// HandleEvent handles all beacon events
 func (e *EventMetrics) HandleEvent(ctx context.Context, event *v1.Event) error {
 	e.Count.WithLabelValues(event.Topic).Inc()
 	e.LastEventTime = time.Now()

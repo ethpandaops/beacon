@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// StringerDuration is a time.Duration that can be marshalled to JSON as a string.
 type StringerDuration time.Duration
 
 func (s StringerDuration) MarshalJSON() ([]byte, error) {
@@ -34,6 +35,7 @@ func (s *StringerDuration) UnmarshalJSON(b []byte) error {
 	}
 }
 
+// AsDuration returns the duration as a time.Duration.
 func (s StringerDuration) AsDuration() time.Duration {
 	return time.Duration(s)
 }

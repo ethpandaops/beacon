@@ -73,10 +73,12 @@ func NewForksJob(beac Node, log logrus.FieldLogger, namespace string, constLabel
 	return f
 }
 
+// Name returns the name of the job.
 func (f *ForkMetrics) Name() string {
 	return NameFork
 }
 
+// Start starts the job.
 func (f *ForkMetrics) Start(ctx context.Context) error {
 	// TODO(sam.calder-mason): Update this to use the wall clock instead.
 	f.beacon.OnBlock(ctx, func(ctx context.Context, event *v1.BlockEvent) error {
@@ -87,7 +89,7 @@ func (f *ForkMetrics) Start(ctx context.Context) error {
 }
 
 func (f *ForkMetrics) calculateCurrent(ctx context.Context, slot phase0.Slot) error {
-	spec, err := f.beacon.GetSpec(ctx)
+	spec, err := f.beacon.Spec()
 	if err != nil {
 		return err
 	}

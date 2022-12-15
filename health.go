@@ -4,6 +4,7 @@ import (
 	"time"
 )
 
+// Health tracks the health status of the beacon node.
 type Health struct {
 	healthy bool
 
@@ -19,6 +20,7 @@ type Health struct {
 	successTotal uint64
 }
 
+// NewHealth creates a new health tracker.
 func NewHealth(successThreshold, failThreshold int) *Health {
 	return &Health{
 		failures:  0,
@@ -34,6 +36,7 @@ func NewHealth(successThreshold, failThreshold int) *Health {
 	}
 }
 
+// RecordFail records a failure.
 func (n *Health) RecordFail(err error) {
 	n.failTotal++
 	n.lastCheck = time.Now()
@@ -45,6 +48,7 @@ func (n *Health) RecordFail(err error) {
 	}
 }
 
+// RecordSuccess records a success.
 func (n *Health) RecordSuccess() {
 	n.successTotal++
 	n.lastCheck = time.Now()
@@ -56,14 +60,17 @@ func (n *Health) RecordSuccess() {
 	}
 }
 
+// Healthy returns true if the node is healthy.
 func (n Health) Healthy() bool {
 	return n.healthy
 }
 
+// FailedTotal returns the total number of failures.
 func (n Health) FailedTotal() uint64 {
 	return n.failTotal
 }
 
+// SuccessTotal returns the total number of successes.
 func (n Health) SuccessTotal() uint64 {
 	return n.successTotal
 }
