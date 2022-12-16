@@ -17,6 +17,7 @@ type Metrics struct {
 // MetricsJob is a job that reports metrics.
 type MetricsJob interface {
 	Start(ctx context.Context) error
+	Stop() error
 	Name() string
 }
 
@@ -57,6 +58,17 @@ func (m *Metrics) Start(ctx context.Context) error {
 	for _, job := range m.jobs {
 		if err := job.Start(ctx); err != nil {
 			return fmt.Errorf("failed to start job %s: %v", job.Name(), err)
+		}
+	}
+
+	return nil
+}
+
+// Stop stops all the metrics jobs.
+func (m *Metrics) Stop() error {
+	for _, job := range m.jobs {
+		if err := job.Stop(); err != nil {
+			return fmt.Errorf("failed to stop job %s: %v", job.Name(), err)
 		}
 	}
 

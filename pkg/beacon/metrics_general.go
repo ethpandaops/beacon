@@ -91,6 +91,11 @@ func (g *GeneralMetrics) Start(ctx context.Context) error {
 	return nil
 }
 
+// Stop stops the job.
+func (g *GeneralMetrics) Stop() error {
+	return nil
+}
+
 func (g *GeneralMetrics) initialFetch(ctx context.Context) error {
 	version, err := g.beacon.NodeVersion()
 	if err != nil {

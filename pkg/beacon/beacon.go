@@ -27,6 +27,8 @@ type Node interface {
 	Start(ctx context.Context) error
 	// StartAsync starts the node asynchronously.
 	StartAsync(ctx context.Context)
+	// Stop stops the node.
+	Stop(ctx context.Context) error
 
 	// Getters
 	// Options returns the options for the node.
@@ -116,7 +118,9 @@ type Node interface {
 // Node represents an Ethereum beacon node. It computes values based on the spec.
 type node struct {
 	// Helpers
-	log logrus.FieldLogger
+	log    logrus.FieldLogger
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	// Configuration
 	// Config should roughly be driven by end users.
@@ -141,6 +145,8 @@ type node struct {
 	stat *Status
 
 	metrics *Metrics
+
+	crons *gocron.Scheduler
 }
 
 // NewNode creates a new beacon node.
@@ -168,6 +174,10 @@ func NewNode(log logrus.FieldLogger, config *Config, namespace string, options O
 }
 
 func (n *node) Start(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	n.ctx = ctx
+	n.cancel = cancel
+
 	if n.options.PrometheusMetrics {
 		if err := n.metrics.Start(ctx); err != nil {
 			return err
@@ -237,6 +247,24 @@ func (n *node) StartAsync(ctx context.Context) {
 			n.log.WithError(err).Error("Failed to start beacon node")
 		}
 	}()
+}
+
+func (n *node) Stop(ctx context.Context) error {
+	if n.options.PrometheusMetrics {
+		if err := n.metrics.Stop(); err != nil {
+			return err
+		}
+	}
+
+	if n.crons != nil {
+		n.crons.Stop()
+	}
+
+	if n.cancel != nil {
+		n.cancel()
+	}
+
+	return nil
 }
 
 func (n *node) Options() *Options {

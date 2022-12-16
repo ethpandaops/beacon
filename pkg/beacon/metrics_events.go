@@ -5,6 +5,7 @@ import (
 	"time"
 
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/go-co-op/gocron"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
@@ -18,6 +19,8 @@ type EventMetrics struct {
 	beacon Node
 
 	LastEventTime time.Time
+
+	crons *gocron.Scheduler
 }
 
 const (
@@ -32,6 +35,7 @@ func NewEventJob(bc Node, log logrus.FieldLogger, namespace string, constLabels 
 	e := &EventMetrics{
 		log:    log,
 		beacon: bc,
+		crons:  gocron.NewScheduler(time.Local),
 		Count: *prometheus.NewCounterVec(
 			prometheus.CounterOpts{
 				Namespace:   namespace,
@@ -69,16 +73,14 @@ func (e *EventMetrics) Name() string {
 func (e *EventMetrics) Start(ctx context.Context) error {
 	e.beacon.OnEvent(ctx, e.HandleEvent)
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(time.Second * 1):
-				e.tick(ctx)
-			}
-		}
-	}()
+	e.crons.Every("1s").Do(e.tick, ctx)
+
+	return nil
+}
+
+// Stop stops the job.
+func (e *EventMetrics) Stop() error {
+	e.crons.Stop()
 
 	return nil
 }
