@@ -73,7 +73,9 @@ func (e *EventMetrics) Name() string {
 func (e *EventMetrics) Start(ctx context.Context) error {
 	e.beacon.OnEvent(ctx, e.HandleEvent)
 
-	e.crons.Every("1s").Do(e.tick, ctx)
+	if _, err := e.crons.Every("1s").Do(e.tick, ctx); err != nil {
+		return err
+	}
 
 	return nil
 }

@@ -257,9 +257,11 @@ func (b *BeaconMetrics) Start(ctx context.Context) error {
 		return err
 	}
 
-	b.crons.Every("60s").Do(func() {
+	if _, err := b.crons.Every("60s").Do(func() {
 		b.tick(ctx)
-	})
+	}); err != nil {
+		return err
+	}
 
 	b.crons.StartAsync()
 
