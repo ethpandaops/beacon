@@ -9,6 +9,7 @@ import (
 
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/go-co-op/gocron"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
@@ -33,6 +34,8 @@ type BeaconMetrics struct {
 	WithdrawalsIndexMax prometheus.GaugeVec
 	WithdrawalsIndexMin prometheus.GaugeVec
 	currentVersion      string
+
+	crons *gocron.Scheduler
 }
 
 const (
@@ -47,6 +50,7 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 	b := &BeaconMetrics{
 		beaconNode: beac,
 		log:        log,
+		crons:      gocron.NewScheduler(time.Local),
 		Slot: *prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace:   namespace,
@@ -253,16 +257,20 @@ func (b *BeaconMetrics) Start(ctx context.Context) error {
 		return err
 	}
 
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-time.After(time.Second * 60):
-				b.tick(ctx)
-			}
-		}
-	}()
+	if _, err := b.crons.Every("60s").Do(func() {
+		b.tick(ctx)
+	}); err != nil {
+		return err
+	}
+
+	b.crons.StartAsync()
+
+	return nil
+}
+
+// Stop stops the job.
+func (b *BeaconMetrics) Stop() error {
+	b.crons.Stop()
 
 	return nil
 }

@@ -112,6 +112,11 @@ func (s *SyncMetrics) Start(ctx context.Context) error {
 	return nil
 }
 
+// Stop stops the job.
+func (s *SyncMetrics) Stop() error {
+	return nil
+}
+
 func (s *SyncMetrics) observeSyncIsSyncing(syncing bool) {
 	if syncing {
 		s.IsSyncing.Set(1)

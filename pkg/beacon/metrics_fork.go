@@ -88,6 +88,11 @@ func (f *ForkMetrics) Start(ctx context.Context) error {
 	return nil
 }
 
+// Stop stops the job.
+func (f *ForkMetrics) Stop() error {
+	return nil
+}
+
 func (f *ForkMetrics) calculateCurrent(ctx context.Context, slot phase0.Slot) error {
 	spec, err := f.beacon.Spec()
 	if err != nil {

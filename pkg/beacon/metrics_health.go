@@ -77,6 +77,11 @@ func (h *HealthMetrics) Start(ctx context.Context) error {
 	return nil
 }
 
+// Stop stops the job.
+func (h *HealthMetrics) Stop() error {
+	return nil
+}
+
 func (h *HealthMetrics) observeFailure() {
 	h.CheckResultsTotal.WithLabelValues("fail").Inc()
 }

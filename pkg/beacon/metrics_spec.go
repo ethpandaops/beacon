@@ -290,6 +290,11 @@ func (s *SpecMetrics) Start(ctx context.Context) error {
 	return nil
 }
 
+// Stop stops the job.
+func (s *SpecMetrics) Stop() error {
+	return nil
+}
+
 func (s *SpecMetrics) observeSpec(ctx context.Context, spec *state.Spec) error {
 	s.ConfigName.Reset()
 	s.ConfigName.WithLabelValues(spec.ConfigName).Set(1)
