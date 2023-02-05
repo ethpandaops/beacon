@@ -250,6 +250,8 @@ func (b *BeaconMetrics) Start(ctx context.Context) error {
 
 		b.updateFinalizedCheckpoint(ctx)
 
+		b.updateFinality(ctx)
+
 		return nil
 	})
 
