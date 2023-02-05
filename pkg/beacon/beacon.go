@@ -196,6 +196,10 @@ func (n *node) Start(ctx context.Context) error {
 		return err
 	}
 
+	if _, err := n.FetchFinality(ctx, "head"); err != nil {
+		n.log.WithError(err).Error("Failed to fetch initial head finality")
+	}
+
 	s := gocron.NewScheduler(time.Local)
 
 	if _, err := s.Every(n.options.HealthCheck.Interval.String()).Do(func() {
