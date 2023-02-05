@@ -257,12 +257,6 @@ func (b *BeaconMetrics) Start(ctx context.Context) error {
 		return err
 	}
 
-	if _, err := b.crons.Every("60s").Do(func() {
-		b.tick(ctx)
-	}); err != nil {
-		return err
-	}
-
 	b.crons.StartAsync()
 
 	return nil
@@ -273,10 +267,6 @@ func (b *BeaconMetrics) Stop() error {
 	b.crons.Stop()
 
 	return nil
-}
-
-func (b *BeaconMetrics) tick(ctx context.Context) {
-	b.updateFinalizedCheckpoint(ctx)
 }
 
 func (b *BeaconMetrics) setupSubscriptions(ctx context.Context) error {
@@ -308,22 +298,8 @@ func (b *BeaconMetrics) setupSubscriptions(ctx context.Context) error {
 
 	b.beaconNode.OnEmptySlot(ctx, b.handleEmptySlot)
 
-	b.beaconNode.OnFinalizedCheckpoint(ctx, func(ctx context.Context, ev *v1.FinalizedCheckpointEvent) error {
-		syncState, err := b.beaconNode.SyncState()
-		if err != nil {
-			return err
-		}
-
-		if syncState == nil || syncState.IsSyncing {
-			return nil
-		}
-
-		// Sleep for 3 seconds to allow the beacon node to process the finalized checkpoint.
-		time.Sleep(3 * time.Second)
-
-		b.updateFinalizedCheckpoint(ctx)
-
-		return nil
+	b.beaconNode.OnFinalityCheckpointUpdated(ctx, func(ctx context.Context, ev *FinalityCheckpointUpdated) error {
+		return b.updateFinality(ctx)
 	})
 
 	return nil
@@ -383,10 +359,6 @@ func (b *BeaconMetrics) handleChainReorg(ctx context.Context, event *v1.ChainReo
 }
 
 func (b *BeaconMetrics) updateFinalizedCheckpoint(ctx context.Context) {
-	if err := b.getFinality(ctx, "head"); err != nil {
-		b.log.WithError(err).Error("Failed to get finality")
-	}
-
 	if err := b.GetSignedBeaconBlock(ctx, "finalized"); err != nil {
 		b.log.WithError(err).Error("Failed to get signed beacon block")
 	}
@@ -405,23 +377,23 @@ func (b *BeaconMetrics) GetSignedBeaconBlock(ctx context.Context, blockID string
 	return nil
 }
 
-// GetFinality fetches the finality checkpoints for the given state ID and records them as metrics.
-func (b *BeaconMetrics) getFinality(ctx context.Context, stateID string) error {
-	finality, err := b.beaconNode.FetchFinality(ctx, stateID)
+// updateFinality updates the finality metrics.
+func (b *BeaconMetrics) updateFinality(ctx context.Context) error {
+	finality, err := b.beaconNode.Finality()
 	if err != nil {
 		return err
 	}
 
 	b.FinalityCheckpoints.
-		WithLabelValues(stateID, "previous_justified").
+		WithLabelValues("head", "previous_justified").
 		Set(float64(finality.PreviousJustified.Epoch))
 
 	b.FinalityCheckpoints.
-		WithLabelValues(stateID, "justified").
+		WithLabelValues("head", "justified").
 		Set(float64(finality.Justified.Epoch))
 
 	b.FinalityCheckpoints.
-		WithLabelValues(stateID, "finalized").
+		WithLabelValues("head", "finalized").
 		Set(float64(finality.Finalized.Epoch))
 
 	return nil

@@ -228,14 +228,6 @@ func (n *node) Start(ctx context.Context) error {
 		return err
 	}
 
-	if _, err := s.Every("30s").Do(func() {
-		if _, err := n.FetchFinality(ctx, "head"); err != nil {
-			n.log.WithError(err).Debug("Failed to fetch finality for head state")
-		}
-	}); err != nil {
-		return err
-	}
-
 	s.StartAsync()
 
 	return nil
@@ -356,6 +348,16 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 
 			return
 		}
+	})
+
+	n.OnFinalizedCheckpoint(ctx, func(ctx context.Context, ev *v1.FinalizedCheckpointEvent) error {
+		time.Sleep(3 * time.Second) // Sleep to give time for the beacon node to update its state.
+
+		if _, err := n.FetchFinality(ctx, "head"); err != nil {
+			n.log.WithError(err).Debug("Failed to fetch finality for head state")
+		}
+
+		return nil
 	})
 
 	return nil
