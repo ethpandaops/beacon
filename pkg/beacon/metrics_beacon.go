@@ -248,8 +248,6 @@ func (b *BeaconMetrics) Start(ctx context.Context) error {
 	b.beaconNode.OnReady(ctx, func(ctx context.Context, event *ReadyEvent) error {
 		time.Sleep(3 * time.Second)
 
-		b.updateFinalizedCheckpoint(ctx)
-
 		b.updateFinality(ctx)
 
 		return nil
@@ -360,12 +358,6 @@ func (b *BeaconMetrics) handleChainReorg(ctx context.Context, event *v1.ChainReo
 	return nil
 }
 
-func (b *BeaconMetrics) updateFinalizedCheckpoint(ctx context.Context) {
-	if err := b.GetSignedBeaconBlock(ctx, "finalized"); err != nil {
-		b.log.WithError(err).Error("Failed to get signed beacon block")
-	}
-}
-
 func (b *BeaconMetrics) GetSignedBeaconBlock(ctx context.Context, blockID string) error {
 	block, err := b.beaconNode.FetchBlock(ctx, blockID)
 	if err != nil {
@@ -381,6 +373,18 @@ func (b *BeaconMetrics) GetSignedBeaconBlock(ctx context.Context, blockID string
 
 // updateFinality updates the finality metrics.
 func (b *BeaconMetrics) updateFinality(ctx context.Context) error {
+	if err := b.GetSignedBeaconBlock(ctx, "finalized"); err != nil {
+		b.log.WithError(err).Error("Failed to get signed beacon block at finalized")
+	}
+
+	if err := b.GetSignedBeaconBlock(ctx, "justified"); err != nil {
+		b.log.WithError(err).Error("Failed to get signed beacon block at justified")
+	}
+
+	if err := b.GetSignedBeaconBlock(ctx, "head"); err != nil {
+		b.log.WithError(err).Error("Failed to get signed beacon block at head")
+	}
+
 	finality, err := b.beaconNode.Finality()
 	if err != nil {
 		return err
