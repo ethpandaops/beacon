@@ -27,7 +27,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
-			timeout := 90 * time.Second
+			timeout := 10 * time.Minute
 
 			client, err := ehttp.New(ctx,
 				ehttp.WithAddress(n.config.Addr),
