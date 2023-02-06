@@ -377,10 +377,6 @@ func (b *BeaconMetrics) updateFinality(ctx context.Context) error {
 		b.log.WithError(err).Error("Failed to get signed beacon block at finalized")
 	}
 
-	if err := b.GetSignedBeaconBlock(ctx, "justified"); err != nil {
-		b.log.WithError(err).Error("Failed to get signed beacon block at justified")
-	}
-
 	if err := b.GetSignedBeaconBlock(ctx, "head"); err != nil {
 		b.log.WithError(err).Error("Failed to get signed beacon block at head")
 	}
