@@ -33,7 +33,9 @@ type BeaconMetrics struct {
 	WithdrawalsAmount   prometheus.GaugeVec
 	WithdrawalsIndexMax prometheus.GaugeVec
 	WithdrawalsIndexMin prometheus.GaugeVec
-	currentVersion      string
+
+	currentVersionHead      string
+	currentVersionFinalized string
 
 	crons *gocron.Scheduler
 }
@@ -406,7 +408,8 @@ func (b *BeaconMetrics) handleSingleBlock(blockID string, block *spec.VersionedS
 		return errors.New("block is nil")
 	}
 
-	if blockID == "head" && b.currentVersion != block.Version.String() {
+	if blockID == "head" && b.currentVersionHead != block.Version.String() ||
+		blockID == "finalized" && b.currentVersionFinalized != block.Version.String() {
 		b.Transactions.Reset()
 		b.Slashings.Reset()
 		b.Attestations.Reset()
@@ -414,7 +417,13 @@ func (b *BeaconMetrics) handleSingleBlock(blockID string, block *spec.VersionedS
 		b.VoluntaryExits.Reset()
 		b.Slot.Reset()
 
-		b.currentVersion = block.Version.String()
+		if blockID == "finalized" {
+			b.currentVersionFinalized = block.Version.String()
+		}
+
+		if blockID == "head" {
+			b.currentVersionHead = block.Version.String()
+		}
 	}
 
 	b.recordNewBeaconBlock(blockID, block)
