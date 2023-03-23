@@ -151,3 +151,12 @@ func (n *node) FetchProposerDuties(ctx context.Context, epoch phase0.Epoch) ([]*
 
 	return duties, nil
 }
+
+func (n *node) FetchForkChoice(ctx context.Context) (*v1.ForkChoice, error) {
+	provider, isProvider := n.client.(eth2client.ForkChoiceProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.ForkChoiceProvider")
+	}
+
+	return provider.ForkChoice(ctx)
+}

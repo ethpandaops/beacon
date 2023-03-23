@@ -18,9 +18,10 @@ func TestAgentParsing(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.input, func(t *testing.T) {
+			te := test
 			t.Parallel()
-			if actual := AgentFromString(test.input); actual != test.expect {
-				t.Errorf("Expected %s, got %s", test.expect, actual)
+			if actual := AgentFromString(te.input); actual != te.expect {
+				t.Errorf("Expected %s, got %s", te.expect, actual)
 			}
 		})
 	}

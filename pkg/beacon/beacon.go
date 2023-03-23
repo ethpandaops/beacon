@@ -74,6 +74,8 @@ type Node interface {
 	FetchSpec(ctx context.Context) (*state.Spec, error)
 	// FetchProposerDuties fetches the proposer duties from the beacon node.
 	FetchProposerDuties(ctx context.Context, epoch phase0.Epoch) ([]*v1.ProposerDuty, error)
+	// FetchForkChoice fetches the fork choice context.
+	FetchForkChoice(ctx context.Context) (*v1.ForkChoice, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
