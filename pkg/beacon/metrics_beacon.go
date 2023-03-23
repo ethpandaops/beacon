@@ -250,9 +250,7 @@ func (b *BeaconMetrics) Start(ctx context.Context) error {
 	b.beaconNode.OnReady(ctx, func(ctx context.Context, event *ReadyEvent) error {
 		time.Sleep(3 * time.Second)
 
-		b.updateFinality(ctx)
-
-		return nil
+		return b.updateFinality(ctx)
 	})
 
 	if err := b.setupSubscriptions(ctx); err != nil {
