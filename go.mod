@@ -1,9 +1,11 @@
 module github.com/ethpandaops/beacon
 
-go 1.17
+go 1.19
+
+replace github.com/attestantio/go-eth2-client v0.15.7 => github.com/samcm/go-eth2-client v0.15.8
 
 require (
-	github.com/attestantio/go-eth2-client v0.14.5
+	github.com/attestantio/go-eth2-client v0.15.7
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethpandaops/ethwallclock v0.2.0
 	github.com/go-co-op/gocron v1.16.2
