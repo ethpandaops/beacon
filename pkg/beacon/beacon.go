@@ -92,7 +92,7 @@ type Node interface {
 	// OnChainReOrg is called when a chain reorg is received.
 	OnChainReOrg(ctx context.Context, handler func(ctx context.Context, ev *v1.ChainReorgEvent) error)
 	// OnVoluntaryExit is called when a voluntary exit is received.
-	OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, ev *phase0.VoluntaryExit) error)
+	OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, ev *phase0.SignedVoluntaryExit) error)
 	// OnContributionAndProof is called when a contribution and proof is received.
 	OnContributionAndProof(ctx context.Context, handler func(ctx context.Context, ev *altair.SignedContributionAndProof) error)
 

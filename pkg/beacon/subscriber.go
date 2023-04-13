@@ -45,8 +45,8 @@ func (n *node) OnHead(ctx context.Context, handler func(ctx context.Context, eve
 	})
 }
 
-func (n *node) OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, event *phase0.VoluntaryExit) error) {
-	n.broker.On(topicVoluntaryExit, func(event *phase0.VoluntaryExit) {
+func (n *node) OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, event *phase0.SignedVoluntaryExit) error) {
+	n.broker.On(topicVoluntaryExit, func(event *phase0.SignedVoluntaryExit) {
 		n.handleSubscriberError(handler(ctx, event), topicVoluntaryExit)
 	})
 }

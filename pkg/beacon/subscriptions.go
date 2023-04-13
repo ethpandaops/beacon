@@ -155,7 +155,7 @@ func (n *node) handleHead(ctx context.Context, event *v1.Event) error {
 }
 
 func (n *node) handleVoluntaryExit(ctx context.Context, event *v1.Event) error {
-	exit, valid := event.Data.(*phase0.VoluntaryExit)
+	exit, valid := event.Data.(*phase0.SignedVoluntaryExit)
 	if !valid {
 		return errors.New("invalid voluntary exit event")
 	}
