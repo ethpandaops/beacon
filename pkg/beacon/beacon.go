@@ -76,6 +76,8 @@ type Node interface {
 	FetchProposerDuties(ctx context.Context, epoch phase0.Epoch) ([]*v1.ProposerDuty, error)
 	// FetchForkChoice fetches the fork choice context.
 	FetchForkChoice(ctx context.Context) (*v1.ForkChoice, error)
+	// FetchDepositSnapshot fetches the deposit snapshot.
+	FetchDepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
