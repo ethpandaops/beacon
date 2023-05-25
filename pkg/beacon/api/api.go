@@ -19,6 +19,7 @@ type ConsensusClient interface {
 	NodePeers(ctx context.Context) (types.Peers, error)
 	NodePeerCount(ctx context.Context) (types.PeerCount, error)
 	RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	DepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
 }
 
 type consensusClient struct {
@@ -180,4 +181,19 @@ func (c *consensusClient) RawDebugBeaconState(ctx context.Context, stateID strin
 	}
 
 	return data, nil
+}
+
+// DepositSnapshot returns the deposit snapshot in the requested format.
+func (c *consensusClient) DepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error) {
+	data, err := c.get(ctx, "/eth/v1/beacon/deposit_snapshot")
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := types.DepositSnapshot{}
+	if err := json.Unmarshal(data, &rsp); err != nil {
+		return nil, err
+	}
+
+	return &rsp, nil
 }

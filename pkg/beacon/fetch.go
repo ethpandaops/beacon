@@ -160,3 +160,7 @@ func (n *node) FetchForkChoice(ctx context.Context) (*v1.ForkChoice, error) {
 
 	return provider.ForkChoice(ctx)
 }
+
+func (n *node) FetchDepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error) {
+	return n.api.DepositSnapshot(ctx)
+}
