@@ -6,4 +6,6 @@ type Config struct {
 	Name string `yaml:"name"`
 	// Address is the address of the node.
 	Addr string `yaml:"addr"`
+	// Headers is the list of HTTP headers sent to the node.
+	Headers map[string]string `yaml:"headers"`
 }

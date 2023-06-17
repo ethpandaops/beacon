@@ -33,6 +33,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 				ehttp.WithAddress(n.config.Addr),
 				ehttp.WithLogLevel(zerolog.Disabled),
 				ehttp.WithTimeout(timeout),
+				ehttp.WithExtraHeaders(n.config.Headers),
 			)
 			if err != nil {
 				failures++
