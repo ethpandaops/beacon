@@ -33,6 +33,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 				ehttp.WithAddress(n.config.Addr),
 				ehttp.WithLogLevel(zerolog.Disabled),
 				ehttp.WithTimeout(timeout),
+				ehttp.WithExtraHeaders(n.config.Headers),
 			)
 			if err != nil {
 				failures++
@@ -57,7 +58,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 				Timeout: timeout,
 			}
 
-			n.api = api.NewConsensusClient(ctx, n.log, n.config.Addr, httpClient)
+			n.api = api.NewConsensusClient(ctx, n.log, n.config.Addr, httpClient, n.config.Headers)
 
 			break
 		}

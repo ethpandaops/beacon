@@ -23,17 +23,19 @@ type ConsensusClient interface {
 }
 
 type consensusClient struct {
-	url    string
-	log    logrus.FieldLogger
-	client http.Client
+	url     string
+	log     logrus.FieldLogger
+	client  http.Client
+	headers map[string]string
 }
 
 // NewConsensusClient creates a new ConsensusClient.
-func NewConsensusClient(ctx context.Context, log logrus.FieldLogger, url string, client http.Client) ConsensusClient {
+func NewConsensusClient(ctx context.Context, log logrus.FieldLogger, url string, client http.Client, headers map[string]string) ConsensusClient {
 	return &consensusClient{
-		url:    url,
-		log:    log,
-		client: client,
+		url:     url,
+		log:     log,
+		client:  client,
+		headers: headers,
 	}
 }
 
@@ -48,7 +50,17 @@ func (c *consensusClient) post(ctx context.Context, path string, body map[string
 		return nil, err
 	}
 
-	rsp, err := c.client.Post(c.url, "application/json", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.url+path, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+
+	// Set headers from c.headers
+	for k, v := range c.headers {
+		req.Header.Set(k, v)
+	}
+
+	rsp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +86,17 @@ func (c *consensusClient) post(ctx context.Context, path string, body map[string
 
 //nolint:unparam // ctx will probably be used in the future
 func (c *consensusClient) get(ctx context.Context, path string) (json.RawMessage, error) {
-	rsp, err := c.client.Get(c.url + path)
+	req, err := http.NewRequestWithContext(ctx, "GET", c.url+path, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set headers from c.headers
+	for k, v := range c.headers {
+		req.Header.Set(k, v)
+	}
+
+	rsp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +120,6 @@ func (c *consensusClient) get(ctx context.Context, path string) (json.RawMessage
 	return resp.Data, nil
 }
 
-//nolint:unparam // ctx will probably be used in the future
 func (c *consensusClient) getRaw(ctx context.Context, path string, contentType string) ([]byte, error) {
 	if contentType == "" {
 		contentType = "application/json"
@@ -108,13 +129,19 @@ func (c *consensusClient) getRaw(ctx context.Context, path string, contentType s
 		return nil, err
 	}
 
-	rsp, err := c.client.Do(&http.Request{
-		Method: "GET",
-		URL:    u,
-		Header: map[string][]string{
-			"Accept": {contentType},
-		},
-	})
+	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set headers from c.headers
+	for k, v := range c.headers {
+		req.Header.Set(k, v)
+	}
+
+	req.Header.Set("Accept", contentType)
+
+	rsp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
