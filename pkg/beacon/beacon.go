@@ -78,6 +78,8 @@ type Node interface {
 	FetchForkChoice(ctx context.Context) (*v1.ForkChoice, error)
 	// FetchDepositSnapshot fetches the deposit snapshot.
 	FetchDepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
+	// FetchBeaconCommittees fetches the committees for the given epoch at the given state.
+	FetchBeaconCommittees(ctx context.Context, state string, epoch phase0.Epoch) ([]*v1.BeaconCommittee, error)
 
 	// Subscriptions
 	// - Proxied Beacon events

@@ -164,3 +164,17 @@ func (n *node) FetchForkChoice(ctx context.Context) (*v1.ForkChoice, error) {
 func (n *node) FetchDepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error) {
 	return n.api.DepositSnapshot(ctx)
 }
+
+func (n *node) FetchBeaconCommittees(ctx context.Context, state string, epoch phase0.Epoch) ([]*v1.BeaconCommittee, error) {
+	provider, isProvider := n.client.(eth2client.BeaconCommitteesProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.BeaconCommitteesProvider")
+	}
+
+	duties, err := provider.BeaconCommitteesAtEpoch(ctx, state, epoch)
+	if err != nil {
+		return nil, err
+	}
+
+	return duties, nil
+}
