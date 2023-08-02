@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"strings"
 
 	"github.com/attestantio/go-eth2-client/spec/phase0"
@@ -21,9 +22,9 @@ type DepositSnapshot struct {
 type DepositSnapshotJSON struct {
 	Finalized            []string `json:"finalized"`
 	DepositRoot          string   `json:"deposit_root"`
-	DepositCount         uint64   `json:"deposit_count"`
+	DepositCount         string   `json:"deposit_count"`
 	ExecutionBlockHash   string   `json:"execution_block_hash"`
-	ExecutionBlockHeight uint64   `json:"execution_block_height"`
+	ExecutionBlockHeight string   `json:"execution_block_height"`
 }
 
 func (d *DepositSnapshot) MarshalJSON() ([]byte, error) {
@@ -35,9 +36,9 @@ func (d *DepositSnapshot) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&DepositSnapshotJSON{
 		Finalized:            finalized,
 		DepositRoot:          d.DepositRoot.String(),
-		DepositCount:         d.DepositCount,
+		DepositCount:         strconv.FormatUint(d.DepositCount, 10),
 		ExecutionBlockHash:   d.ExecutionBlockHash.String(),
-		ExecutionBlockHeight: d.ExecutionBlockHeight,
+		ExecutionBlockHeight: strconv.FormatUint(d.ExecutionBlockHeight, 10),
 	})
 }
 
@@ -74,7 +75,11 @@ func (d *DepositSnapshot) UnmarshalJSON(input []byte) error {
 
 	copy(d.DepositRoot[:], depositRoot)
 
-	d.DepositCount = depositSnapshotJSON.DepositCount
+	depositCount, err := strconv.ParseUint(depositSnapshotJSON.DepositCount, 10, 64)
+	if err != nil {
+		return err
+	}
+	d.DepositCount = depositCount
 
 	executionBlockHash, err := hex.DecodeString(strings.TrimPrefix(depositSnapshotJSON.ExecutionBlockHash, "0x"))
 	if err != nil {
@@ -87,7 +92,11 @@ func (d *DepositSnapshot) UnmarshalJSON(input []byte) error {
 
 	copy(d.ExecutionBlockHash[:], executionBlockHash)
 
-	d.ExecutionBlockHeight = depositSnapshotJSON.ExecutionBlockHeight
+	executionBlockHeight, err := strconv.ParseUint(depositSnapshotJSON.ExecutionBlockHeight, 10, 64)
+	if err != nil {
+		return err
+	}
+	d.ExecutionBlockHeight = executionBlockHeight
 
 	return nil
 }
