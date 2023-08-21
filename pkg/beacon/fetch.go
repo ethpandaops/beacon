@@ -178,3 +178,17 @@ func (n *node) FetchBeaconCommittees(ctx context.Context, state string, epoch ph
 
 	return duties, nil
 }
+
+func (n *node) FetchAttestationData(ctx context.Context, slot phase0.Slot, committeeIndex phase0.CommitteeIndex) (*phase0.AttestationData, error) {
+	provider, isProvider := n.client.(eth2client.AttestationDataProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.AttestationDataProvider")
+	}
+
+	attestationData, err := provider.AttestationData(ctx, slot, committeeIndex)
+	if err != nil {
+		return nil, err
+	}
+
+	return attestationData, nil
+}
