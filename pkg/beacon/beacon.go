@@ -80,6 +80,8 @@ type Node interface {
 	FetchDepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
 	// FetchBeaconCommittees fetches the committees for the given epoch at the given state.
 	FetchBeaconCommittees(ctx context.Context, state string, epoch phase0.Epoch) ([]*v1.BeaconCommittee, error)
+	// FetchAttestationData fetches the attestation data for the given slot and committee index.
+	FetchAttestationData(ctx context.Context, slot phase0.Slot, committeeIndex phase0.CommitteeIndex) (*phase0.AttestationData, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
