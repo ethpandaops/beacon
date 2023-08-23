@@ -21,9 +21,9 @@ type DepositSnapshot struct {
 type DepositSnapshotJSON struct {
 	Finalized            []string `json:"finalized"`
 	DepositRoot          string   `json:"deposit_root"`
-	DepositCount         uint64   `json:"deposit_count"`
+	DepositCount         uint64   `json:"deposit_count,string"`
 	ExecutionBlockHash   string   `json:"execution_block_hash"`
-	ExecutionBlockHeight uint64   `json:"execution_block_height"`
+	ExecutionBlockHeight uint64   `json:"execution_block_height,string"`
 }
 
 func (d *DepositSnapshot) MarshalJSON() ([]byte, error) {
