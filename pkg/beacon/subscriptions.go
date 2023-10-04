@@ -94,6 +94,8 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 		return n.handleVoluntaryExit(ctx, event)
 	case topicContributionAndProof:
 		return n.handleContributionAndProof(ctx, event)
+	case topicBlobSidecar:
+		return n.handleBlobSidecar(ctx, event)
 
 	default:
 		return fmt.Errorf("unknown event topic %s", event.Topic)
@@ -172,6 +174,17 @@ func (n *node) handleContributionAndProof(ctx context.Context, event *v1.Event) 
 	}
 
 	n.publishContributionAndProof(ctx, contributionAndProof)
+
+	return nil
+}
+
+func (n *node) handleBlobSidecar(ctx context.Context, event *v1.Event) error {
+	blobSidecar, valid := event.Data.(*v1.BlobSidecarEvent)
+	if !valid {
+		return errors.New("invalid blob sidecar event")
+	}
+
+	n.publishBlobSidecar(ctx, blobSidecar)
 
 	return nil
 }

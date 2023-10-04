@@ -101,6 +101,8 @@ type Node interface {
 	OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, ev *phase0.SignedVoluntaryExit) error)
 	// OnContributionAndProof is called when a contribution and proof is received.
 	OnContributionAndProof(ctx context.Context, handler func(ctx context.Context, ev *altair.SignedContributionAndProof) error)
+	// OnBlobSidecar is called when a blob sidecar is received.
+	OnBlobSidecar(ctx context.Context, handler func(ctx context.Context, ev *v1.BlobSidecarEvent) error)
 
 	// - Custom events
 	// OnReady is called when the node is ready.
