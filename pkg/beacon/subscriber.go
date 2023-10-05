@@ -57,6 +57,12 @@ func (n *node) OnContributionAndProof(ctx context.Context, handler func(ctx cont
 	})
 }
 
+func (n *node) OnBlobSidecar(ctx context.Context, handler func(ctx context.Context, event *v1.BlobSidecarEvent) error) {
+	n.broker.On(topicBlobSidecar, func(event *v1.BlobSidecarEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicBlobSidecar)
+	})
+}
+
 func (n *node) OnEvent(ctx context.Context, handler func(ctx context.Context, event *v1.Event) error) {
 	n.broker.On(topicEvent, func(event *v1.Event) {
 		n.handleSubscriberError(handler(ctx, event), topicEvent)

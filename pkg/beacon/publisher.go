@@ -40,6 +40,10 @@ func (n *node) publishContributionAndProof(ctx context.Context, event *altair.Si
 	n.broker.Emit(topicContributionAndProof, event)
 }
 
+func (n *node) publishBlobSidecar(ctx context.Context, event *v1.BlobSidecarEvent) {
+	n.broker.Emit(topicBlobSidecar, event)
+}
+
 func (n *node) publishEvent(ctx context.Context, event *v1.Event) {
 	n.broker.Emit(topicEvent, event)
 }

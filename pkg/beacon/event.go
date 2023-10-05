@@ -46,6 +46,7 @@ const (
 	topicHead                 = "head"
 	topicVoluntaryExit        = "voluntary_exit"
 	topicContributionAndProof = "contribution_and_proof"
+	topicBlobSidecar          = "blob_sidecar"
 	topicEvent                = "raw_event"
 )
 
