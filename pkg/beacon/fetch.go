@@ -7,6 +7,7 @@ import (
 	eth2client "github.com/attestantio/go-eth2-client"
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
@@ -134,6 +135,20 @@ func (n *node) FetchSpec(ctx context.Context) (*state.Spec, error) {
 	n.publishSpecUpdated(ctx, &sp)
 
 	return &sp, nil
+}
+
+func (n *node) FetchBeaconBlockBlobs(ctx context.Context, blockID string) ([]*deneb.BlobSidecar, error) {
+	provider, isProvider := n.client.(eth2client.BeaconBlockBlobsProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.BeaconBlockBlobsProvider")
+	}
+
+	data, err := provider.BeaconBlockBlobs(ctx, blockID)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }
 
 func (n *node) FetchProposerDuties(ctx context.Context, epoch phase0.Epoch) ([]*v1.ProposerDuty, error) {

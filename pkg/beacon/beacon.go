@@ -11,6 +11,7 @@ import (
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/chuckpreslar/emission"
 	"github.com/ethpandaops/beacon/pkg/beacon/api"
@@ -82,6 +83,8 @@ type Node interface {
 	FetchBeaconCommittees(ctx context.Context, state string, epoch phase0.Epoch) ([]*v1.BeaconCommittee, error)
 	// FetchAttestationData fetches the attestation data for the given slot and committee index.
 	FetchAttestationData(ctx context.Context, slot phase0.Slot, committeeIndex phase0.CommitteeIndex) (*phase0.AttestationData, error)
+	// FetchBeaconBlockBlobs fetches blob sidecars for the given block id.
+	FetchBeaconBlockBlobs(ctx context.Context, blockID string) ([]*deneb.BlobSidecar, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
