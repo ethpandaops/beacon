@@ -3,7 +3,7 @@ module github.com/ethpandaops/beacon
 go 1.19
 
 require (
-	github.com/attestantio/go-eth2-client v0.18.4-0.20231004102804-73681300fc5f
+	github.com/attestantio/go-eth2-client v0.18.4-0.20231012194602-0eff364fec01
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethpandaops/ethwallclock v0.2.0
 	github.com/go-co-op/gocron v1.16.2
