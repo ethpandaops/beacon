@@ -8,6 +8,7 @@ import (
 	"time"
 
 	eth2client "github.com/attestantio/go-eth2-client"
+	eapi "github.com/attestantio/go-eth2-client/api"
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
@@ -386,7 +387,7 @@ func (n *node) fetchIsHealthy(ctx context.Context) error {
 		return errors.New("client does not implement eth2client.NodeSyncingProvider")
 	}
 
-	_, err := provider.NodeSyncing(ctx)
+	_, err := provider.NodeSyncing(ctx, &eapi.NodeSyncingOpts{})
 	if err != nil {
 		return err
 	}
@@ -437,12 +438,24 @@ func (n *node) getBlock(ctx context.Context, blockID string) (*spec.VersionedSig
 		return nil, errors.New("client does not implement eth2client.SignedBeaconBlockProvider")
 	}
 
-	signedBeaconBlock, err := provider.SignedBeaconBlock(ctx, blockID)
+	signedBeaconBlock, err := provider.SignedBeaconBlock(ctx, &eapi.SignedBeaconBlockOpts{
+		Block: blockID,
+	})
 	if err != nil {
+		var apiErr *eapi.Error
+		if errors.As(err, &apiErr) {
+			switch apiErr.StatusCode {
+			case 404:
+				return nil, nil
+			case 503:
+				return nil, errors.New("beacon node is syncing")
+			}
+		}
+
 		return nil, err
 	}
 
-	return signedBeaconBlock, nil
+	return signedBeaconBlock.Data, nil
 }
 
 func (n *node) Healthy() bool {
