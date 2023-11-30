@@ -3,7 +3,7 @@ module github.com/ethpandaops/beacon
 go 1.19
 
 require (
-	github.com/attestantio/go-eth2-client v0.18.4-0.20231012194602-0eff364fec01
+	github.com/attestantio/go-eth2-client v0.19.5
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethpandaops/ethwallclock v0.2.0
 	github.com/go-co-op/gocron v1.16.2
@@ -23,6 +23,7 @@ require (
 	github.com/goccy/go-yaml v1.9.5 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/holiman/uint256 v1.2.2 // indirect
+	github.com/huandu/go-clone v1.6.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.1.2 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
