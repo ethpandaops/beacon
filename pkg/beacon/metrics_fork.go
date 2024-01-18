@@ -3,8 +3,8 @@ package beacon
 import (
 	"context"
 
-	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/ethwallclock"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )
@@ -81,8 +81,8 @@ func (f *ForkMetrics) Name() string {
 // Start starts the job.
 func (f *ForkMetrics) Start(ctx context.Context) error {
 	// TODO(sam.calder-mason): Update this to use the wall clock instead.
-	f.beacon.OnBlock(ctx, func(ctx context.Context, event *v1.BlockEvent) error {
-		return f.calculateCurrent(ctx, event.Slot)
+	f.beacon.Wallclock().OnEpochChanged(func(epoch ethwallclock.Epoch) {
+		f.calculateCurrent(ctx)
 	})
 
 	return nil
@@ -93,7 +93,9 @@ func (f *ForkMetrics) Stop() error {
 	return nil
 }
 
-func (f *ForkMetrics) calculateCurrent(ctx context.Context, slot phase0.Slot) error {
+func (f *ForkMetrics) calculateCurrent(ctx context.Context) error {
+	slot := f.beacon.Wallclock().Slots().Current()
+
 	spec, err := f.beacon.Spec()
 	if err != nil {
 		return err
@@ -107,14 +109,14 @@ func (f *ForkMetrics) calculateCurrent(ctx context.Context, slot phase0.Slot) er
 	for _, fork := range spec.ForkEpochs {
 		f.Epochs.WithLabelValues(fork.Name).Set(float64(fork.Epoch))
 
-		if fork.Active(slot, slotsPerEpoch) {
+		if fork.Active(phase0.Slot(slot.Number()), slotsPerEpoch) {
 			f.Activated.WithLabelValues(fork.Name).Set(1)
 		} else {
 			f.Activated.WithLabelValues(fork.Name).Set(0)
 		}
 	}
 
-	current, err := spec.ForkEpochs.CurrentFork(slot, slotsPerEpoch)
+	current, err := spec.ForkEpochs.CurrentFork(phase0.Slot(slot.Number()), slotsPerEpoch)
 	if err != nil {
 		f.log.WithError(err).Error("Failed to set current fork")
 	} else {

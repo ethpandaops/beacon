@@ -33,6 +33,7 @@ type BeaconMetrics struct {
 	WithdrawalsAmount   prometheus.GaugeVec
 	WithdrawalsIndexMax prometheus.GaugeVec
 	WithdrawalsIndexMin prometheus.GaugeVec
+	BlobKZGCommitments  prometheus.GaugeVec
 
 	currentVersionHead      string
 	currentVersionFinalized string
@@ -219,6 +220,18 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				"version",
 			},
 		),
+		BlobKZGCommitments: *prometheus.NewGaugeVec(
+			prometheus.GaugeOpts{
+				Namespace:   namespace,
+				Name:        "blob_kzg_commitments",
+				Help:        "The amount of blob kzg commitments in the block.",
+				ConstLabels: constLabels,
+			},
+			[]string{
+				"block_id",
+				"version",
+			},
+		),
 	}
 
 	prometheus.MustRegister(b.Attestations)
@@ -236,6 +249,7 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 	prometheus.MustRegister(b.WithdrawalsAmount)
 	prometheus.MustRegister(b.WithdrawalsIndexMax)
 	prometheus.MustRegister(b.WithdrawalsIndexMin)
+	prometheus.MustRegister(b.BlobKZGCommitments)
 
 	return b
 }
@@ -469,12 +483,13 @@ func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.Version
 	transactions := GetTransactionsCountFromBeaconBlock(block)
 	b.Transactions.WithLabelValues(blockID, version).Set(float64(transactions))
 
-	if block.Version == spec.DataVersionCapella {
+	withdrawals, err := block.Withdrawals()
+	if err == nil {
 		gwei := int64(0)
 		indexMax := int64(0)
 		indexMin := int64(math.MaxInt64)
 
-		for _, withdrawal := range block.Capella.Message.Body.ExecutionPayload.Withdrawals {
+		for _, withdrawal := range withdrawals {
 			gwei += int64(withdrawal.Amount)
 
 			index := int64(withdrawal.Index)
@@ -488,7 +503,7 @@ func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.Version
 		}
 
 		b.WithdrawalsAmount.WithLabelValues(blockID, version).Set(float64(gwei))
-		b.Withdrawals.WithLabelValues(blockID, version).Set(float64(len(block.Capella.Message.Body.ExecutionPayload.Withdrawals)))
+		b.Withdrawals.WithLabelValues(blockID, version).Set(float64(len(withdrawals)))
 
 		if indexMax > 0 {
 			b.WithdrawalsIndexMax.WithLabelValues(blockID, version).Set(float64(indexMax))
@@ -497,5 +512,10 @@ func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.Version
 		if indexMin < math.MaxInt64 {
 			b.WithdrawalsIndexMin.WithLabelValues(blockID, version).Set(float64(indexMin))
 		}
+	}
+
+	blobs, err := block.BlobKZGCommitments()
+	if err == nil {
+		b.BlobKZGCommitments.WithLabelValues(blockID, version).Set(float64(len(blobs)))
 	}
 }
