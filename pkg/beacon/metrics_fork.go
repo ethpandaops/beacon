@@ -80,9 +80,14 @@ func (f *ForkMetrics) Name() string {
 
 // Start starts the job.
 func (f *ForkMetrics) Start(ctx context.Context) error {
-	// TODO(sam.calder-mason): Update this to use the wall clock instead.
-	f.beacon.Wallclock().OnEpochChanged(func(epoch ethwallclock.Epoch) {
-		f.calculateCurrent(ctx)
+	f.beacon.OnReady(ctx, func(ctx context.Context, event *ReadyEvent) error {
+		f.beacon.Wallclock().OnEpochChanged(func(epoch ethwallclock.Epoch) {
+			if err := f.calculateCurrent(ctx); err != nil {
+				f.log.WithError(err).Error("Failed to calculate current fork")
+			}
+		})
+
+		return nil
 	})
 
 	return nil
