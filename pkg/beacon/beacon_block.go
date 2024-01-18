@@ -6,48 +6,30 @@ import (
 
 // GetDepositCountsFromBeaconBlock returns the number of deposits in a beacon block
 func GetDepositCountsFromBeaconBlock(block *spec.VersionedSignedBeaconBlock) int {
-	switch block.Version {
-	case spec.DataVersionPhase0:
-		return len(block.Phase0.Message.Body.Deposits)
-	case spec.DataVersionAltair:
-		return len(block.Altair.Message.Body.Deposits)
-	case spec.DataVersionBellatrix:
-		return len(block.Bellatrix.Message.Body.Deposits)
-	case spec.DataVersionCapella:
-		return len(block.Capella.Message.Body.Deposits)
-	default:
-		return 0
+	deposits, err := block.Deposits()
+	if err == nil {
+		return len(deposits)
 	}
+
+	return 0
 }
 
 // GetVoluntaryExitsFromBeaconBlock returns the number of voluntary exits in a beacon block
 func GetVoluntaryExitsFromBeaconBlock(block *spec.VersionedSignedBeaconBlock) int {
-	switch block.Version {
-	case spec.DataVersionPhase0:
-		return len(block.Phase0.Message.Body.VoluntaryExits)
-	case spec.DataVersionAltair:
-		return len(block.Altair.Message.Body.VoluntaryExits)
-	case spec.DataVersionBellatrix:
-		return len(block.Bellatrix.Message.Body.VoluntaryExits)
-	case spec.DataVersionCapella:
-		return len(block.Capella.Message.Body.VoluntaryExits)
-	default:
-		return 0
+	exits, err := block.VoluntaryExits()
+	if err == nil {
+		return len(exits)
 	}
+
+	return 0
 }
 
 // GetTransactionsCountFromBeaconBlock returns the number of transactions in a beacon block
 func GetTransactionsCountFromBeaconBlock(block *spec.VersionedSignedBeaconBlock) int {
-	switch block.Version {
-	case spec.DataVersionPhase0:
-		return 0
-	case spec.DataVersionAltair:
-		return 0
-	case spec.DataVersionBellatrix:
-		return len(block.Bellatrix.Message.Body.ExecutionPayload.Transactions)
-	case spec.DataVersionCapella:
-		return len(block.Capella.Message.Body.ExecutionPayload.Transactions)
-	default:
-		return 0
+	transactions, err := block.ExecutionTransactions()
+	if err == nil {
+		return len(transactions)
 	}
+
+	return 0
 }
