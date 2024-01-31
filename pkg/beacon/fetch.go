@@ -196,6 +196,22 @@ func (n *node) FetchDepositSnapshot(ctx context.Context) (*types.DepositSnapshot
 	return n.api.DepositSnapshot(ctx)
 }
 
+func (n *node) FetchBeaconStateRoot(ctx context.Context, state string) (phase0.Root, error) {
+	provider, isProvider := n.client.(eth2client.BeaconStateRootProvider)
+	if !isProvider {
+		return phase0.Root{}, errors.New("client does not implement eth2client.StateRootProvider")
+	}
+
+	rsp, err := provider.BeaconStateRoot(ctx, &api.BeaconStateRootOpts{
+		State: state,
+	})
+	if err != nil {
+		return phase0.Root{}, err
+	}
+
+	return *rsp.Data, nil
+}
+
 func (n *node) FetchBeaconCommittees(ctx context.Context, state string, epoch phase0.Epoch) ([]*v1.BeaconCommittee, error) {
 	provider, isProvider := n.client.(eth2client.BeaconCommitteesProvider)
 	if !isProvider {

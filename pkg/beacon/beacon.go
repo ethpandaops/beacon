@@ -60,6 +60,8 @@ type Node interface {
 	FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error)
 	// FetchBeaconState fetches the beacon state for the given state id.
 	FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error)
+	// FetchBeaconStateRoot fetches the state root for the given state id.
+	FetchBeaconStateRoot(ctx context.Context, stateID string) (phase0.Root, error)
 	// FetchRawBeaconState fetches the raw, unparsed beacon state for the given state id.
 	FetchRawBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	// FetchFinality fetches the finality checkpoint for the state id.
