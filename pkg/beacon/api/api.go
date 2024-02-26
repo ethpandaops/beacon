@@ -18,6 +18,7 @@ type ConsensusClient interface {
 	NodePeer(ctx context.Context, peerID string) (types.Peer, error)
 	NodePeers(ctx context.Context) (types.Peers, error)
 	NodePeerCount(ctx context.Context) (types.PeerCount, error)
+	RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	DepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
 }
@@ -203,6 +204,16 @@ func (c *consensusClient) NodePeerCount(ctx context.Context) (types.PeerCount, e
 // RawDebugBeaconState returns the beacon state in the requested format.
 func (c *consensusClient) RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error) {
 	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v2/debug/beacon/states/%s", stateID), contentType)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// RawBlock returns the block in the requested format.
+func (c *consensusClient) RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error) {
+	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v2/beacon/blocks/%s", stateID), contentType)
 	if err != nil {
 		return nil, err
 	}
