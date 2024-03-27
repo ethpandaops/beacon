@@ -58,6 +58,8 @@ type Node interface {
 	// Fetchers - these are not cached and will always fetch from the node.
 	// FetchBlock fetches the block for the given state id.
 	FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error)
+	// FetchRawBlock fetches the raw, unparsed block for the given state id.
+	FetchRawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	// FetchBeaconState fetches the beacon state for the given state id.
 	FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error)
 	// FetchBeaconStateRoot fetches the state root for the given state id.
