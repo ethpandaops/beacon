@@ -128,6 +128,20 @@ func (n *node) FetchFinality(ctx context.Context, stateID string) (*v1.Finality,
 	return finality, nil
 }
 
+func (n *node) FetchRawSpec(ctx context.Context) (map[string]any, error) {
+	provider, isProvider := n.client.(eth2client.SpecProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.SpecProvider")
+	}
+
+	rsp, err := provider.Spec(ctx, &api.SpecOpts{})
+	if err != nil {
+		return nil, err
+	}
+
+	return rsp.Data, nil
+}
+
 func (n *node) FetchSpec(ctx context.Context) (*state.Spec, error) {
 	provider, isProvider := n.client.(eth2client.SpecProvider)
 	if !isProvider {

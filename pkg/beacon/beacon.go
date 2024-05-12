@@ -76,6 +76,8 @@ type Node interface {
 	FetchSyncStatus(ctx context.Context) (*v1.SyncState, error)
 	// FetchNodeVersion fetches the node version from the beacon node.
 	FetchNodeVersion(ctx context.Context) (string, error)
+	// FetchRawSpec fetches the raw, unparsed spec from the beacon node.
+	FetchRawSpec(ctx context.Context) (map[string]any, error)
 	// FetchSpec fetches the spec from the beacon node.
 	FetchSpec(ctx context.Context) (*state.Spec, error)
 	// FetchProposerDuties fetches the proposer duties from the beacon node.
