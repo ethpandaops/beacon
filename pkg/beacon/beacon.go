@@ -32,6 +32,9 @@ type Node interface {
 	// Stop stops the node.
 	Stop(ctx context.Context) error
 
+	// Service returns the Service client for the node.
+	Service() eth2client.Service
+
 	// Getters
 	// Options returns the options for the node.
 	Options() *Options
@@ -307,6 +310,10 @@ func (n *node) SyncState() (*v1.SyncState, error) {
 	}
 
 	return state, nil
+}
+
+func (n *node) Service() eth2client.Service {
+	return n.client
 }
 
 func (n *node) Genesis() (*v1.Genesis, error) {
