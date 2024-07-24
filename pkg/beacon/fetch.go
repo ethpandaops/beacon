@@ -230,16 +230,21 @@ func (n *node) FetchBeaconStateRoot(ctx context.Context, state string) (phase0.R
 	return *rsp.Data, nil
 }
 
-func (n *node) FetchBeaconCommittees(ctx context.Context, state string, epoch phase0.Epoch) ([]*v1.BeaconCommittee, error) {
+func (n *node) FetchBeaconCommittees(ctx context.Context, state string, epoch *phase0.Epoch) ([]*v1.BeaconCommittee, error) {
 	provider, isProvider := n.client.(eth2client.BeaconCommitteesProvider)
 	if !isProvider {
 		return nil, errors.New("client does not implement eth2client.BeaconCommitteesProvider")
 	}
 
-	rsp, err := provider.BeaconCommittees(ctx, &api.BeaconCommitteesOpts{
+	opts := &api.BeaconCommitteesOpts{
 		State: state,
-		Epoch: &epoch,
-	})
+	}
+
+	if epoch != nil {
+		opts.Epoch = epoch
+	}
+
+	rsp, err := provider.BeaconCommittees(ctx, opts)
 	if err != nil {
 		return nil, err
 	}
