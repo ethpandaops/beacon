@@ -71,6 +71,10 @@ func (n *node) FetchRawBlock(ctx context.Context, stateID string, contentType st
 	return n.api.RawBlock(ctx, stateID, contentType)
 }
 
+func (n *node) FetchBlockRoot(ctx context.Context, stateID string) (*phase0.Root, error) {
+	return n.getBlockRoot(ctx, stateID)
+}
+
 func (n *node) FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error) {
 	provider, isProvider := n.client.(eth2client.BeaconStateProvider)
 	if !isProvider {
