@@ -67,6 +67,10 @@ func (n *node) FetchBlock(ctx context.Context, stateID string) (*spec.VersionedS
 	return n.getBlock(ctx, stateID)
 }
 
+func (n *node) FetchBlockRoot(ctx context.Context, stateID string) (*phase0.Root, error) {
+	return n.getBlockRoot(ctx, stateID)
+}
+
 func (n *node) FetchRawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error) {
 	return n.api.RawBlock(ctx, stateID, contentType)
 }

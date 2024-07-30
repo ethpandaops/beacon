@@ -63,6 +63,8 @@ type Node interface {
 	FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error)
 	// FetchRawBlock fetches the raw, unparsed block for the given state id.
 	FetchRawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	// FetchBlockRoot fetches the block root for the given state id.
+	FetchBlockRoot(ctx context.Context, stateID string) (*phase0.Root, error)
 	// FetchBeaconState fetches the beacon state for the given state id.
 	FetchBeaconState(ctx context.Context, stateID string) (*spec.VersionedBeaconState, error)
 	// FetchBeaconStateRoot fetches the state root for the given state id.
@@ -469,6 +471,22 @@ func (n *node) getBlock(ctx context.Context, blockID string) (*spec.VersionedSig
 	}
 
 	return signedBeaconBlock.Data, nil
+}
+
+func (n *node) getBlockRoot(ctx context.Context, blockID string) (*phase0.Root, error) {
+	provider, isProvider := n.client.(eth2client.BeaconBlockRootProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.SignedBeaconBlockProvider")
+	}
+
+	blockRoot, err := provider.BeaconBlockRoot(ctx, &eapi.BeaconBlockRootOpts{
+		Block: blockID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return blockRoot.Data, nil
 }
 
 func (n *node) Healthy() bool {
