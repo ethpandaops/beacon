@@ -272,3 +272,17 @@ func (n *node) FetchAttestationData(ctx context.Context, slot phase0.Slot, commi
 
 	return rsp.Data, nil
 }
+
+func (n *node) FetchBeaconBlockHeader(ctx context.Context, opts *api.BeaconBlockHeaderOpts) (*v1.BeaconBlockHeader, error) {
+	provider, isProvider := n.client.(eth2client.BeaconBlockHeadersProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.BeaconBlockHeadersProvider")
+	}
+
+	rsp, err := provider.BeaconBlockHeader(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return rsp.Data, nil
+}

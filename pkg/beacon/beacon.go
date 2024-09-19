@@ -97,6 +97,8 @@ type Node interface {
 	FetchAttestationData(ctx context.Context, slot phase0.Slot, committeeIndex phase0.CommitteeIndex) (*phase0.AttestationData, error)
 	// FetchBeaconBlockBlobs fetches blob sidecars for the given block id.
 	FetchBeaconBlockBlobs(ctx context.Context, blockID string) ([]*deneb.BlobSidecar, error)
+	// FetchBeaconBlockHeader fetches beacon block headers.
+	FetchBeaconBlockHeader(ctx context.Context, opts *eapi.BeaconBlockHeaderOpts) (*v1.BeaconBlockHeader, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
