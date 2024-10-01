@@ -21,6 +21,7 @@ type ConsensusClient interface {
 	RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	DepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
+	NodeIdentity(ctx context.Context) (*types.Identity, error)
 }
 
 type consensusClient struct {
@@ -229,6 +230,20 @@ func (c *consensusClient) DepositSnapshot(ctx context.Context) (*types.DepositSn
 	}
 
 	rsp := types.DepositSnapshot{}
+	if err := json.Unmarshal(data, &rsp); err != nil {
+		return nil, err
+	}
+
+	return &rsp, nil
+}
+
+func (c *consensusClient) NodeIdentity(ctx context.Context) (*types.Identity, error) {
+	data, err := c.get(ctx, "/eth/v1/node/identity")
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := types.Identity{}
 	if err := json.Unmarshal(data, &rsp); err != nil {
 		return nil, err
 	}

@@ -218,6 +218,10 @@ func (n *node) FetchDepositSnapshot(ctx context.Context) (*types.DepositSnapshot
 	return n.api.DepositSnapshot(ctx)
 }
 
+func (n *node) FetchNodeIdentity(ctx context.Context) (*types.Identity, error) {
+	return n.api.NodeIdentity(ctx)
+}
+
 func (n *node) FetchBeaconStateRoot(ctx context.Context, state string) (phase0.Root, error) {
 	provider, isProvider := n.client.(eth2client.BeaconStateRootProvider)
 	if !isProvider {

@@ -99,6 +99,8 @@ type Node interface {
 	FetchBeaconBlockBlobs(ctx context.Context, blockID string) ([]*deneb.BlobSidecar, error)
 	// FetchBeaconBlockHeader fetches beacon block headers.
 	FetchBeaconBlockHeader(ctx context.Context, opts *eapi.BeaconBlockHeaderOpts) (*v1.BeaconBlockHeader, error)
+	// FetchNodeIdentity fetches the node identity.
+	FetchNodeIdentity(ctx context.Context) (*types.Identity, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
