@@ -47,19 +47,7 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 		return errors.New("client does not implement eth2client.Subscriptions")
 	}
 
-	topics := []string{}
-
-	for key, supported := range v1.SupportedEventTopics {
-		if !supported {
-			continue
-		}
-
-		if !n.options.BeaconSubscription.Topics.Exists(key) {
-			continue
-		}
-
-		topics = append(topics, key)
-	}
+	topics := n.options.BeaconSubscription.Topics
 
 	n.log.WithField("topics", topics).Info("Subscribing to events upstream")
 

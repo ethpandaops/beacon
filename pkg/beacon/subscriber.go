@@ -123,3 +123,9 @@ func (n *node) OnFinalityCheckpointUpdated(ctx context.Context, handler func(ctx
 		n.handleSubscriberError(handler(ctx, event), topicFinalityCheckpointUpdated)
 	})
 }
+
+func (n *node) OnFirstTimeHealthy(ctx context.Context, handler func(ctx context.Context, event *FirstTimeHealthyEvent) error) {
+	n.broker.On(topicFirstTimeHealthy, func(event *FirstTimeHealthyEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicFirstTimeHealthy)
+	})
+}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	eth2client "github.com/attestantio/go-eth2-client"
@@ -142,6 +143,8 @@ type Node interface {
 	OnHealthCheckSucceeded(ctx context.Context, handler func(ctx context.Context, event *HealthCheckSucceededEvent) error)
 	// OnFinalityCheckpointUpdated is called when a the head finality checkpoint is updated.
 	OnFinalityCheckpointUpdated(ctx context.Context, handler func(ctx context.Context, event *FinalityCheckpointUpdated) error)
+	// OnFirstTimeHealthy is called when the node is healthy for the first time.
+	OnFirstTimeHealthy(ctx context.Context, handler func(ctx context.Context, event *FirstTimeHealthyEvent) error)
 }
 
 // Node represents an Ethereum beacon node. It computes values based on the spec.
@@ -175,6 +178,11 @@ type node struct {
 
 	metrics *Metrics
 
+	Ready bool
+
+	hasEmittedFirstTimeHealthy bool
+	firstHealthyMutex          sync.Mutex
+
 	crons *gocron.Scheduler
 }
 
@@ -189,6 +197,8 @@ func NewNode(log logrus.FieldLogger, config *Config, namespace string, options O
 		broker: emission.NewEmitter(),
 
 		stat: NewStatus(options.HealthCheck.SuccessfulResponses, options.HealthCheck.FailedResponses),
+
+		firstHealthyMutex: sync.Mutex{},
 	}
 
 	if options.PrometheusMetrics {
@@ -203,6 +213,8 @@ func NewNode(log logrus.FieldLogger, config *Config, namespace string, options O
 }
 
 func (n *node) Start(ctx context.Context) error {
+	n.log.Info("Starting beacon...")
+
 	ctx, cancel := context.WithCancel(ctx)
 	n.ctx = ctx
 	n.cancel = cancel
@@ -262,6 +274,8 @@ func (n *node) Start(ctx context.Context) error {
 	}
 
 	s.StartAsync()
+
+	n.log.Info("Beacon started!")
 
 	return nil
 }
@@ -351,10 +365,12 @@ func (n *node) bootstrap(ctx context.Context) error {
 		return err
 	}
 
-	n.publishReady(ctx)
-
 	//nolint:errcheck // we dont care if this errors out since it runs indefinitely in a goroutine
 	go n.ensureBeaconSubscription(ctx)
+
+	n.Ready = true
+
+	go n.publishReady(ctx)
 
 	return nil
 }
@@ -428,12 +444,19 @@ func (n *node) runHealthcheck(ctx context.Context) {
 
 	n.stat.Health().RecordSuccess()
 
+	n.firstHealthyMutex.Lock()
+	defer n.firstHealthyMutex.Unlock()
+
+	if !n.hasEmittedFirstTimeHealthy {
+		n.hasEmittedFirstTimeHealthy = true
+
+		go n.publishFirstTimeHealthy(ctx)
+	}
+
 	n.publishHealthCheckSucceeded(ctx, time.Since(start))
 }
 
 func (n *node) initializeState(ctx context.Context) error {
-	n.log.Info("Initializing beacon state")
-
 	spec, err := n.FetchSpec(ctx)
 	if err != nil {
 		return err
@@ -445,8 +468,6 @@ func (n *node) initializeState(ctx context.Context) error {
 	}
 
 	n.wallclock = ethwallclock.NewEthereumBeaconChain(genesis.GenesisTime, spec.SecondsPerSlot.AsDuration(), uint64(spec.SlotsPerEpoch))
-
-	n.log.Info("Beacon state initialized! Ready to serve requests...")
 
 	return nil
 }

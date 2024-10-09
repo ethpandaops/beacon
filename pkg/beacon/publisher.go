@@ -100,3 +100,7 @@ func (n *node) publishFinalityCheckpointUpdated(ctx context.Context, finality *v
 		Finality: finality,
 	})
 }
+
+func (n *node) publishFirstTimeHealthy(ctx context.Context) {
+	n.broker.Emit(topicFirstTimeHealthy, &FirstTimeHealthyEvent{})
+}

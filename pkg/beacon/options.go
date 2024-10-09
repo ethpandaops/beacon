@@ -92,6 +92,7 @@ func DefaultEnabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 			topicHead,
 			topicVoluntaryExit,
 			topicContributionAndProof,
+			topicBlobSidecar,
 		},
 	}
 }

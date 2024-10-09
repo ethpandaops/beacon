@@ -37,6 +37,7 @@ const (
 	topicHealthCheckSucceeded      = "health_check_suceeded"
 	topicHealthCheckFailed         = "health_check_failed"
 	topicFinalityCheckpointUpdated = "finality_checkpoint_updated"
+	topicFirstTimeHealthy          = "first_time_healthy"
 
 	// Official beacon events that are proxied
 	topicAttestation          = "attestation"
@@ -91,4 +92,8 @@ type HealthCheckFailedEvent struct {
 // FinalityCheckpointUpdated is emitted when the finality checkpoint is updated.
 type FinalityCheckpointUpdated struct {
 	Finality *v1.Finality
+}
+
+// FirstTimeHealthyEvent is emitted when the node is first considered healthy.
+type FirstTimeHealthyEvent struct {
 }
