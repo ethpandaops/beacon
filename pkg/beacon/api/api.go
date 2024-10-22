@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
+	"github.com/ethpandaops/beacon/pkg/beacon/api/types/lightclient"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,6 +24,10 @@ type ConsensusClient interface {
 	RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	DepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
 	NodeIdentity(ctx context.Context) (*types.Identity, error)
+	LightClientBootstrap(ctx context.Context, blockRoot string) (*lightclient.Bootstrap, error)
+	LightClientUpdate(ctx context.Context, startPeriod, count int) (*lightclient.Update, error)
+	LightClientFinalityUpdate(ctx context.Context) (*lightclient.FinalityUpdate, error)
+	LightClientOptimisticUpdate(ctx context.Context) (*lightclient.OptimisticUpdate, error)
 }
 
 type consensusClient struct {
@@ -244,6 +250,70 @@ func (c *consensusClient) NodeIdentity(ctx context.Context) (*types.Identity, er
 	}
 
 	rsp := types.Identity{}
+	if err := json.Unmarshal(data, &rsp); err != nil {
+		return nil, err
+	}
+
+	return &rsp, nil
+}
+
+func (c *consensusClient) LightClientBootstrap(ctx context.Context, blockRoot string) (*lightclient.Bootstrap, error) {
+	data, err := c.get(ctx, fmt.Sprintf("/eth/v1/beacon/light_client/bootstrap/%s", blockRoot))
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := lightclient.Bootstrap{}
+	if err := json.Unmarshal(data, &rsp); err != nil {
+		return nil, err
+	}
+
+	return &rsp, nil
+}
+
+func (c *consensusClient) LightClientUpdate(ctx context.Context, startPeriod, count int) (*lightclient.Update, error) {
+	if count == 0 {
+		return nil, errors.New("count must be greater than 0")
+	}
+
+	params := url.Values{}
+	params.Add("start_period", fmt.Sprintf("%d", startPeriod))
+	params.Add("count", fmt.Sprintf("%d", count))
+
+	data, err := c.get(ctx, "/eth/v1/beacon/light_client/updates?"+params.Encode())
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := lightclient.Update{}
+	if err := json.Unmarshal(data, &rsp); err != nil {
+		return nil, err
+	}
+
+	return &rsp, nil
+}
+
+func (c *consensusClient) LightClientFinalityUpdate(ctx context.Context) (*lightclient.FinalityUpdate, error) {
+	data, err := c.get(ctx, "/eth/v1/beacon/light_client/finality_update")
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := lightclient.FinalityUpdate{}
+	if err := json.Unmarshal(data, &rsp); err != nil {
+		return nil, err
+	}
+
+	return &rsp, nil
+}
+
+func (c *consensusClient) LightClientOptimisticUpdate(ctx context.Context) (*lightclient.OptimisticUpdate, error) {
+	data, err := c.get(ctx, "/eth/v1/beacon/light_client/optimistic_update")
+	if err != nil {
+		return nil, err
+	}
+
+	rsp := lightclient.OptimisticUpdate{}
 	if err := json.Unmarshal(data, &rsp); err != nil {
 		return nil, err
 	}
