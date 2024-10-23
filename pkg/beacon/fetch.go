@@ -3,6 +3,7 @@ package beacon
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	eth2client "github.com/attestantio/go-eth2-client"
 	"github.com/attestantio/go-eth2-client/api"
@@ -10,6 +11,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/deneb"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
+	bapi "github.com/ethpandaops/beacon/pkg/beacon/api"
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
 )
@@ -525,4 +527,74 @@ func (n *node) FetchBeaconBlockHeader(ctx context.Context, opts *api.BeaconBlock
 	logCtx.Debug("Successfully fetched beacon block header")
 
 	return rsp.Data, nil
+}
+
+func (n *node) FetchLightClientBootstrap(ctx context.Context, root phase0.Root) (*bapi.LightClientBootstrapResponse, error) {
+	rootAsHex := fmt.Sprintf("0x%x", root)
+
+	logCtx := n.log.WithField("method", "FetchLightClientBootstrap").WithField("root", rootAsHex)
+
+	logCtx.Debug("Fetching light client bootstrap")
+
+	rsp, err := n.api.LightClientBootstrap(ctx, rootAsHex)
+	if err != nil {
+		logCtx.WithError(err).Error("failed to fetch light client bootstrap")
+
+		return nil, err
+	}
+
+	logCtx.Debug("Successfully fetched light client bootstrap")
+
+	return rsp, nil
+}
+
+func (n *node) FetchLightClientFinalityUpdate(ctx context.Context) (*bapi.LightClientFinalityUpdateResponse, error) {
+	logCtx := n.log.WithField("method", "FetchLightClientFinalityUpdate")
+
+	logCtx.Debug("Fetching light client finality update")
+
+	rsp, err := n.api.LightClientFinalityUpdate(ctx)
+	if err != nil {
+		logCtx.WithError(err).Error("failed to fetch light client finality update")
+
+		return nil, err
+	}
+
+	logCtx.Debug("Successfully fetched light client finality update")
+
+	return rsp, nil
+}
+
+func (n *node) FetchLightClientOptimisticUpdate(ctx context.Context) (*bapi.LightClientOptimisticUpdateResponse, error) {
+	logCtx := n.log.WithField("method", "FetchLightClientOptimisticUpdate")
+
+	logCtx.Debug("Fetching light client optimistic update")
+
+	rsp, err := n.api.LightClientOptimisticUpdate(ctx)
+	if err != nil {
+		logCtx.WithError(err).Error("failed to fetch light client optimistic update")
+
+		return nil, err
+	}
+
+	logCtx.Debug("Successfully fetched light client optimistic update")
+
+	return rsp, nil
+}
+
+func (n *node) FetchLightClientUpdates(ctx context.Context, startPeriod, count int) (*bapi.LightClientUpdatesResponse, error) {
+	logCtx := n.log.WithField("method", "FetchLightClientUpdates").WithField("start_period", startPeriod).WithField("count", count)
+
+	logCtx.Debug("Fetching light client update")
+
+	rsp, err := n.api.LightClientUpdates(ctx, startPeriod, count)
+	if err != nil {
+		logCtx.WithError(err).Error("failed to fetch light client update")
+
+		return nil, err
+	}
+
+	logCtx.Debug("Successfully fetched light client update")
+
+	return rsp, nil
 }

@@ -11,6 +11,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Updates represents a light client updates.
+type Updates []*Update
+
 // Update represents a light client update.
 type Update struct {
 	AttestedHeader          LightClientHeader `json:"attested_header"`

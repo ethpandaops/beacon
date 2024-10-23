@@ -81,7 +81,7 @@ func (f FinalityUpdate) MarshalJSON() ([]byte, error) {
 func (f *FinalityUpdate) ToJSON() finalityUpdateJSON {
 	finalityBranch := make([]string, len(f.FinalityBranch))
 	for i, root := range f.FinalityBranch {
-		finalityBranch[i] = fmt.Sprintf("%x", root)
+		finalityBranch[i] = fmt.Sprintf("%#x", root)
 	}
 
 	return finalityUpdateJSON{

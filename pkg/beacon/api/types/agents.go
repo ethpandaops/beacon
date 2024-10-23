@@ -20,6 +20,8 @@ const (
 	AgentPrysm Agent = "prysm"
 	// AgentLodestar is a Lodestar agent.
 	AgentLodestar Agent = "lodestar"
+	// AgentGrandine is a Grandine agent.
+	AgentGrandine Agent = "grandine"
 )
 
 // AllAgents is a list of all agents.
@@ -30,6 +32,7 @@ var AllAgents = []Agent{
 	AgentTeku,
 	AgentPrysm,
 	AgentLodestar,
+	AgentGrandine,
 }
 
 // AgentCount represents the number of peers with each agent.
@@ -40,6 +43,7 @@ type AgentCount struct {
 	Teku       int `json:"teku"`
 	Prysm      int `json:"prysm"`
 	Lodestar   int `json:"lodestar"`
+	Grandine   int `json:"grandine"`
 }
 
 // AgentFromString returns the agent from the given string.
@@ -64,6 +68,10 @@ func AgentFromString(agent string) Agent {
 
 	if strings.Contains(asLower, "lodestar") {
 		return AgentLodestar
+	}
+
+	if strings.Contains(asLower, "grandine") {
+		return AgentGrandine
 	}
 
 	return AgentUnknown
