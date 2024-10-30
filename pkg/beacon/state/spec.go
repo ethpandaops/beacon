@@ -200,7 +200,7 @@ func (s *Spec) Validate() error {
 
 func dataVersionFromString(name string) (sp.DataVersion, error) {
 	var v sp.DataVersion
-	if err := json.Unmarshal([]byte(fmt.Sprintf("\"%q\"", name)), &v); err != nil {
+	if err := json.Unmarshal([]byte(fmt.Sprintf("\"%s\"", name)), &v); err != nil {
 		return sp.DataVersionUnknown, err
 	}
 
