@@ -112,22 +112,22 @@ func (f *ForkMetrics) calculateCurrent(ctx context.Context) error {
 	f.Epochs.Reset()
 
 	for _, fork := range spec.ForkEpochs {
-		f.Epochs.WithLabelValues(fork.Name).Set(float64(fork.Epoch))
+		f.Epochs.WithLabelValues(string(fork.Name)).Set(float64(fork.Epoch))
 
-		if fork.Active(phase0.Slot(slot.Number()), slotsPerEpoch) {
-			f.Activated.WithLabelValues(fork.Name).Set(1)
+		if fork.Active(phase0.Epoch(phase0.Slot(slot.Number()) / slotsPerEpoch)) {
+			f.Activated.WithLabelValues(string(fork.Name)).Set(1)
 		} else {
-			f.Activated.WithLabelValues(fork.Name).Set(0)
+			f.Activated.WithLabelValues(string(fork.Name)).Set(0)
 		}
 	}
 
-	current, err := spec.ForkEpochs.CurrentFork(phase0.Slot(slot.Number()), slotsPerEpoch)
+	current, err := spec.ForkEpochs.CurrentFork(phase0.Epoch(phase0.Slot(slot.Number()) / slotsPerEpoch))
 	if err != nil {
 		f.log.WithError(err).Error("Failed to set current fork")
 	} else {
 		f.Current.Reset()
 
-		f.Current.WithLabelValues(current.Name).Set(1)
+		f.Current.WithLabelValues(string(current.Name)).Set(1)
 	}
 
 	return nil

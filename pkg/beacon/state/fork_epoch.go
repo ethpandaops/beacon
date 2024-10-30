@@ -2,44 +2,63 @@ package state
 
 import (
 	"errors"
+	"sort"
 
+	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
+)
+
+var (
+	// ForkOrder is the canonical order of the forks.
+	ForkOrder = []spec.DataVersion{
+		spec.DataVersionPhase0,
+		spec.DataVersionAltair,
+		spec.DataVersionBellatrix,
+		spec.DataVersionCapella,
+		spec.DataVersionDeneb,
+	}
 )
 
 // ForkEpoch is a beacon fork that activates at a specific epoch.
 type ForkEpoch struct {
-	Epoch   phase0.Epoch `yaml:"epoch"`
-	Version string       `json:"version"`
-	Name    string       `json:"name"`
+	Epoch   phase0.Epoch     `yaml:"epoch"`
+	Version string           `json:"version"`
+	Name    spec.DataVersion `json:"name"`
 }
 
-// Active returns true if the fork is active at the given slot.
-func (f *ForkEpoch) Active(slot, slotsPerEpoch phase0.Slot) bool {
-	return phase0.Epoch(int(slot)/int(slotsPerEpoch)) >= f.Epoch
+// Active returns true if the fork is active at the given epoch.
+func (f *ForkEpoch) Active(epoch phase0.Epoch) bool {
+	return epoch >= f.Epoch
 }
 
 // ForkEpochs is a list of forks that activate at specific epochs.
 type ForkEpochs []*ForkEpoch
 
-// Active returns a list of forks that are active at the given slot.
-func (f *ForkEpochs) Active(slot, slotsPerEpoch phase0.Slot) []*ForkEpoch {
+// Active returns a list of forks that are active at the given epoch.
+func (f *ForkEpochs) Active(epoch phase0.Epoch) []*ForkEpoch {
 	activated := []*ForkEpoch{}
 
 	for _, fork := range *f {
-		if fork.Active(slot, slotsPerEpoch) {
+		if fork.Active(epoch) {
 			activated = append(activated, fork)
 		}
 	}
 
+	// Sort them by our fork order since multiple forks can be activated on the same epoch.
+	// For example, a non-phase0 genesis.
+	sort.Slice(activated, func(i, j int) bool {
+		return f.IndexOf(activated[i].Name) < f.IndexOf(activated[j].Name)
+	})
+
 	return activated
 }
 
-// CurrentFork returns the current fork at the given slot.
-func (f *ForkEpochs) Scheduled(slot, slotsPerEpoch phase0.Slot) []*ForkEpoch {
+// Scheduled returns the scheduled forks at the given epoch.
+func (f *ForkEpochs) Scheduled(epoch phase0.Epoch) []*ForkEpoch {
 	scheduled := []*ForkEpoch{}
 
 	for _, fork := range *f {
-		if !fork.Active(slot, slotsPerEpoch) {
+		if !fork.Active(epoch) {
 			scheduled = append(scheduled, fork)
 		}
 	}
@@ -47,16 +66,17 @@ func (f *ForkEpochs) Scheduled(slot, slotsPerEpoch phase0.Slot) []*ForkEpoch {
 	return scheduled
 }
 
-// CurrentFork returns the current fork at the given slot.
-func (f *ForkEpochs) CurrentFork(slot, slotsPerEpoch phase0.Slot) (*ForkEpoch, error) {
+// CurrentFork returns the current fork at the given epoch.
+func (f *ForkEpochs) CurrentFork(epoch phase0.Epoch) (*ForkEpoch, error) {
 	found := false
 
 	largest := &ForkEpoch{
 		Epoch: 0,
 	}
 
-	for _, fork := range f.Active(slot, slotsPerEpoch) {
-		if fork.Active(slot, slotsPerEpoch) && fork.Epoch >= largest.Epoch {
+	active := f.Active(epoch)
+	for _, fork := range active {
+		if fork.Epoch >= largest.Epoch {
 			found = true
 
 			largest = fork
@@ -70,13 +90,13 @@ func (f *ForkEpochs) CurrentFork(slot, slotsPerEpoch phase0.Slot) (*ForkEpoch, e
 	return largest, nil
 }
 
-// PreviousFork returns the previous fork at the given slot.
-func (f *ForkEpochs) PreviousFork(slot, slotsPerEpoch phase0.Slot) (*ForkEpoch, error) {
+// PreviousFork returns the previous fork at the given epoch.
+func (f *ForkEpochs) PreviousFork(epoch phase0.Epoch) (*ForkEpoch, error) {
 	if len(*f) == 1 {
-		return f.CurrentFork(slot, slotsPerEpoch)
+		return f.CurrentFork(epoch)
 	}
 
-	current, err := f.CurrentFork(slot, slotsPerEpoch)
+	current, err := f.CurrentFork(epoch)
 	if err != nil {
 		return nil, err
 	}
@@ -87,8 +107,8 @@ func (f *ForkEpochs) PreviousFork(slot, slotsPerEpoch phase0.Slot) (*ForkEpoch, 
 		Epoch: 0,
 	}
 
-	for _, fork := range f.Active(slot, slotsPerEpoch) {
-		if fork.Active(slot, slotsPerEpoch) && fork.Name != current.Name && fork.Epoch > largest.Epoch {
+	for _, fork := range f.Active(epoch) {
+		if fork.Active(epoch) && fork.Name != current.Name && fork.Epoch > largest.Epoch {
 			found = true
 
 			largest = fork
@@ -105,7 +125,7 @@ func (f *ForkEpochs) PreviousFork(slot, slotsPerEpoch phase0.Slot) (*ForkEpoch, 
 // GetByName returns the fork with the given name.
 func (f *ForkEpochs) GetByName(name string) (*ForkEpoch, error) {
 	for _, fork := range *f {
-		if fork.Name == name {
+		if fork.Name.String() == name {
 			return fork, nil
 		}
 	}
@@ -116,4 +136,14 @@ func (f *ForkEpochs) GetByName(name string) (*ForkEpoch, error) {
 // AsScheduledForks returns the forks as scheduled forks.
 func (f *ForkEpochs) AsScheduledForks() ([]*ScheduledFork, error) {
 	return ForkScheduleFromForkEpochs(*f)
+}
+
+// IndexOf returns the index of the given data version in the fork order.
+func (f *ForkEpochs) IndexOf(name spec.DataVersion) int {
+	for i, version := range ForkOrder {
+		if version == name {
+			return i
+		}
+	}
+	return -1 // Return -1 if the name is not found
 }

@@ -1,10 +1,12 @@
 package state
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"strings"
 
+	sp "github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/spf13/cast"
 )
@@ -175,9 +177,15 @@ func NewSpec(data map[string]interface{}) Spec {
 			version = v
 		}
 
+		// Convert the name to a DataVersion.
+		dataVersion, err := dataVersionFromString(k)
+		if err != nil {
+			continue
+		}
+
 		spec.ForkEpochs = append(spec.ForkEpochs, &ForkEpoch{
 			Epoch:   v,
-			Name:    k,
+			Name:    dataVersion,
 			Version: version,
 		})
 	}
@@ -188,4 +196,13 @@ func NewSpec(data map[string]interface{}) Spec {
 // Validate performs basic validation of the spec.
 func (s *Spec) Validate() error {
 	return nil
+}
+
+func dataVersionFromString(name string) (sp.DataVersion, error) {
+	var v sp.DataVersion
+	if err := json.Unmarshal([]byte(fmt.Sprintf("\"%q\"", name)), &v); err != nil {
+		return sp.DataVersionUnknown, err
+	}
+
+	return v, nil
 }
