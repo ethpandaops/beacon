@@ -3,7 +3,7 @@ module github.com/ethpandaops/beacon
 go 1.22
 
 require (
-	github.com/attestantio/go-eth2-client v0.21.9
+	github.com/attestantio/go-eth2-client v0.21.12-0.20241106172750-50a032c91938
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethereum/go-ethereum v1.14.10
 	github.com/ethpandaops/ethwallclock v0.2.0
@@ -36,7 +36,7 @@ require (
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/minio/sha256-simd v1.0.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/pk910/dynamic-ssz v0.0.3 // indirect
+	github.com/pk910/dynamic-ssz v0.0.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect

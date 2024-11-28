@@ -31,7 +31,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 
 			client, err := ehttp.New(ctx,
 				ehttp.WithAddress(n.config.Addr),
-				ehttp.WithLogLevel(zerolog.Disabled),
+				ehttp.WithLogLevel(zerolog.WarnLevel),
 				ehttp.WithTimeout(timeout),
 				ehttp.WithExtraHeaders(n.config.Headers),
 			)
