@@ -102,6 +102,14 @@ type Node interface {
 	FetchBeaconBlockHeader(ctx context.Context, opts *eapi.BeaconBlockHeaderOpts) (*v1.BeaconBlockHeader, error)
 	// FetchNodeIdentity fetches the node identity.
 	FetchNodeIdentity(ctx context.Context) (*types.Identity, error)
+	// FetchLightClientBootstrap fetches the light client bootstrap.
+	FetchLightClientBootstrap(ctx context.Context, root phase0.Root) (*api.LightClientBootstrapResponse, error)
+	// FetchLightClientFinalityUpdate fetches the light client finality update.
+	FetchLightClientFinalityUpdate(ctx context.Context) (*api.LightClientFinalityUpdateResponse, error)
+	// FetchLightClientOptimisticUpdate fetches the light client optimistic update.
+	FetchLightClientOptimisticUpdate(ctx context.Context) (*api.LightClientOptimisticUpdateResponse, error)
+	// FetchLightClientUpdates fetches the light client updates.
+	FetchLightClientUpdates(ctx context.Context, startPeriod, count int) (*api.LightClientUpdatesResponse, error)
 
 	// Subscriptions
 	// - Proxied Beacon events
