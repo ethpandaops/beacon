@@ -97,7 +97,6 @@ func (f *ForkMetrics) Start(ctx context.Context) error {
 func (f *ForkMetrics) Stop() error {
 	return nil
 }
-
 func (f *ForkMetrics) calculateCurrent(ctx context.Context) error {
 	slot := f.beacon.Wallclock().Slots().Current()
 
@@ -112,12 +111,12 @@ func (f *ForkMetrics) calculateCurrent(ctx context.Context) error {
 	f.Epochs.Reset()
 
 	for _, fork := range spec.ForkEpochs {
-		f.Epochs.WithLabelValues(string(fork.Name)).Set(float64(fork.Epoch))
+		f.Epochs.WithLabelValues(fork.Name.String()).Set(float64(fork.Epoch))
 
 		if fork.Active(phase0.Epoch(phase0.Slot(slot.Number()) / slotsPerEpoch)) {
-			f.Activated.WithLabelValues(string(fork.Name)).Set(1)
+			f.Activated.WithLabelValues(fork.Name.String()).Set(1)
 		} else {
-			f.Activated.WithLabelValues(string(fork.Name)).Set(0)
+			f.Activated.WithLabelValues(fork.Name.String()).Set(0)
 		}
 	}
 
@@ -127,7 +126,7 @@ func (f *ForkMetrics) calculateCurrent(ctx context.Context) error {
 	} else {
 		f.Current.Reset()
 
-		f.Current.WithLabelValues(string(current.Name)).Set(1)
+		f.Current.WithLabelValues(current.Name.String()).Set(1)
 	}
 
 	return nil

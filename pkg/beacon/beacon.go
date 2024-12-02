@@ -21,6 +21,7 @@ import (
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
 	"github.com/ethpandaops/ethwallclock"
 	"github.com/go-co-op/gocron"
+	"github.com/rs/zerolog"
 	"github.com/sirupsen/logrus"
 )
 
@@ -145,6 +146,9 @@ type Node interface {
 	OnFinalityCheckpointUpdated(ctx context.Context, handler func(ctx context.Context, event *FinalityCheckpointUpdated) error)
 	// OnFirstTimeHealthy is called when the node is healthy for the first time.
 	OnFirstTimeHealthy(ctx context.Context, handler func(ctx context.Context, event *FirstTimeHealthyEvent) error)
+
+	// GetZeroLogLevel returns the zerolog level for the node.
+	GetZeroLogLevel() zerolog.Level
 }
 
 // Node represents an Ethereum beacon node. It computes values based on the spec.

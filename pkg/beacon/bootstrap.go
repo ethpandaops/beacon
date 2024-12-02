@@ -8,12 +8,13 @@ import (
 	eth2client "github.com/attestantio/go-eth2-client"
 	ehttp "github.com/attestantio/go-eth2-client/http"
 	"github.com/ethpandaops/beacon/pkg/beacon/api"
-	"github.com/rs/zerolog"
 )
 
 // ensureClients ensures that the node has a client and an API client.
 func (n *node) ensureClients(ctx context.Context) error {
 	failures := 0
+
+	zerologLevel := n.GetZeroLogLevel()
 
 	for {
 		if n.client != nil {
@@ -31,7 +32,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 
 			client, err := ehttp.New(ctx,
 				ehttp.WithAddress(n.config.Addr),
-				ehttp.WithLogLevel(zerolog.Disabled),
+				ehttp.WithLogLevel(zerologLevel),
 				ehttp.WithTimeout(timeout),
 				ehttp.WithExtraHeaders(n.config.Headers),
 			)
