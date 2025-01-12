@@ -238,6 +238,24 @@ func (n *node) FetchBeaconStateRoot(ctx context.Context, state string) (phase0.R
 	return *rsp.Data, nil
 }
 
+func (n *node) FetchValidators(ctx context.Context, state string, indices []phase0.ValidatorIndex, pubKeys []phase0.BLSPubKey) (map[phase0.ValidatorIndex]*v1.Validator, error) {
+	provider, isProvider := n.client.(eth2client.ValidatorsProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.ValidatorsProvider")
+	}
+
+	rsp, err := provider.Validators(ctx, &api.ValidatorsOpts{
+		State:   state,
+		Indices: indices,
+		PubKeys: pubKeys,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return rsp.Data, nil
+}
+
 func (n *node) FetchBeaconCommittees(ctx context.Context, state string, epoch *phase0.Epoch) ([]*v1.BeaconCommittee, error) {
 	provider, isProvider := n.client.(eth2client.BeaconCommitteesProvider)
 	if !isProvider {
