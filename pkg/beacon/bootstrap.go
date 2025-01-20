@@ -35,6 +35,7 @@ func (n *node) ensureClients(ctx context.Context) error {
 				ehttp.WithLogLevel(zerologLevel),
 				ehttp.WithTimeout(timeout),
 				ehttp.WithExtraHeaders(n.config.Headers),
+				ehttp.WithEnforceJSON(true), // TODO(sam): HACK: Remove this once we have a proper spec
 			)
 			if err != nil {
 				failures++
