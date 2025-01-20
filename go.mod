@@ -3,7 +3,7 @@ module github.com/ethpandaops/beacon
 go 1.22
 
 require (
-	github.com/attestantio/go-eth2-client v0.21.9
+	github.com/attestantio/go-eth2-client v0.23.0
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethereum/go-ethereum v1.14.10
 	github.com/ethpandaops/ethwallclock v0.2.0
