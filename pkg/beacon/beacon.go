@@ -73,6 +73,8 @@ type Node interface {
 	FetchBeaconStateRoot(ctx context.Context, stateID string) (phase0.Root, error)
 	// FetchRawBeaconState fetches the raw, unparsed beacon state for the given state id.
 	FetchRawBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	// FetchValidators fetches the validators for the given state id and validator ids.
+	FetchValidators(ctx context.Context, state string, indices []phase0.ValidatorIndex, pubKeys []phase0.BLSPubKey) (map[phase0.ValidatorIndex]*v1.Validator, error)
 	// FetchFinality fetches the finality checkpoint for the state id.
 	FetchFinality(ctx context.Context, stateID string) (*v1.Finality, error)
 	// FetchGenesis fetches the genesis configuration.
