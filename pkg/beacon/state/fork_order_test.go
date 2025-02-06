@@ -13,6 +13,7 @@ func TestForkOrderIncludesAllSpecDataVersions(t *testing.T) {
 		if v.String() == "unknown" {
 			continue
 		}
+
 		found := false
 		for _, fv := range state.ForkOrder {
 			if fv == v {
@@ -20,6 +21,7 @@ func TestForkOrderIncludesAllSpecDataVersions(t *testing.T) {
 				break
 			}
 		}
+
 		if !found {
 			t.Errorf("ForkOrder missing version: %v", v)
 		}
