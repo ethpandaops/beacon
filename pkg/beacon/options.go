@@ -3,6 +3,7 @@ package beacon
 import (
 	"time"
 
+	ehttp "github.com/attestantio/go-eth2-client/http"
 	"github.com/ethpandaops/beacon/pkg/human"
 )
 
@@ -12,6 +13,7 @@ type Options struct {
 	HealthCheck        HealthCheckOptions
 	PrometheusMetrics  bool
 	DetectEmptySlots   bool
+	GoEth2ClientParams []ehttp.Parameter
 }
 
 // EnablePrometheusMetrics enables Prometheus metrics.
@@ -121,4 +123,16 @@ func DefaultHealthCheckOptions() HealthCheckOptions {
 		SuccessfulResponses: 3,
 		FailedResponses:     3,
 	}
+}
+
+// AddGoEth2ClientParams adds the given parameters to the options.
+func (o *Options) AddGoEth2ClientParams(params ...ehttp.Parameter) *Options {
+	o.GoEth2ClientParams = append(o.GoEth2ClientParams, params...)
+
+	return o
+}
+
+// GetGoEth2ClientParams returns the parameters for the go-eth2-client.
+func (o *Options) GetGoEth2ClientParams() []ehttp.Parameter {
+	return o.GoEth2ClientParams
 }
