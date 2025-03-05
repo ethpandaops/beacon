@@ -41,6 +41,7 @@ const (
 
 	// Official beacon events that are proxied
 	topicAttestation          = "attestation"
+	topicSingleAttestation    = "single_attestation"
 	topicBlock                = "block"
 	topicChainReorg           = "chain_reorg"
 	topicFinalizedCheckpoint  = "finalized_checkpoint"

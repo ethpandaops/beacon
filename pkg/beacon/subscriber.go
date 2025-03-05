@@ -6,6 +6,7 @@ import (
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -61,6 +62,12 @@ func (n *node) OnContributionAndProof(ctx context.Context, handler func(ctx cont
 func (n *node) OnBlobSidecar(ctx context.Context, handler func(ctx context.Context, event *v1.BlobSidecarEvent) error) {
 	n.broker.On(topicBlobSidecar, func(event *v1.BlobSidecarEvent) {
 		n.handleSubscriberError(handler(ctx, event), topicBlobSidecar)
+	})
+}
+
+func (n *node) OnSingleAttestation(ctx context.Context, handler func(ctx context.Context, event *electra.SingleAttestation) error) {
+	n.broker.On(topicSingleAttestation, func(event *electra.SingleAttestation) {
+		n.handleSubscriberError(handler(ctx, event), topicSingleAttestation)
 	})
 }
 

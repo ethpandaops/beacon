@@ -14,6 +14,7 @@ import (
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/deneb"
+	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/chuckpreslar/emission"
 	"github.com/ethpandaops/beacon/pkg/beacon/api"
@@ -114,6 +115,8 @@ type Node interface {
 	OnBlock(ctx context.Context, handler func(ctx context.Context, ev *v1.BlockEvent) error)
 	// OnAttestation is called when an attestation is received.
 	OnAttestation(ctx context.Context, handler func(ctx context.Context, ev *spec.VersionedAttestation) error)
+	// OnSingleAttestation is called when a single attestation is received.
+	OnSingleAttestation(ctx context.Context, handler func(ctx context.Context, ev *electra.SingleAttestation) error)
 	// OnFinalizedCheckpoint is called when a finalized checkpoint is received.
 	OnFinalizedCheckpoint(ctx context.Context, handler func(ctx context.Context, ev *v1.FinalizedCheckpointEvent) error)
 	// OnHead is called when the head is received.

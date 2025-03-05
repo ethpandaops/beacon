@@ -88,6 +88,7 @@ func DefaultEnabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 		Enabled: true,
 		Topics: []string{
 			topicAttestation,
+			topicSingleAttestation,
 			topicBlock,
 			topicChainReorg,
 			topicFinalizedCheckpoint,
