@@ -10,6 +10,7 @@ import (
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -69,6 +70,8 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 	n.publishEvent(ctx, event)
 
 	switch event.Topic {
+	case topicSingleAttestation:
+		return n.handleSingleAttestation(ctx, event)
 	case topicAttestation:
 		return n.handleAttestation(ctx, event)
 	case topicBlock:
@@ -98,6 +101,17 @@ func (n *node) handleAttestation(ctx context.Context, event *v1.Event) error {
 	}
 
 	n.publishAttestation(ctx, attestation)
+
+	return nil
+}
+
+func (n *node) handleSingleAttestation(ctx context.Context, event *v1.Event) error {
+	singleAttestation, valid := event.Data.(*electra.SingleAttestation)
+	if !valid {
+		return errors.New("invalid single attestation event")
+	}
+
+	n.publishSingleAttestation(ctx, singleAttestation)
 
 	return nil
 }

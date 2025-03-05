@@ -7,6 +7,7 @@ import (
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
+	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
@@ -104,4 +105,8 @@ func (n *node) publishFinalityCheckpointUpdated(ctx context.Context, finality *v
 
 func (n *node) publishFirstTimeHealthy(ctx context.Context) {
 	n.broker.Emit(topicFirstTimeHealthy, &FirstTimeHealthyEvent{})
+}
+
+func (n *node) publishSingleAttestation(ctx context.Context, event *electra.SingleAttestation) {
+	n.broker.Emit(topicSingleAttestation, event)
 }
