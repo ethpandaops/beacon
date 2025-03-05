@@ -10,7 +10,6 @@ import (
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
-	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
 
@@ -93,22 +92,12 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 }
 
 func (n *node) handleAttestation(ctx context.Context, event *v1.Event) error {
-	versionedAttestation := &VersionedAttestation{}
-
-	switch data := event.Data.(type) {
-	case *phase0.Attestation:
-		versionedAttestation.Phase0 = data
-		versionedAttestation.Version = spec.DataVersionPhase0
-	case *electra.Attestation:
-		versionedAttestation.Electra = data
-		versionedAttestation.Version = spec.DataVersionElectra
-	}
-
-	if !versionedAttestation.IsValid() {
+	attestation, valid := event.Data.(*spec.VersionedAttestation)
+	if !valid {
 		return errors.New("invalid attestation event")
 	}
 
-	n.publishAttestation(ctx, versionedAttestation)
+	n.publishAttestation(ctx, attestation)
 
 	return nil
 }

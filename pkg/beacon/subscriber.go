@@ -4,6 +4,7 @@ import (
 	"context"
 
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 )
@@ -21,8 +22,8 @@ func (n *node) OnBlock(ctx context.Context, handler func(ctx context.Context, ev
 	})
 }
 
-func (n *node) OnAttestation(ctx context.Context, handler func(ctx context.Context, event *VersionedAttestation) error) {
-	n.broker.On(topicAttestation, func(event *VersionedAttestation) {
+func (n *node) OnAttestation(ctx context.Context, handler func(ctx context.Context, event *spec.VersionedAttestation) error) {
+	n.broker.On(topicAttestation, func(event *spec.VersionedAttestation) {
 		n.handleSubscriberError(handler(ctx, event), topicAttestation)
 	})
 }
