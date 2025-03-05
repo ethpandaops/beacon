@@ -95,7 +95,6 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 func (n *node) handleAttestation(ctx context.Context, event *v1.Event) error {
 	versionedAttestation := &VersionedAttestation{}
 
-	// Try to parse as phase0 attestation
 	switch data := event.Data.(type) {
 	case *phase0.Attestation:
 		versionedAttestation.Phase0 = data
