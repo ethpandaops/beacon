@@ -2,6 +2,8 @@ module github.com/ethpandaops/beacon
 
 go 1.22
 
+replace github.com/attestantio/go-eth2-client => ../../attestantio/go-eth2-client
+
 require (
 	github.com/attestantio/go-eth2-client v0.24.0
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9

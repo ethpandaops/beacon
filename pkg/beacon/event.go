@@ -1,12 +1,16 @@
 package beacon
 
 import (
+	"errors"
 	"time"
 
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
+	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/attestantio/go-eth2-client/spec/electra"
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
+	"github.com/prysmaticlabs/go-bitfield"
 )
 
 // EventTopics is a list of topics that can be subscribed to
@@ -96,4 +100,86 @@ type FinalityCheckpointUpdated struct {
 
 // FirstTimeHealthyEvent is emitted when the node is first considered healthy.
 type FirstTimeHealthyEvent struct {
+}
+
+type VersionedAttestation struct {
+	Electra *electra.Attestation
+	Phase0  *phase0.Attestation
+	Version spec.DataVersion
+}
+
+func (v *VersionedAttestation) IsElectra() bool {
+	return v.Version == spec.DataVersionElectra
+}
+
+func (v *VersionedAttestation) IsPhase0() bool {
+	return v.Version == spec.DataVersionPhase0
+}
+
+func (v *VersionedAttestation) IsValid() bool {
+	return v.IsElectra() || v.IsPhase0()
+}
+
+func (v *VersionedAttestation) GetVersion() spec.DataVersion {
+	return v.Version
+}
+
+func (v *VersionedAttestation) AggregationBits() (bitfield.Bitlist, error) {
+	if v.IsElectra() {
+		return v.Electra.AggregationBits, nil
+	}
+
+	if v.IsPhase0() {
+		return v.Phase0.AggregationBits, nil
+	}
+
+	return nil, errors.New("invalid attestation")
+}
+
+func (v *VersionedAttestation) Slot() (phase0.Slot, error) {
+	if v.IsElectra() {
+		return v.Electra.Data.Slot, nil
+	}
+
+	if v.IsPhase0() {
+		return v.Phase0.Data.Slot, nil
+	}
+
+	return 0, errors.New("invalid attestation")
+}
+
+func (v *VersionedAttestation) Target() (*phase0.Checkpoint, error) {
+	if v.IsElectra() {
+		return v.Electra.Data.Target, nil
+	}
+
+	if v.IsPhase0() {
+		return v.Phase0.Data.Target, nil
+	}
+
+	return nil, errors.New("invalid attestation")
+}
+
+func (v *VersionedAttestation) Source() (*phase0.Checkpoint, error) {
+	if v.IsElectra() {
+		return v.Electra.Data.Source, nil
+	}
+
+	if v.IsPhase0() {
+		return v.Phase0.Data.Source, nil
+	}
+
+	return nil, errors.New("invalid attestation")
+}
+
+func (v *VersionedAttestation) Signature() (phase0.BLSSignature, error) {
+	if v.IsElectra() {
+		return v.Electra.Signature, nil
+	}
+
+	if v.IsPhase0() {
+		return v.Phase0.Signature, nil
+	}
+
+	return phase0.BLSSignature{}, errors.New("invalid attestation")
 }

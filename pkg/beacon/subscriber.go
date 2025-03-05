@@ -21,8 +21,8 @@ func (n *node) OnBlock(ctx context.Context, handler func(ctx context.Context, ev
 	})
 }
 
-func (n *node) OnAttestation(ctx context.Context, handler func(ctx context.Context, event *phase0.Attestation) error) {
-	n.broker.On(topicAttestation, func(event *phase0.Attestation) {
+func (n *node) OnAttestation(ctx context.Context, handler func(ctx context.Context, event *VersionedAttestation) error) {
+	n.broker.On(topicAttestation, func(event *VersionedAttestation) {
 		n.handleSubscriberError(handler(ctx, event), topicAttestation)
 	})
 }

@@ -16,7 +16,7 @@ func (n *node) publishBlock(ctx context.Context, event *v1.BlockEvent) {
 	n.broker.Emit(topicBlock, event)
 }
 
-func (n *node) publishAttestation(ctx context.Context, event *phase0.Attestation) {
+func (n *node) publishAttestation(ctx context.Context, event *VersionedAttestation) {
 	n.broker.Emit(topicAttestation, event)
 }
 
