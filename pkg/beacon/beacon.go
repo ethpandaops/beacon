@@ -113,7 +113,7 @@ type Node interface {
 	// OnBlock is called when a block is received.
 	OnBlock(ctx context.Context, handler func(ctx context.Context, ev *v1.BlockEvent) error)
 	// OnAttestation is called when an attestation is received.
-	OnAttestation(ctx context.Context, handler func(ctx context.Context, ev *phase0.Attestation) error)
+	OnAttestation(ctx context.Context, handler func(ctx context.Context, ev *spec.VersionedAttestation) error)
 	// OnFinalizedCheckpoint is called when a finalized checkpoint is received.
 	OnFinalizedCheckpoint(ctx context.Context, handler func(ctx context.Context, ev *v1.FinalizedCheckpointEvent) error)
 	// OnHead is called when the head is received.
