@@ -50,10 +50,11 @@ func (d *DepositSnapshot) UnmarshalJSON(input []byte) error {
 	}
 
 	d.Finalized = make([]phase0.Root, len(depositSnapshotJSON.Finalized))
+
 	for i := range depositSnapshotJSON.Finalized {
-		root, err := hex.DecodeString(strings.TrimPrefix(depositSnapshotJSON.Finalized[i], "0x"))
-		if err != nil {
-			return err
+		root, rootErr := hex.DecodeString(strings.TrimPrefix(depositSnapshotJSON.Finalized[i], "0x"))
+		if rootErr != nil {
+			return rootErr
 		}
 
 		if len(root) != 32 {

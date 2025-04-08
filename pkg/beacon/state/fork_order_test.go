@@ -18,6 +18,7 @@ func TestForkOrderIncludesAllSpecDataVersions(t *testing.T) {
 		for _, fv := range state.ForkOrder {
 			if fv == v {
 				found = true
+
 				break
 			}
 		}

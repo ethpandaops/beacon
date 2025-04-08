@@ -20,6 +20,7 @@ func ForkScheduleFromForkEpochs(forks ForkEpochs) ([]*ScheduledFork, error) {
 	})
 
 	scheduled := []*ScheduledFork{}
+
 	for i, fork := range forks {
 		scheduledFork := &ScheduledFork{
 			CurrentVersion:  fork.Version,

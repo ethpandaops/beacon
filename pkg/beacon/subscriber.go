@@ -16,7 +16,7 @@ func (n *node) handleSubscriberError(err error, topic string) {
 	}
 }
 
-// Official Beacon events
+// Official Beacon events.
 func (n *node) OnBlock(ctx context.Context, handler func(ctx context.Context, event *v1.BlockEvent) error) {
 	n.broker.On(topicBlock, func(event *v1.BlockEvent) {
 		n.handleSubscriberError(handler(ctx, event), topicBlock)
@@ -77,7 +77,7 @@ func (n *node) OnEvent(ctx context.Context, handler func(ctx context.Context, ev
 	})
 }
 
-// Custom Events
+// Custom Events.
 func (n *node) OnReady(ctx context.Context, handler func(ctx context.Context, event *ReadyEvent) error) {
 	n.broker.On(topicReady, func(event *ReadyEvent) {
 		n.handleSubscriberError(handler(ctx, event), topicReady)

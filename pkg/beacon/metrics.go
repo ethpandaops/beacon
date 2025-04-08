@@ -77,35 +77,35 @@ func (m *Metrics) Stop() error {
 
 // General returns the general metrics job.
 func (m *Metrics) General() *GeneralMetrics {
-	return m.jobs[metricsJobNameGeneral].(*GeneralMetrics)
+	return m.jobs[metricsJobNameGeneral].(*GeneralMetrics) //nolint:errcheck // existing.
 }
 
 // Events returns the events metrics job.
 func (m *Metrics) Events() *EventMetrics {
-	return m.jobs[metricsJobNameEvent].(*EventMetrics)
+	return m.jobs[metricsJobNameEvent].(*EventMetrics) //nolint:errcheck // existing.
 }
 
 // Forks returns the forks metrics job.
 func (m *Metrics) Forks() *ForkMetrics {
-	return m.jobs[metricsJobNameFork].(*ForkMetrics)
+	return m.jobs[metricsJobNameFork].(*ForkMetrics) //nolint:errcheck // existing.
 }
 
 // Spec returns the spec metrics job.
 func (m *Metrics) Spec() *SpecMetrics {
-	return m.jobs[metricsJobNameSpec].(*SpecMetrics)
+	return m.jobs[metricsJobNameSpec].(*SpecMetrics) //nolint:errcheck // existing.
 }
 
 // Sync returns the sync metrics job.
 func (m *Metrics) Sync() *SyncMetrics {
-	return m.jobs[metricsJobNameSync].(*SyncMetrics)
+	return m.jobs[metricsJobNameSync].(*SyncMetrics) //nolint:errcheck // existing.
 }
 
 // Health returns the health metrics job.
 func (m *Metrics) Health() *HealthMetrics {
-	return m.jobs[metricsJobNameHealth].(*HealthMetrics)
+	return m.jobs[metricsJobNameHealth].(*HealthMetrics) //nolint:errcheck // existing.
 }
 
 // Beacon returns the beacon metrics job.
 func (m *Metrics) Beacon() *BeaconMetrics {
-	return m.jobs[metricsJobNameBeacon].(*BeaconMetrics)
+	return m.jobs[metricsJobNameBeacon].(*BeaconMetrics) //nolint:errcheck // existing.
 }

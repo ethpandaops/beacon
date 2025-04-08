@@ -13,7 +13,7 @@ import (
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
 )
 
-// Official beacon events that are proxied
+// Official beacon events that are proxied.
 func (n *node) publishBlock(ctx context.Context, event *v1.BlockEvent) {
 	n.broker.Emit(topicBlock, event)
 }
@@ -50,7 +50,7 @@ func (n *node) publishEvent(ctx context.Context, event *v1.Event) {
 	n.broker.Emit(topicEvent, event)
 }
 
-// Custom Events derived from our pseudo beacon node
+// Custom Events derived from our pseudo beacon node.
 func (n *node) publishReady(ctx context.Context) {
 	n.broker.Emit(topicReady, nil)
 }

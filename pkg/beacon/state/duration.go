@@ -19,16 +19,20 @@ func (s *StringerDuration) UnmarshalJSON(b []byte) error {
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
+
 	switch value := v.(type) {
 	case float64:
 		*s = StringerDuration(time.Duration(value))
+
 		return nil
 	case string:
 		tmp, err := time.ParseDuration(value)
 		if err != nil {
 			return err
 		}
+
 		*s = StringerDuration(tmp)
+
 		return nil
 	default:
 		return errors.New("invalid duration")

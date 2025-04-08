@@ -145,6 +145,7 @@ func (n *node) handleFinalizedCheckpoint(ctx context.Context, event *v1.Event) e
 	}
 
 	n.publishFinalizedCheckpoint(ctx, checkpoint)
+
 	return nil
 }
 

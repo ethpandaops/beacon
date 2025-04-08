@@ -126,6 +126,7 @@ func (c *consensusClient) getRaw(ctx context.Context, path string, contentType s
 	if contentType == "" {
 		contentType = "application/json"
 	}
+
 	u, err := url.Parse(c.url + path)
 	if err != nil {
 		return nil, err
