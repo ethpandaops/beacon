@@ -7,6 +7,7 @@ import (
 	"time"
 
 	eth2client "github.com/attestantio/go-eth2-client"
+	"github.com/attestantio/go-eth2-client/api"
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
 	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/attestantio/go-eth2-client/spec/altair"
@@ -53,12 +54,15 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 
 	n.log.WithField("topics", topics).Info("Subscribing to events upstream")
 
-	if err := provider.Events(ctx, topics, func(event *v1.Event) {
-		n.lastEventTime = time.Now()
+	if err := provider.Events(ctx, &api.EventsOpts{
+		Topics: topics,
+		Handler: func(event *v1.Event) {
+			n.lastEventTime = time.Now()
 
-		if err := n.handleEvent(ctx, event); err != nil {
-			n.log.Errorf("Failed to handle event: %v", err)
-		}
+			if err := n.handleEvent(ctx, event); err != nil {
+				n.log.Errorf("Failed to handle event: %v", err)
+			}
+		},
 	}); err != nil {
 		return err
 	}
