@@ -146,5 +146,6 @@ func (f *ForkEpochs) IndexOf(name spec.DataVersion) int {
 			return i
 		}
 	}
+
 	return -1 // Return -1 if the name is not found
 }

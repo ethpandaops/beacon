@@ -87,12 +87,12 @@ func (e *EventMetrics) Stop() error {
 	return nil
 }
 
-//nolint:unparam // ctx will probably be used in the future
+//nolint:unparam // ctx will probably be used in the future.
 func (e *EventMetrics) tick(ctx context.Context) {
 	e.TimeSinceLastEvent.Set(float64(time.Since(e.LastEventTime).Milliseconds()))
 }
 
-// HandleEvent handles all beacon events
+// HandleEvent handles all beacon events.
 func (e *EventMetrics) HandleEvent(ctx context.Context, event *v1.Event) error {
 	e.Count.WithLabelValues(event.Topic).Inc()
 	e.LastEventTime = time.Now()

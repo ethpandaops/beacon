@@ -48,6 +48,8 @@ type Spec struct {
 }
 
 // NewSpec creates a new spec instance.
+//
+//nolint:gocyclo // existing.
 func NewSpec(data map[string]interface{}) Spec {
 	spec := Spec{
 		ForkEpochs: ForkEpochs{},

@@ -160,7 +160,7 @@ type Node interface {
 type node struct {
 	// Helpers
 	log    logrus.FieldLogger
-	ctx    context.Context
+	ctx    context.Context //nolint:containedctx // existing.
 	cancel context.CancelFunc
 
 	// Configuration
@@ -495,7 +495,7 @@ func (n *node) getBlock(ctx context.Context, blockID string) (*spec.VersionedSig
 		if errors.As(err, &apiErr) {
 			switch apiErr.StatusCode {
 			case 404:
-				return nil, nil
+				return nil, nil //nolint:nilnil // existing.
 			case 503:
 				return nil, errors.New("beacon node is syncing")
 			}

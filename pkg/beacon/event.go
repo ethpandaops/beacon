@@ -9,10 +9,10 @@ import (
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
 )
 
-// EventTopics is a list of topics that can be subscribed to
+// EventTopics is a list of topics that can be subscribed to.
 type EventTopics []string
 
-// Exists returns true if the topic exists in the list
+// Exists returns true if the topic exists in the list.
 func (e EventTopics) Exists(topic string) bool {
 	for _, t := range e {
 		if t == topic {
@@ -24,7 +24,7 @@ func (e EventTopics) Exists(topic string) bool {
 }
 
 const (
-	// Custom events derived from our pseudo beacon node
+	// Custom events derived from our pseudo beacon node.
 	topicEpochChanged              = "epoch_changed"
 	topicSlotChanged               = "slot_changed"
 	topicEpochSlotChanged          = "epoch_slot_changed"
@@ -34,12 +34,12 @@ const (
 	topicPeersUpdated              = "peers_updated"
 	topicSpecUpdated               = "spec_updated"
 	topicEmptySlot                 = "slot_empty"
-	topicHealthCheckSucceeded      = "health_check_suceeded"
+	topicHealthCheckSucceeded      = "health_check_suceeded" //nolint:misspell // existing.
 	topicHealthCheckFailed         = "health_check_failed"
 	topicFinalityCheckpointUpdated = "finality_checkpoint_updated"
 	topicFirstTimeHealthy          = "first_time_healthy"
 
-	// Official beacon events that are proxied
+	// Official beacon events that are proxied.
 	topicAttestation          = "attestation"
 	topicSingleAttestation    = "single_attestation"
 	topicBlock                = "block"

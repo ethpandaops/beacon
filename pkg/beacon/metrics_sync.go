@@ -120,6 +120,7 @@ func (s *SyncMetrics) Stop() error {
 func (s *SyncMetrics) observeSyncIsSyncing(syncing bool) {
 	if syncing {
 		s.IsSyncing.Set(1)
+
 		return
 	}
 

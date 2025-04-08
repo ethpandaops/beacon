@@ -25,13 +25,14 @@ func (d *Duration) UnmarshalJSON(data []byte) error {
 
 func (d *Duration) Unmarshal(s string) (err error) {
 	d.Duration, err = time.ParseDuration(s)
+
 	return
 }
 
 func (d Duration) MarshalText() ([]byte, error) {
-	return []byte(d.Duration.String()), nil
+	return []byte(d.Duration.String()), nil //nolint:staticcheck // existing.
 }
 
 func (d Duration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(d.Duration.String())
+	return json.Marshal(d.Duration.String()) //nolint:staticcheck // existing.
 }

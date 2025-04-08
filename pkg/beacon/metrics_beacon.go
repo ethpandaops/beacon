@@ -339,7 +339,7 @@ func (b *BeaconMetrics) handleEmptySlot(ctx context.Context, event *EmptySlotEve
 func (b *BeaconMetrics) handleBlock(ctx context.Context, event *v1.BlockEvent) error {
 	syncState, err := b.beaconNode.SyncState()
 	if err != nil {
-		return nil
+		return nil //nolint:nilerr // existing.
 	}
 
 	if syncState == nil || syncState.IsSyncing {
@@ -490,9 +490,9 @@ func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.Version
 		indexMin := int64(math.MaxInt64)
 
 		for _, withdrawal := range withdrawals {
-			gwei += int64(withdrawal.Amount)
+			gwei += int64(withdrawal.Amount) //nolint:gosec // fine.
 
-			index := int64(withdrawal.Index)
+			index := int64(withdrawal.Index) //nolint:gosec // fine.
 			if index > indexMax {
 				indexMax = index
 			}

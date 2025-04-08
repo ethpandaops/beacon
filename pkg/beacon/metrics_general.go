@@ -85,7 +85,7 @@ func (g *GeneralMetrics) Start(ctx context.Context) error {
 	})
 
 	if err := g.initialFetch(ctx); err != nil {
-		return nil
+		return nil //nolint:nilerr // existing.
 	}
 
 	return nil
