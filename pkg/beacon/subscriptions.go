@@ -51,20 +51,24 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 	}
 
 	topics := n.options.BeaconSubscription.Topics
-
 	n.log.WithField("topics", topics).Info("Subscribing to events upstream")
 
-	if err := provider.Events(ctx, &api.EventsOpts{
-		Topics: topics,
-		Handler: func(event *v1.Event) {
-			n.lastEventTime = time.Now()
+	// Open a new subscription for each topic.
+	for _, topic := range topics {
+		n.log.WithField("topic", topic).Info("Subscribing to event")
 
-			if err := n.handleEvent(ctx, event); err != nil {
-				n.log.Errorf("Failed to handle event: %v", err)
-			}
-		},
-	}); err != nil {
-		return err
+		if err := provider.Events(ctx, &api.EventsOpts{
+			Topics: []string{topic},
+			Handler: func(event *v1.Event) {
+				n.lastEventTime = time.Now()
+
+				if err := n.handleEvent(ctx, event); err != nil {
+					n.log.Errorf("Failed to handle event: %v", err)
+				}
+			},
+		}); err != nil {
+			return err
+		}
 	}
 
 	return nil
