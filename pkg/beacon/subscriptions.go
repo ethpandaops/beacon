@@ -84,6 +84,8 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 		return n.handleAttestation(ctx, event)
 	case topicBlock:
 		return n.handleBlock(ctx, event)
+	case topicBlockGossip:
+		return n.handleBlockGossip(ctx, event)
 	case topicChainReorg:
 		return n.handleChainReorg(ctx, event)
 	case topicFinalizedCheckpoint:
@@ -131,6 +133,17 @@ func (n *node) handleBlock(ctx context.Context, event *v1.Event) error {
 	}
 
 	n.publishBlock(ctx, block)
+
+	return nil
+}
+
+func (n *node) handleBlockGossip(ctx context.Context, event *v1.Event) error {
+	blockGossip, valid := event.Data.(*v1.BlockGossipEvent)
+	if !valid {
+		return errors.New("invalid block gossip event")
+	}
+
+	n.publishBlockGossip(ctx, blockGossip)
 
 	return nil
 }

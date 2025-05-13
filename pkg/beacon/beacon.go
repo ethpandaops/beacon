@@ -113,6 +113,8 @@ type Node interface {
 	OnEvent(ctx context.Context, handler func(ctx context.Context, ev *v1.Event) error)
 	// OnBlock is called when a block is received.
 	OnBlock(ctx context.Context, handler func(ctx context.Context, ev *v1.BlockEvent) error)
+	// OnBlockGossip is called when a block gossip is received.
+	OnBlockGossip(ctx context.Context, handler func(ctx context.Context, ev *v1.BlockGossipEvent) error)
 	// OnAttestation is called when an attestation is received.
 	OnAttestation(ctx context.Context, handler func(ctx context.Context, ev *spec.VersionedAttestation) error)
 	// OnSingleAttestation is called when a single attestation is received.

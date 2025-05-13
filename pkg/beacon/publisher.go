@@ -18,6 +18,10 @@ func (n *node) publishBlock(ctx context.Context, event *v1.BlockEvent) {
 	n.broker.Emit(topicBlock, event)
 }
 
+func (n *node) publishBlockGossip(ctx context.Context, event *v1.BlockGossipEvent) {
+	n.broker.Emit(topicBlockGossip, event)
+}
+
 func (n *node) publishAttestation(ctx context.Context, event *spec.VersionedAttestation) {
 	n.broker.Emit(topicAttestation, event)
 }

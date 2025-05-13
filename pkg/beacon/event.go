@@ -43,6 +43,7 @@ const (
 	topicAttestation          = "attestation"
 	topicSingleAttestation    = "single_attestation"
 	topicBlock                = "block"
+	topicBlockGossip          = "block_gossip"
 	topicChainReorg           = "chain_reorg"
 	topicFinalizedCheckpoint  = "finalized_checkpoint"
 	topicHead                 = "head"

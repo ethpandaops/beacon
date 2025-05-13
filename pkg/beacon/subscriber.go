@@ -23,6 +23,12 @@ func (n *node) OnBlock(ctx context.Context, handler func(ctx context.Context, ev
 	})
 }
 
+func (n *node) OnBlockGossip(ctx context.Context, handler func(ctx context.Context, event *v1.BlockGossipEvent) error) {
+	n.broker.On(topicBlockGossip, func(event *v1.BlockGossipEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicBlockGossip)
+	})
+}
+
 func (n *node) OnAttestation(ctx context.Context, handler func(ctx context.Context, event *spec.VersionedAttestation) error) {
 	n.broker.On(topicAttestation, func(event *spec.VersionedAttestation) {
 		n.handleSubscriberError(handler(ctx, event), topicAttestation)

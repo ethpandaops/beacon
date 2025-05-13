@@ -90,6 +90,7 @@ func DefaultEnabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 			topicAttestation,
 			topicSingleAttestation,
 			topicBlock,
+			topicBlockGossip,
 			topicChainReorg,
 			topicFinalizedCheckpoint,
 			topicHead,
