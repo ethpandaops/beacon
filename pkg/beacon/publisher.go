@@ -50,6 +50,10 @@ func (n *node) publishBlobSidecar(ctx context.Context, event *v1.BlobSidecarEven
 	n.broker.Emit(topicBlobSidecar, event)
 }
 
+func (n *node) publishDataColumnSidecar(ctx context.Context, event *DataColumnSidecarEvent) {
+	n.broker.Emit(topicDataColumnSidecar, event)
+}
+
 func (n *node) publishEvent(ctx context.Context, event *v1.Event) {
 	n.broker.Emit(topicEvent, event)
 }

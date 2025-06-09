@@ -98,6 +98,8 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 		return n.handleContributionAndProof(ctx, event)
 	case topicBlobSidecar:
 		return n.handleBlobSidecar(ctx, event)
+	case topicDataColumnSidecar:
+		return n.handleDataColumnSidecar(ctx, event)
 
 	default:
 		return fmt.Errorf("unknown event topic %s", event.Topic)
@@ -210,6 +212,17 @@ func (n *node) handleBlobSidecar(ctx context.Context, event *v1.Event) error {
 	}
 
 	n.publishBlobSidecar(ctx, blobSidecar)
+
+	return nil
+}
+
+func (n *node) handleDataColumnSidecar(ctx context.Context, event *v1.Event) error {
+	dataColumnSidecar, valid := event.Data.(*DataColumnSidecarEvent)
+	if !valid {
+		return errors.New("invalid data column sidecar event")
+	}
+
+	n.publishDataColumnSidecar(ctx, dataColumnSidecar)
 
 	return nil
 }
