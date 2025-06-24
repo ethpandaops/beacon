@@ -20,7 +20,9 @@ func (n *node) FetchGenesis(ctx context.Context) (*v1.Genesis, error) {
 		return nil, err
 	}
 
+	n.genesisMu.Lock()
 	n.genesis = rsp.Data
+	n.genesisMu.Unlock()
 
 	return rsp.Data, nil
 }

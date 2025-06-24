@@ -178,6 +178,7 @@ type node struct {
 
 	// Internal data stores
 	genesis         *v1.Genesis
+	genesisMu       sync.RWMutex
 	lastEventTime   time.Time
 	lastEventTimeMu sync.RWMutex
 	nodeVersion     string
@@ -185,6 +186,7 @@ type node struct {
 	peers           types.Peers
 	finality        *v1.Finality
 	spec            *state.Spec
+	specMu          sync.RWMutex
 	wallclock       *ethwallclock.EthereumBeaconChain
 
 	stat *Status
@@ -328,6 +330,9 @@ func (n *node) Wallclock() *ethwallclock.EthereumBeaconChain {
 }
 
 func (n *node) Spec() (*state.Spec, error) {
+	n.specMu.RLock()
+	defer n.specMu.RUnlock()
+
 	if n.spec == nil {
 		return nil, errors.New("spec is not available")
 	}
@@ -350,6 +355,9 @@ func (n *node) Service() eth2client.Service {
 }
 
 func (n *node) Genesis() (*v1.Genesis, error) {
+	n.genesisMu.RLock()
+	defer n.genesisMu.RUnlock()
+
 	return n.genesis, nil
 }
 
