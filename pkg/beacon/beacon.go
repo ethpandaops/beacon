@@ -181,6 +181,7 @@ type node struct {
 	lastEventTime   time.Time
 	lastEventTimeMu sync.RWMutex
 	nodeVersion     string
+	nodeVersionMu   sync.RWMutex
 	peers           types.Peers
 	finality        *v1.Finality
 	spec            *state.Spec
@@ -353,6 +354,9 @@ func (n *node) Genesis() (*v1.Genesis, error) {
 }
 
 func (n *node) NodeVersion() (string, error) {
+	n.nodeVersionMu.RLock()
+	defer n.nodeVersionMu.RUnlock()
+
 	return n.nodeVersion, nil
 }
 

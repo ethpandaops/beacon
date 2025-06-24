@@ -56,7 +56,9 @@ func (n *node) FetchNodeVersion(ctx context.Context) (string, error) {
 		return "", err
 	}
 
+	n.nodeVersionMu.Lock()
 	n.nodeVersion = rsp.Data
+	n.nodeVersionMu.Unlock()
 
 	n.publishNodeVersionUpdated(ctx, rsp.Data)
 
