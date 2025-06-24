@@ -177,13 +177,14 @@ type node struct {
 	broker *emission.Emitter
 
 	// Internal data stores
-	genesis       *v1.Genesis
-	lastEventTime time.Time
-	nodeVersion   string
-	peers         types.Peers
-	finality      *v1.Finality
-	spec          *state.Spec
-	wallclock     *ethwallclock.EthereumBeaconChain
+	genesis         *v1.Genesis
+	lastEventTime   time.Time
+	lastEventTimeMu sync.RWMutex
+	nodeVersion     string
+	peers           types.Peers
+	finality        *v1.Finality
+	spec            *state.Spec
+	wallclock       *ethwallclock.EthereumBeaconChain
 
 	stat *Status
 
