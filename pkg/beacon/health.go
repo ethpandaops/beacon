@@ -1,11 +1,14 @@
 package beacon
 
 import (
+	"sync"
 	"time"
 )
 
 // Health tracks the health status of the beacon node.
 type Health struct {
+	mu sync.RWMutex
+
 	healthy bool
 
 	failures  int
@@ -38,6 +41,9 @@ func NewHealth(successThreshold, failThreshold int) *Health {
 
 // RecordFail records a failure.
 func (n *Health) RecordFail(err error) {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	n.failTotal++
 	n.lastCheck = time.Now()
 	n.failures++
@@ -50,6 +56,9 @@ func (n *Health) RecordFail(err error) {
 
 // RecordSuccess records a success.
 func (n *Health) RecordSuccess() {
+	n.mu.Lock()
+	defer n.mu.Unlock()
+
 	n.successTotal++
 	n.lastCheck = time.Now()
 	n.successes++
@@ -61,16 +70,25 @@ func (n *Health) RecordSuccess() {
 }
 
 // Healthy returns true if the node is healthy.
-func (n Health) Healthy() bool {
+func (n *Health) Healthy() bool {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+
 	return n.healthy
 }
 
 // FailedTotal returns the total number of failures.
-func (n Health) FailedTotal() uint64 {
+func (n *Health) FailedTotal() uint64 {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+
 	return n.failTotal
 }
 
 // SuccessTotal returns the total number of successes.
-func (n Health) SuccessTotal() uint64 {
+func (n *Health) SuccessTotal() uint64 {
+	n.mu.RLock()
+	defer n.mu.RUnlock()
+
 	return n.successTotal
 }
