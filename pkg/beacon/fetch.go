@@ -162,7 +162,9 @@ func (n *node) FetchSpec(ctx context.Context) (*state.Spec, error) {
 
 	sp := state.NewSpec(rsp.Data)
 
+	n.specMu.Lock()
 	n.spec = &sp
+	n.specMu.Unlock()
 
 	n.publishSpecUpdated(ctx, &sp)
 
