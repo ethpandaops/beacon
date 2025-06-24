@@ -60,7 +60,9 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 		if err := provider.Events(ctx, &api.EventsOpts{
 			Topics: []string{topic},
 			Handler: func(event *v1.Event) {
+				n.lastEventTimeMu.Lock()
 				n.lastEventTime = time.Now()
+				n.lastEventTimeMu.Unlock()
 
 				if err := n.handleEvent(ctx, event); err != nil {
 					n.log.Errorf("Failed to handle event: %v", err)
