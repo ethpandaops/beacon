@@ -71,6 +71,12 @@ func (n *node) OnBlobSidecar(ctx context.Context, handler func(ctx context.Conte
 	})
 }
 
+func (n *node) OnDataColumnSidecar(ctx context.Context, handler func(ctx context.Context, event *DataColumnSidecarEvent) error) {
+	n.broker.On(topicDataColumnSidecar, func(event *DataColumnSidecarEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicDataColumnSidecar)
+	})
+}
+
 func (n *node) OnSingleAttestation(ctx context.Context, handler func(ctx context.Context, event *electra.SingleAttestation) error) {
 	n.broker.On(topicSingleAttestation, func(event *electra.SingleAttestation) {
 		n.handleSubscriberError(handler(ctx, event), topicSingleAttestation)
