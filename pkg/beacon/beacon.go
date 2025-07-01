@@ -163,9 +163,10 @@ type Node interface {
 // Node represents an Ethereum beacon node. It computes values based on the spec.
 type node struct {
 	// Helpers
-	log    logrus.FieldLogger
-	ctx    context.Context //nolint:containedctx // existing.
-	cancel context.CancelFunc
+	log         logrus.FieldLogger
+	ctx         context.Context //nolint:containedctx // existing.
+	cancel      context.CancelFunc
+	lifecycleMu sync.Mutex // protects ctx and cancel
 
 	// Configuration
 	// Config should roughly be driven by end users.
@@ -233,8 +234,11 @@ func (n *node) Start(ctx context.Context) error {
 	n.log.Info("Starting beacon...")
 
 	ctx, cancel := context.WithCancel(ctx)
+
+	n.lifecycleMu.Lock()
 	n.ctx = ctx
 	n.cancel = cancel
+	n.lifecycleMu.Unlock()
 
 	if n.options.PrometheusMetrics {
 		if err := n.metrics.Start(ctx); err != nil {
@@ -316,9 +320,11 @@ func (n *node) Stop(ctx context.Context) error {
 		n.crons.Stop()
 	}
 
+	n.lifecycleMu.Lock()
 	if n.cancel != nil {
 		n.cancel()
 	}
+	n.lifecycleMu.Unlock()
 
 	return nil
 }
