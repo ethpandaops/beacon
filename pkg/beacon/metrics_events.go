@@ -2,6 +2,7 @@ package beacon
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	v1 "github.com/attestantio/go-eth2-client/api/v1"
@@ -18,6 +19,7 @@ type EventMetrics struct {
 
 	beacon Node
 
+	mu            sync.RWMutex
 	LastEventTime time.Time
 
 	crons *gocron.Scheduler
@@ -89,13 +91,20 @@ func (e *EventMetrics) Stop() error {
 
 //nolint:unparam // ctx will probably be used in the future.
 func (e *EventMetrics) tick(ctx context.Context) {
-	e.TimeSinceLastEvent.Set(float64(time.Since(e.LastEventTime).Milliseconds()))
+	e.mu.RLock()
+	lastEventTime := e.LastEventTime
+	e.mu.RUnlock()
+	e.TimeSinceLastEvent.Set(float64(time.Since(lastEventTime).Milliseconds()))
 }
 
 // HandleEvent handles all beacon events.
 func (e *EventMetrics) HandleEvent(ctx context.Context, event *v1.Event) error {
 	e.Count.WithLabelValues(event.Topic).Inc()
+
+	e.mu.Lock()
 	e.LastEventTime = time.Now()
+	e.mu.Unlock()
+
 	e.TimeSinceLastEvent.Set(0)
 
 	return nil
