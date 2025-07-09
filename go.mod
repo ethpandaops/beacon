@@ -3,12 +3,13 @@ module github.com/ethpandaops/beacon
 go 1.22
 
 require (
-	github.com/attestantio/go-eth2-client v0.25.0
+	github.com/attestantio/go-eth2-client v0.26.0
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethereum/go-ethereum v1.14.10
 	github.com/ethpandaops/ethwallclock v0.2.0
 	github.com/go-co-op/gocron v1.16.2
 	github.com/prometheus/client_golang v1.16.0
+	github.com/prometheus/client_model v0.3.0
 	github.com/rs/zerolog v1.32.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cast v1.5.0
@@ -40,7 +41,6 @@ require (
 	github.com/pk910/dynamic-ssz v0.0.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.42.0 // indirect
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/prysmaticlabs/go-bitfield v0.0.0-20240618144021-706c95b2dd15 // indirect

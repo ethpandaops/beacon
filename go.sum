@@ -1,5 +1,5 @@
-github.com/attestantio/go-eth2-client v0.25.0 h1:wLQxoteGCbTE/vKCMASx1ze+Zm9rcqtltRnblaLJup4=
-github.com/attestantio/go-eth2-client v0.25.0/go.mod h1:fvULSL9WtNskkOB4i+Yyr6BKpNHXvmpGZj9969fCrfY=
+github.com/attestantio/go-eth2-client v0.26.0 h1:oDWKvIUJfvr1EBi/w9L6mawYZHOCymjHkml7fZplT20=
+github.com/attestantio/go-eth2-client v0.26.0/go.mod h1:fvULSL9WtNskkOB4i+Yyr6BKpNHXvmpGZj9969fCrfY=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
 github.com/btcsuite/btcd/btcec/v2 v2.3.4 h1:3EJjcN70HCu/mwqlUsGK8GcNVyLVxFDlWurTXGPFfiQ=
