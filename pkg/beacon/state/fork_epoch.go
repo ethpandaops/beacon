@@ -17,6 +17,7 @@ var (
 		spec.DataVersionCapella,
 		spec.DataVersionDeneb,
 		spec.DataVersionElectra,
+		spec.DataVersionFulu,
 	}
 )
 
