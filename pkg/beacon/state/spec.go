@@ -44,7 +44,8 @@ type Spec struct {
 	MinGenesisActiveValidatorCount uint64           `json:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT,string"`
 	Eth1FollowDistance             uint64           `json:"ETH1_FOLLOW_DISTANCE,string"`
 
-	ForkEpochs ForkEpochs `json:"-"`
+	ForkEpochs   ForkEpochs   `json:"-"`
+	BlobSchedule BlobSchedule `json:"BLOB_SCHEDULE"`
 }
 
 // NewSpec creates a new spec instance.
@@ -192,12 +193,32 @@ func NewSpec(data map[string]interface{}) Spec {
 		})
 	}
 
+	if blobSchedule, exists := data["BLOB_SCHEDULE"]; exists {
+		if scheduleData, ok := blobSchedule.([]interface{}); ok {
+			spec.BlobSchedule = make(BlobSchedule, len(scheduleData))
+
+			for i, entry := range scheduleData {
+				if entryMap, ok := entry.(map[string]interface{}); ok {
+					spec.BlobSchedule[i] = BlobScheduleEntry{
+						Epoch:            phase0.Epoch(cast.ToUint64(entryMap["EPOCH"])),
+						MaxBlobsPerBlock: cast.ToUint64(entryMap["MAX_BLOBS_PER_BLOCK"]),
+					}
+				}
+			}
+		}
+	}
+
 	return spec
 }
 
 // Validate performs basic validation of the spec.
 func (s *Spec) Validate() error {
 	return nil
+}
+
+// GetMaxBlobsPerBlock returns the maximum number of blobs that can be included in a block for a given epoch.
+func (s *Spec) GetMaxBlobsPerBlock(epoch phase0.Epoch) uint64 {
+	return s.BlobSchedule.GetMaxBlobsPerBlock(epoch)
 }
 
 func dataVersionFromString(name string) (sp.DataVersion, error) {
