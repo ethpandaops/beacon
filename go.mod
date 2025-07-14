@@ -2,8 +2,8 @@ module github.com/ethpandaops/beacon
 
 go 1.22
 
-// Use PK's fork supporting fulu spec, until upstream is updated (https://github.com/pk910/go-eth2-client/pull/2)
-replace github.com/attestantio/go-eth2-client => github.com/pk910/go-eth2-client v0.0.0-20250603065335-ce8ba1e2c627
+// TODO: remove this once the upstream PR is merged: https://github.com/attestantio/go-eth2-client/pull/246
+replace github.com/attestantio/go-eth2-client => github.com/samcm/go-eth2-client v0.15.13-0.20250714032458-b02c75e9831d
 
 require (
 	github.com/attestantio/go-eth2-client v0.26.0
