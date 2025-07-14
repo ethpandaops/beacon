@@ -100,11 +100,3 @@ type FinalityCheckpointUpdated struct {
 // FirstTimeHealthyEvent is emitted when the node is first considered healthy.
 type FirstTimeHealthyEvent struct {
 }
-
-// DataColumnSidecarEvent represents a data column sidecar event for PeerDAS (EIP-7594).
-type DataColumnSidecarEvent struct {
-	Slot           phase0.Slot `json:"slot"`
-	Index          uint64      `json:"index"`
-	BlockRoot      phase0.Root `json:"block_root"`
-	KZGCommitments []string    `json:"kzg_commitments"`
-}

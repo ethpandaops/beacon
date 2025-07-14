@@ -219,7 +219,7 @@ func (n *node) handleBlobSidecar(ctx context.Context, event *v1.Event) error {
 }
 
 func (n *node) handleDataColumnSidecar(ctx context.Context, event *v1.Event) error {
-	dataColumnSidecar, valid := event.Data.(*DataColumnSidecarEvent)
+	dataColumnSidecar, valid := event.Data.(*v1.DataColumnSidecarEvent)
 	if !valid {
 		return errors.New("invalid data column sidecar event")
 	}
