@@ -33,8 +33,10 @@ func TestLifecycleMutex(t *testing.T) {
 
 				// This simulates what Start() does
 				n.lifecycleMu.Lock()
+
 				n.ctx = ctx
 				n.cancel = cancel
+
 				n.lifecycleMu.Unlock()
 
 				// Clean up
@@ -50,9 +52,11 @@ func TestLifecycleMutex(t *testing.T) {
 
 				// This simulates what Stop() does
 				n.lifecycleMu.Lock()
+
 				if n.cancel != nil {
 					n.cancel()
 				}
+
 				n.lifecycleMu.Unlock()
 			}()
 		}
@@ -61,8 +65,10 @@ func TestLifecycleMutex(t *testing.T) {
 
 		// Reset for next iteration
 		n.lifecycleMu.Lock()
+
 		n.ctx = nil
 		n.cancel = nil
+
 		n.lifecycleMu.Unlock()
 	}
 }
@@ -82,23 +88,30 @@ func TestLifecycleStartStopSequence(t *testing.T) {
 
 	// Before Start, cancel should be nil
 	n.lifecycleMu.Lock()
+
 	if n.cancel != nil {
 		t.Error("cancel should be nil before Start")
 	}
+
 	n.lifecycleMu.Unlock()
 
 	// Simulate Start without actually starting (to avoid bootstrap errors)
 	startCtx, startCancel := context.WithCancel(ctx)
+
 	n.lifecycleMu.Lock()
+
 	n.ctx = startCtx
 	n.cancel = startCancel
+
 	n.lifecycleMu.Unlock()
 
 	// Verify cancel is set
 	n.lifecycleMu.Lock()
+
 	if n.cancel == nil {
 		t.Error("cancel should not be nil after Start")
 	}
+
 	n.lifecycleMu.Unlock()
 
 	// Stop should work without race
