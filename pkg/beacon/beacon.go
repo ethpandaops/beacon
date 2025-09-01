@@ -236,8 +236,10 @@ func (n *node) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 
 	n.lifecycleMu.Lock()
+
 	n.ctx = ctx
 	n.cancel = cancel
+
 	n.lifecycleMu.Unlock()
 
 	if n.options.PrometheusMetrics {
@@ -321,9 +323,11 @@ func (n *node) Stop(ctx context.Context) error {
 	}
 
 	n.lifecycleMu.Lock()
+
 	if n.cancel != nil {
 		n.cancel()
 	}
+
 	n.lifecycleMu.Unlock()
 
 	return nil
