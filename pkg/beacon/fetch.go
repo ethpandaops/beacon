@@ -164,7 +164,6 @@ func (n *node) FetchSpec(ctx context.Context) (*state.Spec, error) {
 
 	sp := state.NewSpec(rsp.Data)
 
-	// Initialize dynamic SSZ encoder following dora's approach
 	staticSpec := map[string]any{}
 
 	specYaml, err := yaml.Marshal(&sp)
