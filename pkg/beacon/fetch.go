@@ -12,6 +12,8 @@ import (
 	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
+	dynssz "github.com/pk910/dynamic-ssz"
+	"gopkg.in/yaml.v2"
 )
 
 func (n *node) FetchSyncStatus(ctx context.Context) (*v1.SyncState, error) {
@@ -162,9 +164,24 @@ func (n *node) FetchSpec(ctx context.Context) (*state.Spec, error) {
 
 	sp := state.NewSpec(rsp.Data)
 
+	// Initialize dynamic SSZ encoder following dora's approach
+	staticSpec := map[string]any{}
+
+	specYaml, err := yaml.Marshal(&sp)
+	if err == nil {
+		if err := yaml.Unmarshal(specYaml, &staticSpec); err != nil {
+			n.log.WithError(err).Warn("Failed to unmarshal spec for dynamic SSZ, using empty spec")
+		}
+	}
+
+	dynSsz := dynssz.NewDynSsz(staticSpec)
+
 	n.specMu.Lock()
 	n.spec = &sp
+	n.dynSsz = dynSsz
 	n.specMu.Unlock()
+
+	n.log.WithField("preset", sp.PresetBase).Info("Initialized dynamic SSZ encoder with preset")
 
 	n.publishSpecUpdated(ctx, &sp)
 

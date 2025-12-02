@@ -22,6 +22,7 @@ import (
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
 	"github.com/ethpandaops/ethwallclock"
 	"github.com/go-co-op/gocron"
+	dynssz "github.com/pk910/dynamic-ssz"
 	"github.com/rs/zerolog"
 	"github.com/sirupsen/logrus"
 )
@@ -189,6 +190,7 @@ type node struct {
 	peers           types.Peers
 	finality        *v1.Finality
 	spec            *state.Spec
+	dynSsz          *dynssz.DynSsz
 	specMu          sync.RWMutex
 	wallclock       *ethwallclock.EthereumBeaconChain
 
