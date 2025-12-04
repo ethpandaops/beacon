@@ -44,8 +44,9 @@ type Spec struct {
 	MinGenesisActiveValidatorCount uint64           `json:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT,string"`
 	Eth1FollowDistance             uint64           `json:"ETH1_FOLLOW_DISTANCE,string"`
 
-	ForkEpochs   ForkEpochs   `json:"-"`
-	BlobSchedule BlobSchedule `json:"BLOB_SCHEDULE"`
+	ForkEpochs   ForkEpochs     `json:"-"`
+	BlobSchedule BlobSchedule   `json:"BLOB_SCHEDULE"`
+	FullSpec     map[string]any `json:"-"`
 }
 
 // NewSpec creates a new spec instance.
@@ -54,6 +55,7 @@ type Spec struct {
 func NewSpec(data map[string]interface{}) Spec {
 	spec := Spec{
 		ForkEpochs: ForkEpochs{},
+		FullSpec:   data,
 	}
 
 	if safeSlotsToUpdateJustified, exists := data["SAFE_SLOTS_TO_UPDATE_JUSTIFIED"]; exists {
