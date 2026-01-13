@@ -16,6 +16,7 @@ type SyncMetrics struct {
 	HeadSlot             prometheus.Gauge
 	Distance             prometheus.Gauge
 	IsSyncing            prometheus.Gauge
+	IsOptimistic         prometheus.Gauge
 }
 
 const (
@@ -71,6 +72,14 @@ func NewSyncMetrics(beac Node, log logrus.FieldLogger, namespace string, constLa
 				ConstLabels: constLabels,
 			},
 		),
+		IsOptimistic: prometheus.NewGauge(
+			prometheus.GaugeOpts{
+				Namespace:   namespace,
+				Name:        "is_optimistic",
+				Help:        "1 if the node is optimistically syncing.",
+				ConstLabels: constLabels,
+			},
+		),
 	}
 
 	prometheus.MustRegister(s.Percentage)
@@ -78,6 +87,7 @@ func NewSyncMetrics(beac Node, log logrus.FieldLogger, namespace string, constLa
 	prometheus.MustRegister(s.HeadSlot)
 	prometheus.MustRegister(s.Distance)
 	prometheus.MustRegister(s.IsSyncing)
+	prometheus.MustRegister(s.IsOptimistic)
 
 	return s
 }
@@ -95,6 +105,7 @@ func (s *SyncMetrics) Start(ctx context.Context) error {
 		s.Distance.Set(float64(status.SyncDistance))
 		s.HeadSlot.Set(float64(status.HeadSlot))
 		s.observeSyncIsSyncing(status.IsSyncing)
+		s.observeSyncIsOptimistic(status.IsOptimistic)
 
 		estimatedHighestHeadSlot := status.SyncDistance + status.HeadSlot
 		s.EstimatedHighestSlot.Set(float64(estimatedHighestHeadSlot))
@@ -117,12 +128,20 @@ func (s *SyncMetrics) Stop() error {
 	return nil
 }
 
-func (s *SyncMetrics) observeSyncIsSyncing(syncing bool) {
-	if syncing {
-		s.IsSyncing.Set(1)
+func observeBoolGauge(dst prometheus.Gauge, b bool) {
+	if b {
+		dst.Set(1)
 
 		return
 	}
 
-	s.IsSyncing.Set(0)
+	dst.Set(0)
+}
+
+func (s *SyncMetrics) observeSyncIsSyncing(syncing bool) {
+	observeBoolGauge(s.IsSyncing, syncing)
+}
+
+func (s *SyncMetrics) observeSyncIsOptimistic(optimistic bool) {
+	observeBoolGauge(s.IsOptimistic, optimistic)
 }
