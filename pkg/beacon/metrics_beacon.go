@@ -485,14 +485,16 @@ func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.Version
 
 	withdrawals, err := block.Withdrawals()
 	if err == nil {
-		gwei := int64(0)
-		indexMax := int64(0)
-		indexMin := int64(math.MaxInt64)
+		var gwei uint64
+
+		var indexMax uint64
+
+		indexMin := uint64(math.MaxUint64)
 
 		for _, withdrawal := range withdrawals {
-			gwei += int64(withdrawal.Amount)
+			gwei += uint64(withdrawal.Amount)
 
-			index := int64(withdrawal.Index)
+			index := uint64(withdrawal.Index)
 			if index > indexMax {
 				indexMax = index
 			}
@@ -509,7 +511,7 @@ func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.Version
 			b.WithdrawalsIndexMax.WithLabelValues(blockID, version).Set(float64(indexMax))
 		}
 
-		if indexMin < math.MaxInt64 {
+		if indexMin < math.MaxUint64 {
 			b.WithdrawalsIndexMin.WithLabelValues(blockID, version).Set(float64(indexMin))
 		}
 	}
