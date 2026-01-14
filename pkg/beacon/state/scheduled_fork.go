@@ -19,7 +19,7 @@ func ForkScheduleFromForkEpochs(forks ForkEpochs) ([]*ScheduledFork, error) {
 		return (forks)[i].Epoch < (forks)[j].Epoch
 	})
 
-	scheduled := []*ScheduledFork{}
+	scheduled := make([]*ScheduledFork, 0, len(forks))
 
 	for i, fork := range forks {
 		scheduledFork := &ScheduledFork{
