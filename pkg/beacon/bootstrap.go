@@ -30,14 +30,17 @@ func (n *node) ensureClients(ctx context.Context) error {
 		default:
 			timeout := 10 * time.Minute
 
-			params := []ehttp.Parameter{
+			extraParams := n.options.GetGoEth2ClientParams()
+			params := make([]ehttp.Parameter, 0, 4+len(extraParams))
+
+			params = append(params,
 				ehttp.WithAddress(n.config.Addr),
 				ehttp.WithLogLevel(zerologLevel),
 				ehttp.WithTimeout(timeout),
 				ehttp.WithExtraHeaders(n.config.Headers),
-			}
+			)
 
-			params = append(params, n.options.GetGoEth2ClientParams()...)
+			params = append(params, extraParams...)
 
 			client, err := ehttp.New(ctx, params...)
 			if err != nil {
