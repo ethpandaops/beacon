@@ -420,8 +420,8 @@ func (b *BeaconMetrics) handleSingleBlock(blockID string, block *spec.VersionedS
 		return errors.New("block is nil")
 	}
 
-	if blockID == "head" && b.currentVersionHead != block.Version.String() ||
-		blockID == "finalized" && b.currentVersionFinalized != block.Version.String() {
+	if blockID == topicHead && b.currentVersionHead != block.Version.String() ||
+		blockID == topicFinalized && b.currentVersionFinalized != block.Version.String() {
 		b.Transactions.Reset()
 		b.Slashings.Reset()
 		b.Attestations.Reset()
@@ -429,11 +429,11 @@ func (b *BeaconMetrics) handleSingleBlock(blockID string, block *spec.VersionedS
 		b.VoluntaryExits.Reset()
 		b.Slot.Reset()
 
-		if blockID == "finalized" {
+		if blockID == topicFinalized {
 			b.currentVersionFinalized = block.Version.String()
 		}
 
-		if blockID == "head" {
+		if blockID == topicHead {
 			b.currentVersionHead = block.Version.String()
 		}
 	}

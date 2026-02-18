@@ -112,7 +112,6 @@ func (n *node) FetchFinality(ctx context.Context, stateID string) (*v1.Finality,
 
 	finality := rsp.Data
 
-	//nolint:goconst // existing.
 	if stateID == "head" {
 		changed := false
 		if n.finality == nil ||
