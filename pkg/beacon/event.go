@@ -47,6 +47,7 @@ const (
 	topicChainReorg           = "chain_reorg"
 	topicFinalizedCheckpoint  = "finalized_checkpoint"
 	topicHead                 = "head"
+	topicFinalized            = "finalized"
 	topicVoluntaryExit        = "voluntary_exit"
 	topicContributionAndProof = "contribution_and_proof"
 	topicBlobSidecar          = "blob_sidecar"
