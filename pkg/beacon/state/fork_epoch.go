@@ -18,6 +18,7 @@ var (
 		spec.DataVersionDeneb,
 		spec.DataVersionElectra,
 		spec.DataVersionFulu,
+		spec.DataVersionGloas,
 	}
 )
 
