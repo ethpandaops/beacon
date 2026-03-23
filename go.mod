@@ -2,6 +2,10 @@ module github.com/ethpandaops/beacon
 
 go 1.25.1
 
+// TODO: remove once Glamsterdam (Gloas) support is merged upstream.
+// Tracks: https://github.com/pk910/go-eth2-client/pull/7
+replace github.com/attestantio/go-eth2-client => github.com/pk910/go-eth2-client v0.0.0-20260211135810-4d8cc413fd3b
+
 require (
 	github.com/attestantio/go-eth2-client v0.27.1
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
@@ -61,5 +65,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/attestantio/go-eth2-client => github.com/pk910/go-eth2-client v0.0.0-20260211135810-4d8cc413fd3b
