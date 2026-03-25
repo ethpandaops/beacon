@@ -9,7 +9,7 @@ replace github.com/attestantio/go-eth2-client => github.com/pk910/go-eth2-client
 require (
 	github.com/attestantio/go-eth2-client v0.27.1
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
-	github.com/ethereum/go-ethereum v1.17.2-0.20260319135215-e5d453c086c7
+	github.com/ethereum/go-ethereum v1.17.2-0.20260324190457-8f361e342cb9
 	github.com/ethpandaops/ethwallclock v0.2.0
 	github.com/go-co-op/gocron v1.16.2
 	github.com/prometheus/client_golang v1.23.2

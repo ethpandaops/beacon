@@ -18,8 +18,8 @@ github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 h1:YLtO71vCjJRCBcrPMtQ9nqBsqpA1
 github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1/go.mod h1:hyedUtir6IdtD/7lIxGeCxkaw7y45JueMRL4DIyJDKs=
 github.com/emicklei/dot v1.6.4 h1:cG9ycT67d9Yw22G+mAb4XiuUz6E6H1S0zePp/5Cwe/c=
 github.com/emicklei/dot v1.6.4/go.mod h1:DeV7GvQtIw4h2u73RKBkkFdvVAz0D9fzeJrgPW6gy/s=
-github.com/ethereum/go-ethereum v1.17.2-0.20260319135215-e5d453c086c7 h1:3iXPDQhD4YaF9wzx6um5lydHidwThQQ2E3SMQpAk7dM=
-github.com/ethereum/go-ethereum v1.17.2-0.20260319135215-e5d453c086c7/go.mod h1:8BS3L+ky1nBsSvjoKueaUeEYxKnC0sbW2ImjVCXkpy8=
+github.com/ethereum/go-ethereum v1.17.2-0.20260324190457-8f361e342cb9 h1:87oCZDemf+tvCIUtKt9EUtkfXbU/llIl41ML8+vZ8Mo=
+github.com/ethereum/go-ethereum v1.17.2-0.20260324190457-8f361e342cb9/go.mod h1:KHcRXfGOUfUmKg51IhQ0IowiqZ6PqZf08CMtk0g5K1o=
 github.com/ethpandaops/ethwallclock v0.2.0 h1:EeFKtZ7v6TAdn/oAh0xaPujD7N4amjBxrWIByraUfLM=
 github.com/ethpandaops/ethwallclock v0.2.0/go.mod h1:y0Cu+mhGLlem19vnAV2x0hpFS5KZ7oOi2SWYayv9l24=
 github.com/fatih/color v1.10.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
