@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	eth2client "github.com/attestantio/go-eth2-client"
-	"github.com/attestantio/go-eth2-client/api"
-	v1 "github.com/attestantio/go-eth2-client/api/v1"
+	eth2client "github.com/ethpandaops/go-eth2-client"
+	"github.com/ethpandaops/go-eth2-client/api"
+	v1 "github.com/ethpandaops/go-eth2-client/api/v1"
 )
 
 func (n *node) FetchGenesis(ctx context.Context) (*v1.Genesis, error) {

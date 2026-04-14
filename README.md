@@ -12,7 +12,7 @@ As a general rule, any function that starts with `Fetch` will fetch data from th
 
 ## Built with
 
-- [attestantio/go-eth2-client](github.com/attestantio/go-eth2-client)
+- [attestantio/go-eth2-client](github.com/ethpandaops/go-eth2-client)
 - [ethpandaops/ethwallclock](github.com/ethpandaops/ethwallclock)
 
 ## Options

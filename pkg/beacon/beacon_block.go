@@ -1,7 +1,7 @@
 package beacon
 
 import (
-	"github.com/attestantio/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec"
 )
 
 // GetDepositCountsFromBeaconBlock returns the number of deposits in a beacon block.
