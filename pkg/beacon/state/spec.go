@@ -6,8 +6,8 @@ import (
 	"math/big"
 	"strings"
 
-	sp "github.com/attestantio/go-eth2-client/spec"
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	sp "github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/spf13/cast"
 )
 

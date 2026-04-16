@@ -3,8 +3,8 @@ package state_test
 import (
 	"testing"
 
-	"github.com/attestantio/go-eth2-client/spec"
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
+	"github.com/ethpandaops/go-eth2-client/spec"
 )
 
 func TestForkOrderIncludesAllSpecDataVersions(t *testing.T) {

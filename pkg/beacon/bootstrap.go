@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	eth2client "github.com/attestantio/go-eth2-client"
-	ehttp "github.com/attestantio/go-eth2-client/http"
 	"github.com/ethpandaops/beacon/pkg/beacon/api"
+	eth2client "github.com/ethpandaops/go-eth2-client"
+	ehttp "github.com/ethpandaops/go-eth2-client/http"
 )
 
 // ensureClients ensures that the node has a client and an API client.
