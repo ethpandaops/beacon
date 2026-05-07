@@ -84,9 +84,10 @@ func DefaultDisabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 
 // DefaultEnabledBeaconSubscriptionOptions returns the default options for an enabled beacon subscription.
 //
-// EIP-7732 ePBS topics are appended unconditionally; pre-Gloas networks won't emit
-// them, so consumers should gate subscription registration on the connected node's
-// fork if they want to avoid noisy logs on older networks.
+// execution_payload, execution_payload_gossip, execution_payload_available,
+// execution_payload_bid, payload_attestation_message, and proposer_preferences
+// can be added once Gloas is live if you want them defaulting. Not adding for
+// now due to connection thrashing, etc.
 func DefaultEnabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 	return BeaconSubscriptionOptions{
 		Enabled: true,
@@ -101,12 +102,6 @@ func DefaultEnabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 			topicVoluntaryExit,
 			topicContributionAndProof,
 			topicBlobSidecar,
-			topicExecutionPayload,
-			topicExecutionPayloadGossip,
-			topicExecutionPayloadAvailable,
-			topicExecutionPayloadBid,
-			topicPayloadAttestationMessage,
-			topicProposerPreferences,
 		},
 	}
 }
