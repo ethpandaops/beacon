@@ -53,6 +53,14 @@ const (
 	topicBlobSidecar          = "blob_sidecar"
 	topicDataColumnSidecar    = "data_column_sidecar"
 	topicEvent                = "raw_event"
+
+	// EIP-7732 ePBS beacon SSE topics.
+	topicExecutionPayload          = "execution_payload"
+	topicExecutionPayloadAvailable = "execution_payload_available"
+	topicExecutionPayloadBid       = "execution_payload_bid"
+	topicExecutionPayloadGossip    = "execution_payload_gossip"
+	topicPayloadAttestationMessage = "payload_attestation_message"
+	topicProposerPreferences       = "proposer_preferences"
 )
 
 type ReadyEvent struct {
