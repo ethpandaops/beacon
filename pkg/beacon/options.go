@@ -83,6 +83,11 @@ func DefaultDisabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 }
 
 // DefaultEnabledBeaconSubscriptionOptions returns the default options for an enabled beacon subscription.
+//
+// execution_payload, execution_payload_gossip, execution_payload_available,
+// execution_payload_bid, payload_attestation_message, and proposer_preferences
+// can be added once Gloas is live if you want them defaulting. Not adding for
+// now due to connection thrashing, etc.
 func DefaultEnabledBeaconSubscriptionOptions() BeaconSubscriptionOptions {
 	return BeaconSubscriptionOptions{
 		Enabled: true,

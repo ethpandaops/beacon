@@ -20,6 +20,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/go-co-op/gocron"
 	"github.com/rs/zerolog"
@@ -133,6 +134,20 @@ type Node interface {
 	OnBlobSidecar(ctx context.Context, handler func(ctx context.Context, ev *v1.BlobSidecarEvent) error)
 	// OnDataColumnSidecar is called when a data column sidecar is received.
 	OnDataColumnSidecar(ctx context.Context, handler func(ctx context.Context, ev *v1.DataColumnSidecarEvent) error)
+
+	// EIP-7732 ePBS subscriptions.
+	// OnExecutionPayload is called when a SignedExecutionPayloadEnvelope has been imported into fork-choice.
+	OnExecutionPayload(ctx context.Context, handler func(ctx context.Context, ev *gloas.SignedExecutionPayloadEnvelope) error)
+	// OnExecutionPayloadGossip is called when a SignedExecutionPayloadEnvelope has passed gossip validation.
+	OnExecutionPayloadGossip(ctx context.Context, handler func(ctx context.Context, ev *gloas.SignedExecutionPayloadEnvelope) error)
+	// OnExecutionPayloadAvailable is called when the node has verified the execution payload and blobs are locally available.
+	OnExecutionPayloadAvailable(ctx context.Context, handler func(ctx context.Context, ev *v1.ExecutionPayloadAvailableEvent) error)
+	// OnExecutionPayloadBid is called when a SignedExecutionPayloadBid passes gossip validation.
+	OnExecutionPayloadBid(ctx context.Context, handler func(ctx context.Context, ev *gloas.SignedExecutionPayloadBid) error)
+	// OnPayloadAttestationMessage is called when a PayloadAttestationMessage is received.
+	OnPayloadAttestationMessage(ctx context.Context, handler func(ctx context.Context, ev *gloas.PayloadAttestationMessage) error)
+	// OnProposerPreferences is called when a SignedProposerPreferences is received.
+	OnProposerPreferences(ctx context.Context, handler func(ctx context.Context, ev *gloas.SignedProposerPreferences) error)
 
 	// - Custom events
 	// OnReady is called when the node is ready.

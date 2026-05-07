@@ -34,7 +34,7 @@ func TestEventMetrics_ConcurrentAccess(t *testing.T) {
 				Name:      "event_count",
 				Help:      "Test event count",
 			},
-			[]string{"event"},
+			[]string{metricsJobNameEvent},
 		),
 		TimeSinceLastEvent: prometheus.NewGauge(
 			prometheus.GaugeOpts{
@@ -128,7 +128,7 @@ func TestEventMetrics_LastEventTime(t *testing.T) {
 				Name:      "event_count",
 				Help:      "Test event count",
 			},
-			[]string{"event"},
+			[]string{metricsJobNameEvent},
 		),
 		TimeSinceLastEvent: prometheus.NewGauge(
 			prometheus.GaugeOpts{

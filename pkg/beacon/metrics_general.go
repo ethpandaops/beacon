@@ -36,7 +36,7 @@ func NewGeneralJob(beac Node, log logrus.FieldLogger, namespace string, constLab
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"version",
+				metricsLabelVersion,
 			},
 		),
 		Peers: *prometheus.NewGaugeVec(
