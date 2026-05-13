@@ -3,8 +3,8 @@ package beacon
 import (
 	"context"
 
-	"github.com/attestantio/go-eth2-client/spec/phase0"
 	"github.com/ethpandaops/ethwallclock"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
 )

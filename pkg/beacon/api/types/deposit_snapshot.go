@@ -6,7 +6,7 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/attestantio/go-eth2-client/spec/phase0"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
 // DepositSnapshot represents an EIP-4881 deposit snapshot.
