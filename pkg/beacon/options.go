@@ -3,8 +3,8 @@ package beacon
 import (
 	"time"
 
-	ehttp "github.com/attestantio/go-eth2-client/http"
 	"github.com/ethpandaops/beacon/pkg/human"
+	ehttp "github.com/ethpandaops/go-eth2-client/http"
 )
 
 // Options holds the options for a beacon node.
