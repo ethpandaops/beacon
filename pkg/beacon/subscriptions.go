@@ -102,6 +102,9 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 		return n.handleBlobSidecar(ctx, event)
 	case topicDataColumnSidecar:
 		return n.handleDataColumnSidecar(ctx, event)
+	case topicFastConfirmation:
+		// No typed parser yet; raw event is already broadcast via publishEvent above.
+		return nil
 
 	default:
 		return fmt.Errorf("unknown event topic %s", event.Topic)
