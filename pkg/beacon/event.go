@@ -52,6 +52,7 @@ const (
 	topicContributionAndProof = "contribution_and_proof"
 	topicBlobSidecar          = "blob_sidecar"
 	topicDataColumnSidecar    = "data_column_sidecar"
+	topicFastConfirmation     = "fast_confirmation"
 	topicEvent                = "raw_event"
 
 	// EIP-7732 ePBS beacon SSE topics.

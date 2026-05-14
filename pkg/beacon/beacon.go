@@ -134,6 +134,8 @@ type Node interface {
 	OnBlobSidecar(ctx context.Context, handler func(ctx context.Context, ev *v1.BlobSidecarEvent) error)
 	// OnDataColumnSidecar is called when a data column sidecar is received.
 	OnDataColumnSidecar(ctx context.Context, handler func(ctx context.Context, ev *v1.DataColumnSidecarEvent) error)
+	// OnFastConfirmation is called when a fast confirmation is received.
+	OnFastConfirmation(ctx context.Context, handler func(ctx context.Context, ev *v1.FastConfirmationEvent) error)
 
 	// EIP-7732 ePBS subscriptions.
 	// OnExecutionPayload is called when a SignedExecutionPayloadEnvelope has been imported into fork-choice.

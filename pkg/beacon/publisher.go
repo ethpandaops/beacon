@@ -23,6 +23,10 @@ func (n *node) publishBlockGossip(ctx context.Context, event *v1.BlockGossipEven
 	n.broker.Emit(topicBlockGossip, event)
 }
 
+func (n *node) publishFastConfirmation(ctx context.Context, event *v1.FastConfirmationEvent) {
+	n.broker.Emit(topicFastConfirmation, event)
+}
+
 func (n *node) publishAttestation(ctx context.Context, event *spec.VersionedAttestation) {
 	n.broker.Emit(topicAttestation, event)
 }

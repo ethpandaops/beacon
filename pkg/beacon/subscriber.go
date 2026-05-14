@@ -30,6 +30,12 @@ func (n *node) OnBlockGossip(ctx context.Context, handler func(ctx context.Conte
 	})
 }
 
+func (n *node) OnFastConfirmation(ctx context.Context, handler func(ctx context.Context, event *v1.FastConfirmationEvent) error) {
+	n.broker.On(topicFastConfirmation, func(event *v1.FastConfirmationEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicFastConfirmation)
+	})
+}
+
 func (n *node) OnAttestation(ctx context.Context, handler func(ctx context.Context, event *spec.VersionedAttestation) error) {
 	n.broker.On(topicAttestation, func(event *spec.VersionedAttestation) {
 		n.handleSubscriberError(handler(ctx, event), topicAttestation)
