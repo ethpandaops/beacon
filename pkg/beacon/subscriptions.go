@@ -102,6 +102,8 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 		return n.handleBlobSidecar(ctx, event)
 	case topicDataColumnSidecar:
 		return n.handleDataColumnSidecar(ctx, event)
+	case topicFastConfirmation:
+		return n.handleFastConfirmation(ctx, event)
 
 	default:
 		return fmt.Errorf("unknown event topic %s", event.Topic)
@@ -148,6 +150,17 @@ func (n *node) handleBlockGossip(ctx context.Context, event *v1.Event) error {
 	}
 
 	n.publishBlockGossip(ctx, blockGossip)
+
+	return nil
+}
+
+func (n *node) handleFastConfirmation(ctx context.Context, event *v1.Event) error {
+	fastConfirmation, valid := event.Data.(*v1.FastConfirmationEvent)
+	if !valid {
+		return errors.New("invalid fast confirmation event")
+	}
+
+	n.publishFastConfirmation(ctx, fastConfirmation)
 
 	return nil
 }

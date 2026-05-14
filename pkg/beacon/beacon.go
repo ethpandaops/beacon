@@ -133,6 +133,8 @@ type Node interface {
 	OnBlobSidecar(ctx context.Context, handler func(ctx context.Context, ev *v1.BlobSidecarEvent) error)
 	// OnDataColumnSidecar is called when a data column sidecar is received.
 	OnDataColumnSidecar(ctx context.Context, handler func(ctx context.Context, ev *v1.DataColumnSidecarEvent) error)
+	// OnFastConfirmation is called when a fast confirmation is received.
+	OnFastConfirmation(ctx context.Context, handler func(ctx context.Context, ev *v1.FastConfirmationEvent) error)
 
 	// - Custom events
 	// OnReady is called when the node is ready.
