@@ -4,7 +4,7 @@ go 1.25.1
 
 require (
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
-	github.com/ethereum/go-ethereum v1.17.2-0.20260324190457-8f361e342cb9
+	github.com/ethereum/go-ethereum v1.17.3-0.20260507223249-73944e329925
 	github.com/ethpandaops/ethwallclock v0.2.0
 	github.com/ethpandaops/go-eth2-client v0.1.2-0.20260507042554-4e9992fe2f0e
 	github.com/go-co-op/gocron v1.16.2
@@ -49,9 +49,9 @@ require (
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
-	golang.org/x/crypto v0.44.0 // indirect
-	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/crypto v0.47.0 // indirect
+	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
