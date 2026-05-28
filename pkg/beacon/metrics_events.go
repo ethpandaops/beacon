@@ -46,7 +46,7 @@ func NewEventJob(bc Node, log logrus.FieldLogger, namespace string, constLabels 
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"event",
+				metricLabelEvent,
 			},
 		),
 		TimeSinceLastEvent: prometheus.NewGauge(

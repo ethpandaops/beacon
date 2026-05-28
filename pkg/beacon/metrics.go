@@ -8,6 +8,13 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	metricLabelBlockID = "block_id"
+	metricLabelVersion = "version"
+	metricLabelEvent   = "event"
+	metricLabelFork    = "fork"
+)
+
 // Metrics contains all the metrics jobs.
 type Metrics struct {
 	jobs map[string]MetricsJob
