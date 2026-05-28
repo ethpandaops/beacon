@@ -19,30 +19,30 @@ func TestHealthConcurrentAccess(t *testing.T) {
 	wg.Add(numGoroutines * 3) // 3 types of operations per goroutine
 
 	// Spawn goroutines that call RecordSuccess
-	for i := 0; i < numGoroutines; i++ {
+	for range numGoroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < numOperations; j++ {
+			for range numOperations {
 				h.RecordSuccess()
 			}
 		}()
 	}
 
 	// Spawn goroutines that call RecordFail
-	for i := 0; i < numGoroutines; i++ {
+	for range numGoroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < numOperations; j++ {
+			for range numOperations {
 				h.RecordFail(errors.New("test error"))
 			}
 		}()
 	}
 
 	// Spawn goroutines that read health status
-	for i := 0; i < numGoroutines; i++ {
+	for range numGoroutines {
 		go func() {
 			defer wg.Done()
-			for j := 0; j < numOperations; j++ {
+			for range numOperations {
 				_ = h.Healthy()
 				_ = h.SuccessTotal()
 				_ = h.FailedTotal()
@@ -75,7 +75,7 @@ func TestHealthRaceCondition(t *testing.T) {
 	t.Run("parallel", func(t *testing.T) {
 		t.Run("success", func(t *testing.T) {
 			t.Parallel()
-			for i := 0; i < 100; i++ {
+			for range 100 {
 				h.RecordSuccess()
 				time.Sleep(time.Microsecond)
 			}
@@ -83,7 +83,7 @@ func TestHealthRaceCondition(t *testing.T) {
 
 		t.Run("fail", func(t *testing.T) {
 			t.Parallel()
-			for i := 0; i < 100; i++ {
+			for range 100 {
 				h.RecordFail(errors.New("test"))
 				time.Sleep(time.Microsecond)
 			}
@@ -91,7 +91,7 @@ func TestHealthRaceCondition(t *testing.T) {
 
 		t.Run("read", func(t *testing.T) {
 			t.Parallel()
-			for i := 0; i < 100; i++ {
+			for range 100 {
 				_ = h.Healthy()
 				_ = h.SuccessTotal()
 				_ = h.FailedTotal()

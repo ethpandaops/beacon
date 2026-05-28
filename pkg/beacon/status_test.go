@@ -21,10 +21,10 @@ func TestStatus_ConcurrentSyncStateAccess(t *testing.T) {
 	wg.Add(numGoroutines * 2) // Half readers, half writers
 
 	// Start writer goroutines
-	for i := 0; i < numGoroutines; i++ {
+	for i := range numGoroutines {
 		go func(id int) {
 			defer wg.Done()
-			for j := 0; j < numIterations; j++ {
+			for j := range numIterations {
 				syncState := &v1.SyncState{
 					IsSyncing:    j%2 == 0,
 					HeadSlot:     phase0.Slot(j),
@@ -36,10 +36,10 @@ func TestStatus_ConcurrentSyncStateAccess(t *testing.T) {
 	}
 
 	// Start reader goroutines
-	for i := 0; i < numGoroutines; i++ {
+	for i := range numGoroutines {
 		go func(id int) {
 			defer wg.Done()
-			for j := 0; j < numIterations; j++ {
+			for range numIterations {
 				// Read sync state
 				state := status.SyncState()
 				if state != nil {
@@ -71,20 +71,20 @@ func TestStatus_ConcurrentNetworkIDAccess(t *testing.T) {
 	wg.Add(numGoroutines * 2)
 
 	// Start writer goroutines
-	for i := 0; i < numGoroutines; i++ {
+	for i := range numGoroutines {
 		go func(id int) {
 			defer wg.Done()
-			for j := 0; j < numIterations; j++ {
+			for j := range numIterations {
 				status.UpdateNetworkID(uint64(id*1000 + j))
 			}
 		}(i)
 	}
 
 	// Start reader goroutines
-	for i := 0; i < numGoroutines; i++ {
+	for i := range numGoroutines {
 		go func(id int) {
 			defer wg.Done()
-			for j := 0; j < numIterations; j++ {
+			for range numIterations {
 				networkID := status.NetworkID()
 				// Verify we get a valid network ID (not corrupted)
 				assert.GreaterOrEqual(t, networkID, uint64(0))

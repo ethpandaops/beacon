@@ -21,14 +21,12 @@ func TestLifecycleMutex(t *testing.T) {
 	const workers = 50
 	const iterations = 100
 
-	for i := 0; i < iterations; i++ {
+	for range iterations {
 		var wg sync.WaitGroup
 
 		// Writer goroutines - simulate Start() setting ctx and cancel
-		for j := 0; j < workers; j++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+		for range workers {
+			wg.Go(func() {
 				ctx, cancel := context.WithCancel(context.Background())
 
 				// This simulates what Start() does
@@ -41,15 +39,12 @@ func TestLifecycleMutex(t *testing.T) {
 
 				// Clean up
 				cancel()
-			}()
+			})
 		}
 
 		// Reader goroutines - simulate Stop() reading cancel
-		for j := 0; j < workers; j++ {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-
+		for range workers {
+			wg.Go(func() {
 				// This simulates what Stop() does
 				n.lifecycleMu.Lock()
 
@@ -58,7 +53,7 @@ func TestLifecycleMutex(t *testing.T) {
 				}
 
 				n.lifecycleMu.Unlock()
-			}()
+			})
 		}
 
 		wg.Wait()

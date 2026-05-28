@@ -58,13 +58,9 @@ func TestEventMetrics_ConcurrentAccess(t *testing.T) {
 	var wg sync.WaitGroup
 
 	// Start goroutines that call HandleEvent
-	for i := 0; i < numGoroutines; i++ {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
-			for j := 0; j < eventsPerGoroutine; j++ {
+	for range numGoroutines {
+		wg.Go(func() {
+			for range eventsPerGoroutine {
 				event := &v1.Event{
 					Topic: "test_event",
 					Data:  []byte("test data"),
@@ -72,22 +68,18 @@ func TestEventMetrics_ConcurrentAccess(t *testing.T) {
 
 				_ = em.HandleEvent(ctx, event)
 			}
-		}()
+		})
 	}
 
 	// Start goroutines that call tick to read LastEventTime
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
-			for j := 0; j < 1000; j++ {
+	for range 10 {
+		wg.Go(func() {
+			for range 1000 {
 				em.tick(ctx)
 
 				time.Sleep(time.Microsecond)
 			}
-		}()
+		})
 	}
 
 	// Wait for all goroutines to complete
@@ -147,7 +139,7 @@ func TestEventMetrics_LastEventTime(t *testing.T) {
 
 	// Writer goroutine - rapidly updates LastEventTime.
 	go func() {
-		for i := 0; i < 10000; i++ {
+		for range 10000 {
 			event := &v1.Event{
 				Topic: "race_test",
 				Data:  []byte("data"),
@@ -161,7 +153,7 @@ func TestEventMetrics_LastEventTime(t *testing.T) {
 
 	// Reader goroutine - rapidly reads LastEventTime.
 	go func() {
-		for i := 0; i < 10000; i++ {
+		for range 10000 {
 			em.tick(ctx)
 		}
 

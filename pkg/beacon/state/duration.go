@@ -15,7 +15,7 @@ func (s StringerDuration) MarshalJSON() ([]byte, error) {
 }
 
 func (s *StringerDuration) UnmarshalJSON(b []byte) error {
-	var v interface{}
+	var v any
 	if err := json.Unmarshal(b, &v); err != nil {
 		return err
 	}
