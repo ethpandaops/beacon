@@ -52,7 +52,7 @@ type Spec struct {
 // NewSpec creates a new spec instance.
 //
 //nolint:gocyclo // existing.
-func NewSpec(data map[string]interface{}) Spec {
+func NewSpec(data map[string]any) Spec {
 	spec := Spec{
 		ForkEpochs: ForkEpochs{},
 		FullSpec:   data,
@@ -196,11 +196,11 @@ func NewSpec(data map[string]interface{}) Spec {
 	}
 
 	if blobSchedule, exists := data["BLOB_SCHEDULE"]; exists {
-		if scheduleData, ok := blobSchedule.([]interface{}); ok {
+		if scheduleData, ok := blobSchedule.([]any); ok {
 			spec.BlobSchedule = make(BlobSchedule, len(scheduleData))
 
 			for i, entry := range scheduleData {
-				if entryMap, ok := entry.(map[string]interface{}); ok {
+				if entryMap, ok := entry.(map[string]any); ok {
 					spec.BlobSchedule[i] = BlobScheduleEntry{
 						Epoch:            phase0.Epoch(cast.ToUint64(entryMap["EPOCH"])),
 						MaxBlobsPerBlock: cast.ToUint64(entryMap["MAX_BLOBS_PER_BLOCK"]),
@@ -225,7 +225,7 @@ func (s *Spec) GetMaxBlobsPerBlock(epoch phase0.Epoch) uint64 {
 
 func dataVersionFromString(name string) (sp.DataVersion, error) {
 	var v sp.DataVersion
-	if err := json.Unmarshal([]byte(fmt.Sprintf("\"%s\"", name)), &v); err != nil {
+	if err := json.Unmarshal(fmt.Appendf(nil, "\"%s\"", name), &v); err != nil {
 		return sp.DataVersionUnknown, err
 	}
 

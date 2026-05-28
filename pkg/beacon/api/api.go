@@ -46,7 +46,7 @@ type apiResponse struct {
 }
 
 //nolint:unused // this is used in the future
-func (c *consensusClient) post(ctx context.Context, path string, body map[string]interface{}) (json.RawMessage, error) {
+func (c *consensusClient) post(ctx context.Context, path string, body map[string]any) (json.RawMessage, error) {
 	jsonData, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
