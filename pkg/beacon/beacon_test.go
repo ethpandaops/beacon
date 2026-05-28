@@ -45,7 +45,6 @@ func TestLifecycleMutex(t *testing.T) {
 		// Reader goroutines - simulate Stop() reading cancel
 		for range workers {
 			wg.Go(func() {
-
 				// This simulates what Stop() does
 				n.lifecycleMu.Lock()
 

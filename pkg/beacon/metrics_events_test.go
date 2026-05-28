@@ -59,9 +59,7 @@ func TestEventMetrics_ConcurrentAccess(t *testing.T) {
 
 	// Start goroutines that call HandleEvent
 	for range numGoroutines {
-
 		wg.Go(func() {
-
 			for range eventsPerGoroutine {
 				event := &v1.Event{
 					Topic: "test_event",
@@ -75,9 +73,7 @@ func TestEventMetrics_ConcurrentAccess(t *testing.T) {
 
 	// Start goroutines that call tick to read LastEventTime
 	for range 10 {
-
 		wg.Go(func() {
-
 			for range 1000 {
 				em.tick(ctx)
 
