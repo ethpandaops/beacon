@@ -8,10 +8,6 @@ on:
 
 jobs:
   full_ci:
-    strategy:
-      matrix:
-        go_version: [ 1.25.x ]
-
     runs-on: ubuntu-24.04
 
     steps:
@@ -21,7 +17,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
         with:
-          go-version: ${{ matrix.go_version }}
+          go-version-file: go.mod
 
       - name: run tests
         run: go test -json ./... > test.json

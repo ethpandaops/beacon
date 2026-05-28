@@ -62,8 +62,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		Transactions: *prometheus.NewGaugeVec(
@@ -74,8 +74,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		Slashings: *prometheus.NewGaugeVec(
@@ -86,8 +86,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 				"type",
 			},
 		),
@@ -99,8 +99,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		Deposits: *prometheus.NewGaugeVec(
@@ -111,8 +111,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		VoluntaryExits: *prometheus.NewGaugeVec(
@@ -123,8 +123,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		FinalityCheckpoints: *prometheus.NewGaugeVec(
@@ -180,8 +180,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		WithdrawalsAmount: *prometheus.NewGaugeVec(
@@ -192,8 +192,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		WithdrawalsIndexMax: *prometheus.NewGaugeVec(
@@ -204,8 +204,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		WithdrawalsIndexMin: *prometheus.NewGaugeVec(
@@ -216,8 +216,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 		BlobKZGCommitments: *prometheus.NewGaugeVec(
@@ -228,8 +228,8 @@ func NewBeaconMetrics(beac Node, log logrus.FieldLogger, namespace string, const
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"block_id",
-				"version",
+				metricLabelBlockID,
+				metricLabelVersion,
 			},
 		),
 	}
@@ -448,28 +448,28 @@ func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.Version
 
 	slot, err := block.Slot()
 	if err != nil {
-		b.log.WithError(err).WithField("block_id", blockID).Error("Failed to get slot from block")
+		b.log.WithError(err).WithField(metricLabelBlockID, blockID).Error("Failed to get slot from block")
 	} else {
 		b.Slot.WithLabelValues(blockID, version).Set(float64(slot))
 	}
 
 	attesterSlashing, err := block.AttesterSlashings()
 	if err != nil {
-		b.log.WithError(err).WithField("block_id", blockID).Error("Failed to get attester slashing from block")
+		b.log.WithError(err).WithField(metricLabelBlockID, blockID).Error("Failed to get attester slashing from block")
 	} else {
 		b.Slashings.WithLabelValues(blockID, version, "attester").Set(float64(len(attesterSlashing)))
 	}
 
 	proposerSlashing, err := block.ProposerSlashings()
 	if err != nil {
-		b.log.WithError(err).WithField("block_id", blockID).Error("Failed to get proposer slashing from block")
+		b.log.WithError(err).WithField(metricLabelBlockID, blockID).Error("Failed to get proposer slashing from block")
 	} else {
 		b.Slashings.WithLabelValues(blockID, version, "proposer").Set(float64(len(proposerSlashing)))
 	}
 
 	attestations, err := block.Attestations()
 	if err != nil {
-		b.log.WithError(err).WithField("block_id", blockID).Error("Failed to get attestations from block")
+		b.log.WithError(err).WithField(metricLabelBlockID, blockID).Error("Failed to get attestations from block")
 	} else {
 		b.Attestations.WithLabelValues(blockID, version).Set(float64(len(attestations)))
 	}

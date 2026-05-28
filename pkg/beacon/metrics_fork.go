@@ -39,7 +39,7 @@ func NewForksJob(beac Node, log logrus.FieldLogger, namespace string, constLabel
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"fork",
+				metricLabelFork,
 			},
 		),
 		Activated: *prometheus.NewGaugeVec(
@@ -50,7 +50,7 @@ func NewForksJob(beac Node, log logrus.FieldLogger, namespace string, constLabel
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"fork",
+				metricLabelFork,
 			},
 		),
 		Current: *prometheus.NewGaugeVec(
@@ -61,7 +61,7 @@ func NewForksJob(beac Node, log logrus.FieldLogger, namespace string, constLabel
 				ConstLabels: constLabels,
 			},
 			[]string{
-				"fork",
+				metricLabelFork,
 			},
 		),
 	}
