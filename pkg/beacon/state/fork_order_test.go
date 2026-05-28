@@ -1,6 +1,7 @@
 package state_test
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
@@ -8,20 +9,13 @@ import (
 )
 
 func TestForkOrderIncludesAllSpecDataVersions(t *testing.T) {
-	for i := 0; i < 1000; i++ {
+	for i := range 1000 {
 		v := spec.DataVersion(i)
 		if v.String() == "unknown" {
 			continue
 		}
 
-		found := false
-		for _, fv := range state.ForkOrder {
-			if fv == v {
-				found = true
-
-				break
-			}
-		}
+		found := slices.Contains(state.ForkOrder, v)
 
 		if !found {
 			t.Errorf("ForkOrder missing version: %v", v)

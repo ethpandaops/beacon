@@ -1,6 +1,7 @@
 package beacon
 
 import (
+	"slices"
 	"time"
 
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
@@ -14,13 +15,7 @@ type EventTopics []string
 
 // Exists returns true if the topic exists in the list.
 func (e EventTopics) Exists(topic string) bool {
-	for _, t := range e {
-		if t == topic {
-			return true
-		}
-	}
-
-	return false
+	return slices.Contains(e, topic)
 }
 
 const (

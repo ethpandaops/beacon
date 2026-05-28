@@ -46,12 +46,9 @@ func (n *node) ensureClients(ctx context.Context) error {
 			if err != nil {
 				failures++
 
-				sleepFor := time.Duration(failures) * (time.Second * 5)
-
-				// Clamp the sleep time to a maximum of 5 minutes.
-				if sleepFor > time.Minute*5 {
-					sleepFor = time.Minute * 5
-				}
+				sleepFor := min(
+					// Clamp the sleep time to a maximum of 5 minutes.
+					time.Duration(failures)*(time.Second*5), time.Minute*5)
 
 				n.log.WithError(err).Errorf("failed to bootstrap node.. will retry in %s", sleepFor.String())
 
