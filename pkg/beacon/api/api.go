@@ -62,7 +62,7 @@ func (c *consensusClient) post(ctx context.Context, path string, body map[string
 		req.Header.Set(k, v)
 	}
 
-	rsp, err := c.client.Do(req) //nolint:gosec // url is operator-supplied beacon node config, not user input
+	rsp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +98,7 @@ func (c *consensusClient) get(ctx context.Context, path string) (json.RawMessage
 		req.Header.Set(k, v)
 	}
 
-	rsp, err := c.client.Do(req) //nolint:gosec // url is operator-supplied beacon node config, not user input
+	rsp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (c *consensusClient) getRaw(ctx context.Context, path string, contentType s
 
 	req.Header.Set("Accept", contentType)
 
-	rsp, err := c.client.Do(req) //nolint:gosec // url is operator-supplied beacon node config, not user input
+	rsp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}

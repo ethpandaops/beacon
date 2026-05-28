@@ -9,8 +9,10 @@ import (
 )
 
 const (
-	metricsLabelBlockID = "block_id"
-	metricsLabelVersion = "version"
+	metricLabelBlockID = "block_id"
+	metricLabelVersion = "version"
+	metricLabelEvent   = "event"
+	metricLabelFork    = "fork"
 )
 
 // Metrics contains all the metrics jobs.
