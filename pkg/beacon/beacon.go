@@ -138,10 +138,10 @@ type Node interface {
 	OnFastConfirmation(ctx context.Context, handler func(ctx context.Context, ev *v1.FastConfirmationEvent) error)
 
 	// EIP-7732 ePBS subscriptions.
-	// OnExecutionPayload is called when a SignedExecutionPayloadEnvelope has been imported into fork-choice.
-	OnExecutionPayload(ctx context.Context, handler func(ctx context.Context, ev *gloas.SignedExecutionPayloadEnvelope) error)
-	// OnExecutionPayloadGossip is called when a SignedExecutionPayloadEnvelope has passed gossip validation.
-	OnExecutionPayloadGossip(ctx context.Context, handler func(ctx context.Context, ev *gloas.SignedExecutionPayloadEnvelope) error)
+	// OnExecutionPayload is called when an execution payload has been imported into fork-choice.
+	OnExecutionPayload(ctx context.Context, handler func(ctx context.Context, ev *v1.ExecutionPayloadEvent) error)
+	// OnExecutionPayloadGossip is called when an execution payload has passed gossip validation.
+	OnExecutionPayloadGossip(ctx context.Context, handler func(ctx context.Context, ev *v1.ExecutionPayloadEvent) error)
 	// OnExecutionPayloadAvailable is called when the node has verified the execution payload and blobs are locally available.
 	OnExecutionPayloadAvailable(ctx context.Context, handler func(ctx context.Context, ev *v1.ExecutionPayloadAvailableEvent) error)
 	// OnExecutionPayloadBid is called when a SignedExecutionPayloadBid passes gossip validation.

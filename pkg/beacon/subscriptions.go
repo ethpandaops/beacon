@@ -256,23 +256,23 @@ func (n *node) handleDataColumnSidecar(ctx context.Context, event *v1.Event) err
 }
 
 func (n *node) handleExecutionPayload(ctx context.Context, event *v1.Event) error {
-	envelope, valid := event.Data.(*gloas.SignedExecutionPayloadEnvelope)
+	ev, valid := event.Data.(*v1.ExecutionPayloadEvent)
 	if !valid {
 		return errors.New("invalid execution payload event")
 	}
 
-	n.publishExecutionPayload(ctx, envelope)
+	n.publishExecutionPayload(ctx, ev)
 
 	return nil
 }
 
 func (n *node) handleExecutionPayloadGossip(ctx context.Context, event *v1.Event) error {
-	envelope, valid := event.Data.(*gloas.SignedExecutionPayloadEnvelope)
+	ev, valid := event.Data.(*v1.ExecutionPayloadEvent)
 	if !valid {
 		return errors.New("invalid execution payload gossip event")
 	}
 
-	n.publishExecutionPayloadGossip(ctx, envelope)
+	n.publishExecutionPayloadGossip(ctx, ev)
 
 	return nil
 }
