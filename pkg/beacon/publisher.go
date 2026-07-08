@@ -125,11 +125,11 @@ func (n *node) publishSingleAttestation(ctx context.Context, event *electra.Sing
 }
 
 // EIP-7732 ePBS beacon SSE event publishers.
-func (n *node) publishExecutionPayload(ctx context.Context, event *gloas.SignedExecutionPayloadEnvelope) {
+func (n *node) publishExecutionPayload(ctx context.Context, event *v1.ExecutionPayloadEvent) {
 	n.broker.Emit(topicExecutionPayload, event)
 }
 
-func (n *node) publishExecutionPayloadGossip(ctx context.Context, event *gloas.SignedExecutionPayloadEnvelope) {
+func (n *node) publishExecutionPayloadGossip(ctx context.Context, event *v1.ExecutionPayloadEvent) {
 	n.broker.Emit(topicExecutionPayloadGossip, event)
 }
 

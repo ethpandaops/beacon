@@ -91,14 +91,14 @@ func (n *node) OnSingleAttestation(ctx context.Context, handler func(ctx context
 }
 
 // EIP-7732 ePBS beacon SSE event handlers.
-func (n *node) OnExecutionPayload(ctx context.Context, handler func(ctx context.Context, event *gloas.SignedExecutionPayloadEnvelope) error) {
-	n.broker.On(topicExecutionPayload, func(event *gloas.SignedExecutionPayloadEnvelope) {
+func (n *node) OnExecutionPayload(ctx context.Context, handler func(ctx context.Context, event *v1.ExecutionPayloadEvent) error) {
+	n.broker.On(topicExecutionPayload, func(event *v1.ExecutionPayloadEvent) {
 		n.handleSubscriberError(handler(ctx, event), topicExecutionPayload)
 	})
 }
 
-func (n *node) OnExecutionPayloadGossip(ctx context.Context, handler func(ctx context.Context, event *gloas.SignedExecutionPayloadEnvelope) error) {
-	n.broker.On(topicExecutionPayloadGossip, func(event *gloas.SignedExecutionPayloadEnvelope) {
+func (n *node) OnExecutionPayloadGossip(ctx context.Context, handler func(ctx context.Context, event *v1.ExecutionPayloadEvent) error) {
+	n.broker.On(topicExecutionPayloadGossip, func(event *v1.ExecutionPayloadEvent) {
 		n.handleSubscriberError(handler(ctx, event), topicExecutionPayloadGossip)
 	})
 }
