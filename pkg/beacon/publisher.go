@@ -43,6 +43,10 @@ func (n *node) publishHead(ctx context.Context, event *v1.HeadEvent) {
 	n.broker.Emit(topicHead, event)
 }
 
+func (n *node) publishHeadV2(ctx context.Context, event *v1.HeadEventV2) {
+	n.broker.Emit(topicHeadV2, event)
+}
+
 func (n *node) publishVoluntaryExit(ctx context.Context, event *phase0.SignedVoluntaryExit) {
 	n.broker.Emit(topicVoluntaryExit, event)
 }

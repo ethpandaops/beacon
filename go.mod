@@ -6,7 +6,7 @@ require (
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethereum/go-ethereum v1.17.3-0.20260507223249-73944e329925
 	github.com/ethpandaops/ethwallclock v0.2.0
-	github.com/ethpandaops/go-eth2-client v0.1.6-0.20260708061330-ed85bf5c3bab
+	github.com/ethpandaops/go-eth2-client v0.1.7-0.20260712074542-bca0dce49005
 	github.com/go-co-op/gocron v1.16.2
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2

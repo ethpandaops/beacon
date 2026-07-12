@@ -60,6 +60,12 @@ func (n *node) OnHead(ctx context.Context, handler func(ctx context.Context, eve
 	})
 }
 
+func (n *node) OnHeadV2(ctx context.Context, handler func(ctx context.Context, event *v1.HeadEventV2) error) {
+	n.broker.On(topicHeadV2, func(event *v1.HeadEventV2) {
+		n.handleSubscriberError(handler(ctx, event), topicHeadV2)
+	})
+}
+
 func (n *node) OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, event *phase0.SignedVoluntaryExit) error) {
 	n.broker.On(topicVoluntaryExit, func(event *phase0.SignedVoluntaryExit) {
 		n.handleSubscriberError(handler(ctx, event), topicVoluntaryExit)

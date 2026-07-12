@@ -95,6 +95,8 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 		return n.handleFinalizedCheckpoint(ctx, event)
 	case topicHead:
 		return n.handleHead(ctx, event)
+	case topicHeadV2:
+		return n.handleHeadV2(ctx, event)
 	case topicVoluntaryExit:
 		return n.handleVoluntaryExit(ctx, event)
 	case topicContributionAndProof:
@@ -196,6 +198,17 @@ func (n *node) handleFinalizedCheckpoint(ctx context.Context, event *v1.Event) e
 	}
 
 	n.publishFinalizedCheckpoint(ctx, checkpoint)
+
+	return nil
+}
+
+func (n *node) handleHeadV2(ctx context.Context, event *v1.Event) error {
+	head, valid := event.Data.(*v1.HeadEventV2)
+	if !valid {
+		return errors.New("invalid head_v2 event")
+	}
+
+	n.publishHeadV2(ctx, head)
 
 	return nil
 }
