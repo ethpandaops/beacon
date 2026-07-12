@@ -124,6 +124,8 @@ type Node interface {
 	OnFinalizedCheckpoint(ctx context.Context, handler func(ctx context.Context, ev *v1.FinalizedCheckpointEvent) error)
 	// OnHead is called when the head is received.
 	OnHead(ctx context.Context, handler func(ctx context.Context, ev *v1.HeadEvent) error)
+	// OnHeadV2 is called when a head_v2 event (gloas) is received.
+	OnHeadV2(ctx context.Context, handler func(ctx context.Context, ev *v1.HeadEventV2) error)
 	// OnChainReOrg is called when a chain reorg is received.
 	OnChainReOrg(ctx context.Context, handler func(ctx context.Context, ev *v1.ChainReorgEvent) error)
 	// OnVoluntaryExit is called when a voluntary exit is received.
