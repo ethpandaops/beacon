@@ -19,6 +19,7 @@ type ConsensusClient interface {
 	NodePeers(ctx context.Context) (types.Peers, error)
 	NodePeerCount(ctx context.Context) (types.PeerCount, error)
 	RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	RawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error)
 	RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	DepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
 	NodeIdentity(ctx context.Context) (*types.Identity, error)
@@ -216,6 +217,17 @@ func (c *consensusClient) RawDebugBeaconState(ctx context.Context, stateID strin
 // RawBlock returns the block in the requested format.
 func (c *consensusClient) RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error) {
 	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v2/beacon/blocks/%s", stateID), contentType)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// RawExecutionPayloadEnvelope returns the signed execution payload envelope
+// for the given block id in the requested format (gloas onwards).
+func (c *consensusClient) RawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error) {
+	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v1/beacon/execution_payload_envelopes/%s", blockID), contentType)
 	if err != nil {
 		return nil, err
 	}

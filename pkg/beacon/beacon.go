@@ -67,6 +67,9 @@ type Node interface {
 	FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error)
 	// FetchRawBlock fetches the raw, unparsed block for the given state id.
 	FetchRawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	// FetchRawExecutionPayloadEnvelope fetches the raw, unparsed signed execution
+	// payload envelope for the given block id (gloas onwards).
+	FetchRawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error)
 	// FetchBlockRoot fetches the block root for the given state id.
 	FetchBlockRoot(ctx context.Context, stateID string) (*phase0.Root, error)
 	// FetchBeaconState fetches the beacon state for the given state id.
