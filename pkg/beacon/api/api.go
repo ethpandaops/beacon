@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,12 +14,18 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// ErrNotFound is returned when the node responds with HTTP 404 for the
+// requested resource, e.g. an execution payload envelope that has not been
+// revealed or a block that does not exist.
+var ErrNotFound = errors.New("not found")
+
 // ConsensusClient is an interface for executing RPC calls to the Ethereum node.
 type ConsensusClient interface {
 	NodePeer(ctx context.Context, peerID string) (types.Peer, error)
 	NodePeers(ctx context.Context) (types.Peers, error)
 	NodePeerCount(ctx context.Context) (types.PeerCount, error)
 	RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	RawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error)
 	RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
 	DepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
 	NodeIdentity(ctx context.Context) (*types.Identity, error)
@@ -152,6 +159,10 @@ func (c *consensusClient) getRaw(ctx context.Context, path string, contentType s
 	defer rsp.Body.Close()
 
 	if rsp.StatusCode != http.StatusOK {
+		if rsp.StatusCode == http.StatusNotFound {
+			return nil, fmt.Errorf("status code: %d: %w", rsp.StatusCode, ErrNotFound)
+		}
+
 		return nil, fmt.Errorf("status code: %d", rsp.StatusCode)
 	}
 
@@ -216,6 +227,17 @@ func (c *consensusClient) RawDebugBeaconState(ctx context.Context, stateID strin
 // RawBlock returns the block in the requested format.
 func (c *consensusClient) RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error) {
 	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v2/beacon/blocks/%s", stateID), contentType)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+// RawExecutionPayloadEnvelope returns the signed execution payload envelope
+// for the given block id in the requested format (gloas onwards).
+func (c *consensusClient) RawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error) {
+	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v1/beacon/execution_payload_envelopes/%s", blockID), contentType)
 	if err != nil {
 		return nil, err
 	}
