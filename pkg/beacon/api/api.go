@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,11 @@ import (
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/sirupsen/logrus"
 )
+
+// ErrNotFound is returned when the node responds with HTTP 404 for the
+// requested resource, e.g. an execution payload envelope that has not been
+// revealed or a block that does not exist.
+var ErrNotFound = errors.New("not found")
 
 // ConsensusClient is an interface for executing RPC calls to the Ethereum node.
 type ConsensusClient interface {
@@ -153,6 +159,10 @@ func (c *consensusClient) getRaw(ctx context.Context, path string, contentType s
 	defer rsp.Body.Close()
 
 	if rsp.StatusCode != http.StatusOK {
+		if rsp.StatusCode == http.StatusNotFound {
+			return nil, fmt.Errorf("status code: %d: %w", rsp.StatusCode, ErrNotFound)
+		}
+
 		return nil, fmt.Errorf("status code: %d", rsp.StatusCode)
 	}
 
