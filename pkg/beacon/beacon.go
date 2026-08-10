@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -65,8 +66,8 @@ type Node interface {
 	// Fetchers - these are not cached and will always fetch from the node.
 	// FetchBlock fetches the block for the given state id.
 	FetchBlock(ctx context.Context, stateID string) (*spec.VersionedSignedBeaconBlock, error)
-	// FetchRawBlock fetches the raw, unparsed block for the given state id.
-	FetchRawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	// FetchRawBlock fetches the raw, unparsed block for the given block id.
+	FetchRawBlock(ctx context.Context, blockID string, contentType string) ([]byte, error)
 	// FetchRawExecutionPayloadEnvelope fetches the raw, unparsed signed execution
 	// payload envelope for the given block id (gloas onwards).
 	FetchRawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error)
@@ -78,6 +79,24 @@ type Node interface {
 	FetchBeaconStateRoot(ctx context.Context, stateID string) (phase0.Root, error)
 	// FetchRawBeaconState fetches the raw, unparsed beacon state for the given state id.
 	FetchRawBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	// OpenRawBeaconState opens a streaming beacon state response. A successful
+	// return only establishes the response status and body; reads can still fail
+	// and are governed by ctx and the configured raw API client timeout. The caller
+	// must always close the response. Slow or partial reads retain transport
+	// resources, so callers should bound concurrency.
+	OpenRawBeaconState(ctx context.Context, stateID string, contentType string) (*api.RawResponse, error)
+	// OpenRawBlock opens a streaming block response. A successful return only
+	// establishes the response status and body; reads can still fail and remain
+	// governed by ctx and the configured raw API client timeout. The caller must
+	// always close the response. Slow or partial reads retain transport
+	// resources, so callers should bound concurrency.
+	OpenRawBlock(ctx context.Context, blockID string, contentType string) (*api.RawResponse, error)
+	// OpenRawExecutionPayloadEnvelope opens a streaming signed execution payload
+	// envelope response. A successful return only establishes the response status
+	// and body; reads can still fail and are governed by ctx and the configured raw
+	// API client timeout. The caller must always close the response. Slow or
+	// partial reads retain transport resources, so callers should bound concurrency.
+	OpenRawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) (*api.RawResponse, error)
 	// FetchValidators fetches the validators for the given state id and validator ids.
 	FetchValidators(ctx context.Context, state string, indices []phase0.ValidatorIndex, pubKeys []phase0.BLSPubKey) (map[phase0.ValidatorIndex]*v1.Validator, error)
 	// FetchFinality fetches the finality checkpoint for the state id.
@@ -188,7 +207,7 @@ type node struct {
 	log         logrus.FieldLogger
 	ctx         context.Context //nolint:containedctx // existing.
 	cancel      context.CancelFunc
-	lifecycleMu sync.Mutex // protects ctx and cancel
+	lifecycleMu sync.Mutex // serializes cancellation and client installation
 
 	// Configuration
 	// Config should roughly be driven by end users.
@@ -197,9 +216,10 @@ type node struct {
 	options *Options
 
 	// Clients
-	api    api.ConsensusClient
-	client eth2client.Service
-	broker *emission.Emitter
+	api           api.ConsensusClient
+	client        eth2client.Service
+	rawHTTPClient *http.Client
+	broker        *emission.Emitter
 
 	// Internal data stores
 	genesis         *v1.Genesis
@@ -226,8 +246,15 @@ type node struct {
 	crons *gocron.Scheduler
 }
 
+var _ api.RawResponseObserver = (*node)(nil)
+
 // NewNode creates a new beacon node.
 func NewNode(log logrus.FieldLogger, config *Config, namespace string, options Options) Node {
+	if options.APIClient != nil {
+		apiClientOptions := *options.APIClient
+		options.APIClient = &apiClientOptions
+	}
+
 	n := &node{
 		log: log.WithField("module", "consensus/beacon"),
 
@@ -334,9 +361,11 @@ func (n *node) StartAsync(ctx context.Context) {
 }
 
 func (n *node) Stop(ctx context.Context) error {
-	if n.options.PrometheusMetrics {
+	var stopErr error
+
+	if n.metrics != nil {
 		if err := n.metrics.Stop(); err != nil {
-			return err
+			stopErr = err
 		}
 	}
 
@@ -350,9 +379,33 @@ func (n *node) Stop(ctx context.Context) error {
 		n.cancel()
 	}
 
+	rawHTTPClient := n.rawHTTPClient
+
 	n.lifecycleMu.Unlock()
 
-	return nil
+	if rawHTTPClient != nil {
+		rawHTTPClient.CloseIdleConnections()
+	}
+
+	return stopErr
+}
+
+func (n *node) RawResponseOpened() {
+	if n.metrics != nil {
+		n.metrics.RawResponses().OpenStreams.Inc()
+	}
+}
+
+func (n *node) RawResponseClosed() {
+	if n.metrics != nil {
+		n.metrics.RawResponses().OpenStreams.Dec()
+	}
+}
+
+func (n *node) RawResponseLeaked() {
+	if n.metrics != nil {
+		n.metrics.RawResponses().Leaks.Inc()
+	}
 }
 
 func (n *node) Options() *Options {

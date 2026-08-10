@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/sirupsen/logrus"
@@ -24,27 +23,52 @@ type ConsensusClient interface {
 	NodePeer(ctx context.Context, peerID string) (types.Peer, error)
 	NodePeers(ctx context.Context) (types.Peers, error)
 	NodePeerCount(ctx context.Context) (types.PeerCount, error)
-	RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	RawBlock(ctx context.Context, blockID string, contentType string) ([]byte, error)
 	RawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error)
 	RawDebugBeaconState(ctx context.Context, stateID string, contentType string) ([]byte, error)
+	// OpenRawBlock opens a successful raw block response without consuming its body.
+	OpenRawBlock(ctx context.Context, blockID string, contentType string) (*RawResponse, error)
+	// OpenRawExecutionPayloadEnvelope opens a successful raw envelope response without consuming its body.
+	OpenRawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) (*RawResponse, error)
+	// OpenRawDebugBeaconState opens a successful raw beacon state response without consuming its body.
+	OpenRawDebugBeaconState(ctx context.Context, stateID string, contentType string) (*RawResponse, error)
 	DepositSnapshot(ctx context.Context) (*types.DepositSnapshot, error)
 	NodeIdentity(ctx context.Context) (*types.Identity, error)
 }
 
 type consensusClient struct {
-	url     string
-	log     logrus.FieldLogger
-	client  http.Client
-	headers map[string]string
+	url                 string
+	log                 logrus.FieldLogger
+	client              *http.Client
+	rawClient           *http.Client
+	headers             map[string]string
+	rawResponseObserver RawResponseObserver
 }
 
-// NewConsensusClient creates a new ConsensusClient.
-func NewConsensusClient(ctx context.Context, log logrus.FieldLogger, url string, client http.Client, headers map[string]string) ConsensusClient {
+// NewConsensusClient creates a ConsensusClient. Both HTTP clients must be non-nil.
+func NewConsensusClient(
+	log logrus.FieldLogger,
+	url string,
+	client *http.Client,
+	rawClient *http.Client,
+	headers map[string]string,
+	rawResponseObserver RawResponseObserver,
+) ConsensusClient {
+	if client == nil {
+		panic("api: nil HTTP client")
+	}
+
+	if rawClient == nil {
+		panic("api: nil raw HTTP client")
+	}
+
 	return &consensusClient{
-		url:     url,
-		log:     log,
-		client:  client,
-		headers: headers,
+		url:                 url,
+		log:                 log,
+		client:              client,
+		rawClient:           rawClient,
+		headers:             headers,
+		rawResponseObserver: rawResponseObserver,
 	}
 }
 
@@ -130,43 +154,19 @@ func (c *consensusClient) get(ctx context.Context, path string) (json.RawMessage
 }
 
 func (c *consensusClient) getRaw(ctx context.Context, path string, contentType string) ([]byte, error) {
-	if contentType == "" {
-		contentType = "application/json"
-	}
-
-	u, err := url.Parse(c.url + path)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequestWithContext(ctx, "GET", u.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	// Set headers from c.headers
-	for k, v := range c.headers {
-		req.Header.Set(k, v)
-	}
-
-	req.Header.Set("Accept", contentType)
-
-	rsp, err := c.client.Do(req)
+	rsp, err := c.doRaw(ctx, path, contentType)
 	if err != nil {
 		return nil, err
 	}
 
 	defer rsp.Body.Close()
 
-	if rsp.StatusCode != http.StatusOK {
-		if rsp.StatusCode == http.StatusNotFound {
-			return nil, fmt.Errorf("status code: %d: %w", rsp.StatusCode, ErrNotFound)
-		}
-
-		return nil, fmt.Errorf("status code: %d", rsp.StatusCode)
+	data, err := io.ReadAll(rsp.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	return io.ReadAll(rsp.Body)
+	return data, nil
 }
 
 // NodePeers returns the list of peers connected to the node.
@@ -225,8 +225,8 @@ func (c *consensusClient) RawDebugBeaconState(ctx context.Context, stateID strin
 }
 
 // RawBlock returns the block in the requested format.
-func (c *consensusClient) RawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error) {
-	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v2/beacon/blocks/%s", stateID), contentType)
+func (c *consensusClient) RawBlock(ctx context.Context, blockID string, contentType string) ([]byte, error) {
+	data, err := c.getRaw(ctx, fmt.Sprintf("/eth/v2/beacon/blocks/%s", blockID), contentType)
 	if err != nil {
 		return nil, err
 	}
