@@ -4,11 +4,10 @@ import (
 	"context"
 	"errors"
 
-	beaconapi "github.com/ethpandaops/beacon/pkg/beacon/api"
 	"github.com/ethpandaops/beacon/pkg/beacon/api/types"
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
 	eth2client "github.com/ethpandaops/go-eth2-client"
-	eapi "github.com/ethpandaops/go-eth2-client/api"
+	"github.com/ethpandaops/go-eth2-client/api"
 	v1 "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/deneb"
@@ -21,7 +20,7 @@ func (n *node) FetchSyncStatus(ctx context.Context) (*v1.SyncState, error) {
 		return nil, errors.New("client does not implement eth2client.NodeSyncingProvider")
 	}
 
-	status, err := provider.NodeSyncing(ctx, &eapi.NodeSyncingOpts{})
+	status, err := provider.NodeSyncing(ctx, &api.NodeSyncingOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +51,7 @@ func (n *node) FetchNodeVersion(ctx context.Context) (string, error) {
 		return "", errors.New("client does not implement eth2client.NodeVersionProvider")
 	}
 
-	rsp, err := provider.NodeVersion(ctx, &eapi.NodeVersionOpts{})
+	rsp, err := provider.NodeVersion(ctx, &api.NodeVersionOpts{})
 	if err != nil {
 		return "", err
 	}
@@ -70,24 +69,12 @@ func (n *node) FetchBlock(ctx context.Context, stateID string) (*spec.VersionedS
 	return n.getBlock(ctx, stateID)
 }
 
-func (n *node) FetchRawBlock(ctx context.Context, blockID string, contentType string) ([]byte, error) {
-	return n.api.RawBlock(ctx, blockID, contentType)
+func (n *node) FetchRawBlock(ctx context.Context, stateID string, contentType string) ([]byte, error) {
+	return n.api.RawBlock(ctx, stateID, contentType)
 }
 
 func (n *node) FetchRawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error) {
 	return n.api.RawExecutionPayloadEnvelope(ctx, blockID, contentType)
-}
-
-func (n *node) OpenRawBeaconState(ctx context.Context, stateID string, contentType string) (*beaconapi.RawResponse, error) {
-	return n.api.OpenRawDebugBeaconState(ctx, stateID, contentType)
-}
-
-func (n *node) OpenRawBlock(ctx context.Context, blockID string, contentType string) (*beaconapi.RawResponse, error) {
-	return n.api.OpenRawBlock(ctx, blockID, contentType)
-}
-
-func (n *node) OpenRawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) (*beaconapi.RawResponse, error) {
-	return n.api.OpenRawExecutionPayloadEnvelope(ctx, blockID, contentType)
 }
 
 func (n *node) FetchBlockRoot(ctx context.Context, stateID string) (*phase0.Root, error) {
@@ -100,7 +87,7 @@ func (n *node) FetchBeaconState(ctx context.Context, stateID string) (*spec.Vers
 		return nil, errors.New("client does not implement eth2client.NodeVersionProvider")
 	}
 
-	rsp, err := provider.BeaconState(ctx, &eapi.BeaconStateOpts{
+	rsp, err := provider.BeaconState(ctx, &api.BeaconStateOpts{
 		State: stateID,
 	})
 	if err != nil {
@@ -120,7 +107,7 @@ func (n *node) FetchFinality(ctx context.Context, stateID string) (*v1.Finality,
 		return nil, errors.New("client does not implement eth2client.FinalityProvider")
 	}
 
-	rsp, err := provider.Finality(ctx, &eapi.FinalityOpts{
+	rsp, err := provider.Finality(ctx, &api.FinalityOpts{
 		State: stateID,
 	})
 	if err != nil {
@@ -157,7 +144,7 @@ func (n *node) FetchRawSpec(ctx context.Context) (map[string]any, error) {
 		return nil, errors.New("client does not implement eth2client.SpecProvider")
 	}
 
-	rsp, err := provider.Spec(ctx, &eapi.SpecOpts{})
+	rsp, err := provider.Spec(ctx, &api.SpecOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +158,7 @@ func (n *node) FetchSpec(ctx context.Context) (*state.Spec, error) {
 		return nil, errors.New("client does not implement eth2client.SpecProvider")
 	}
 
-	rsp, err := provider.Spec(ctx, &eapi.SpecOpts{})
+	rsp, err := provider.Spec(ctx, &api.SpecOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +180,7 @@ func (n *node) FetchBeaconBlockBlobs(ctx context.Context, blockID string) ([]*de
 		return nil, errors.New("client does not implement eth2client.BlobSidecarsProvider")
 	}
 
-	rsp, err := provider.BlobSidecars(ctx, &eapi.BlobSidecarsOpts{
+	rsp, err := provider.BlobSidecars(ctx, &api.BlobSidecarsOpts{
 		Block: blockID,
 	})
 	if err != nil {
@@ -211,7 +198,7 @@ func (n *node) FetchProposerDuties(ctx context.Context, epoch phase0.Epoch) ([]*
 		return nil, errors.New("client does not implement eth2client.ProposerDutiesProvider")
 	}
 
-	rsp, err := provider.ProposerDuties(ctx, &eapi.ProposerDutiesOpts{
+	rsp, err := provider.ProposerDuties(ctx, &api.ProposerDutiesOpts{
 		Epoch: epoch,
 	})
 	if err != nil {
@@ -227,7 +214,7 @@ func (n *node) FetchForkChoice(ctx context.Context) (*v1.ForkChoice, error) {
 		return nil, errors.New("client does not implement eth2client.ForkChoiceProvider")
 	}
 
-	rsp, err := provider.ForkChoice(ctx, &eapi.ForkChoiceOpts{})
+	rsp, err := provider.ForkChoice(ctx, &api.ForkChoiceOpts{})
 	if err != nil {
 		return nil, err
 	}
@@ -249,7 +236,7 @@ func (n *node) FetchBeaconStateRoot(ctx context.Context, state string) (phase0.R
 		return phase0.Root{}, errors.New("client does not implement eth2client.StateRootProvider")
 	}
 
-	rsp, err := provider.BeaconStateRoot(ctx, &eapi.BeaconStateRootOpts{
+	rsp, err := provider.BeaconStateRoot(ctx, &api.BeaconStateRootOpts{
 		State: state,
 	})
 	if err != nil {
@@ -265,7 +252,7 @@ func (n *node) FetchValidators(ctx context.Context, state string, indices []phas
 		return nil, errors.New("client does not implement eth2client.ValidatorsProvider")
 	}
 
-	rsp, err := provider.Validators(ctx, &eapi.ValidatorsOpts{
+	rsp, err := provider.Validators(ctx, &api.ValidatorsOpts{
 		State:   state,
 		Indices: indices,
 		PubKeys: pubKeys,
@@ -283,7 +270,7 @@ func (n *node) FetchBeaconCommittees(ctx context.Context, state string, epoch *p
 		return nil, errors.New("client does not implement eth2client.BeaconCommitteesProvider")
 	}
 
-	opts := &eapi.BeaconCommitteesOpts{
+	opts := &api.BeaconCommitteesOpts{
 		State: state,
 	}
 
@@ -305,7 +292,7 @@ func (n *node) FetchAttestationData(ctx context.Context, slot phase0.Slot, commi
 		return nil, errors.New("client does not implement eth2client.AttestationDataProvider")
 	}
 
-	rsp, err := provider.AttestationData(ctx, &eapi.AttestationDataOpts{
+	rsp, err := provider.AttestationData(ctx, &api.AttestationDataOpts{
 		Slot:           slot,
 		CommitteeIndex: committeeIndex,
 	})
@@ -316,7 +303,7 @@ func (n *node) FetchAttestationData(ctx context.Context, slot phase0.Slot, commi
 	return rsp.Data, nil
 }
 
-func (n *node) FetchBeaconBlockHeader(ctx context.Context, opts *eapi.BeaconBlockHeaderOpts) (*v1.BeaconBlockHeader, error) {
+func (n *node) FetchBeaconBlockHeader(ctx context.Context, opts *api.BeaconBlockHeaderOpts) (*v1.BeaconBlockHeader, error) {
 	provider, isProvider := n.client.(eth2client.BeaconBlockHeadersProvider)
 	if !isProvider {
 		return nil, errors.New("client does not implement eth2client.BeaconBlockHeadersProvider")

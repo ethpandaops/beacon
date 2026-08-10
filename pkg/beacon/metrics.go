@@ -13,7 +13,6 @@ const (
 	metricLabelVersion = "version"
 	metricLabelEvent   = "event"
 	metricLabelFork    = "fork"
-	metricLabelNode    = "node"
 )
 
 // Metrics contains all the metrics jobs.
@@ -32,7 +31,7 @@ type MetricsJob interface {
 // NewMetrics returns a new Metrics instance.
 func NewMetrics(log logrus.FieldLogger, namespace, nodeName string, beacon Node) *Metrics {
 	constLabels := prometheus.Labels{
-		metricLabelNode: nodeName,
+		"node": nodeName,
 	}
 
 	beac := NewBeaconMetrics(beacon, log, namespace, constLabels)
@@ -42,17 +41,15 @@ func NewMetrics(log logrus.FieldLogger, namespace, nodeName string, beacon Node)
 	spec := NewSpecJob(beacon, log, namespace, constLabels)
 	sync := NewSyncMetrics(beacon, log, namespace, constLabels)
 	health := NewHealthMetrics(beacon, log, namespace, constLabels)
-	rawResponses := NewRawResponseMetrics(namespace, constLabels)
 
 	jobs := map[string]MetricsJob{
-		sync.Name():         sync,
-		general.Name():      general,
-		event.Name():        event,
-		forks.Name():        forks,
-		spec.Name():         spec,
-		health.Name():       health,
-		beac.Name():         beac,
-		rawResponses.Name(): rawResponses,
+		sync.Name():    sync,
+		general.Name(): general,
+		event.Name():   event,
+		forks.Name():   forks,
+		spec.Name():    spec,
+		health.Name():  health,
+		beac.Name():    beac,
 	}
 
 	m := &Metrics{
@@ -118,9 +115,4 @@ func (m *Metrics) Health() *HealthMetrics {
 // Beacon returns the beacon metrics job.
 func (m *Metrics) Beacon() *BeaconMetrics {
 	return m.jobs[metricsJobNameBeacon].(*BeaconMetrics) //nolint:errcheck // existing.
-}
-
-// RawResponses returns the raw response metrics job.
-func (m *Metrics) RawResponses() *RawResponseMetrics {
-	return m.jobs[metricsJobNameRawResponse].(*RawResponseMetrics) //nolint:errcheck // Constructed with this concrete type.
 }

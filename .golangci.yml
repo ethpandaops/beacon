@@ -1,9 +1,5 @@
 version: "2"
 run:
-  build-tags:
-    - acceptance
-    - acceptance_full_buffered
-    - acceptance_http2
   issues-exit-code: 1
 linters:
   default: none

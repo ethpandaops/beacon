@@ -57,47 +57,17 @@ func (n *node) ensureClients(ctx context.Context) error {
 				continue
 			}
 
-			regularHTTPClient := &http.Client{Timeout: timeout}
-			rawHTTPClient := n.options.apiClientOptions().httpClient()
+			n.client = client
 
-			if err := n.installClients(ctx, client, regularHTTPClient, rawHTTPClient); err != nil {
-				return err
+			httpClient := http.Client{
+				Timeout: timeout,
 			}
+
+			n.api = api.NewConsensusClient(ctx, n.log, n.config.Addr, httpClient, n.config.Headers)
 
 			break
 		}
 	}
-
-	return nil
-}
-
-func (n *node) installClients(
-	ctx context.Context,
-	client eth2client.Service,
-	regularHTTPClient *http.Client,
-	rawHTTPClient *http.Client,
-) error {
-	n.lifecycleMu.Lock()
-
-	if err := ctx.Err(); err != nil {
-		n.lifecycleMu.Unlock()
-		rawHTTPClient.CloseIdleConnections()
-
-		return err
-	}
-
-	n.client = client
-	n.rawHTTPClient = rawHTTPClient
-	n.api = api.NewConsensusClient(
-		n.log,
-		n.config.Addr,
-		regularHTTPClient,
-		rawHTTPClient,
-		n.config.Headers,
-		n,
-	)
-
-	n.lifecycleMu.Unlock()
 
 	return nil
 }
