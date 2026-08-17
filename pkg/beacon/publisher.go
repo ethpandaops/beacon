@@ -10,6 +10,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
@@ -40,6 +41,10 @@ func (n *node) publishFinalizedCheckpoint(ctx context.Context, event *v1.Finaliz
 
 func (n *node) publishHead(ctx context.Context, event *v1.HeadEvent) {
 	n.broker.Emit(topicHead, event)
+}
+
+func (n *node) publishHeadV2(ctx context.Context, event *v1.HeadEventV2) {
+	n.broker.Emit(topicHeadV2, event)
 }
 
 func (n *node) publishVoluntaryExit(ctx context.Context, event *phase0.SignedVoluntaryExit) {
@@ -121,4 +126,29 @@ func (n *node) publishFirstTimeHealthy(ctx context.Context) {
 
 func (n *node) publishSingleAttestation(ctx context.Context, event *electra.SingleAttestation) {
 	n.broker.Emit(topicSingleAttestation, event)
+}
+
+// EIP-7732 ePBS beacon SSE event publishers.
+func (n *node) publishExecutionPayload(ctx context.Context, event *v1.ExecutionPayloadEvent) {
+	n.broker.Emit(topicExecutionPayload, event)
+}
+
+func (n *node) publishExecutionPayloadGossip(ctx context.Context, event *v1.ExecutionPayloadEvent) {
+	n.broker.Emit(topicExecutionPayloadGossip, event)
+}
+
+func (n *node) publishExecutionPayloadAvailable(ctx context.Context, event *v1.ExecutionPayloadAvailableEvent) {
+	n.broker.Emit(topicExecutionPayloadAvailable, event)
+}
+
+func (n *node) publishExecutionPayloadBid(ctx context.Context, event *gloas.SignedExecutionPayloadBid) {
+	n.broker.Emit(topicExecutionPayloadBid, event)
+}
+
+func (n *node) publishPayloadAttestationMessage(ctx context.Context, event *gloas.PayloadAttestationMessage) {
+	n.broker.Emit(topicPayloadAttestationMessage, event)
+}
+
+func (n *node) publishProposerPreferences(ctx context.Context, event *gloas.SignedProposerPreferences) {
+	n.broker.Emit(topicProposerPreferences, event)
 }

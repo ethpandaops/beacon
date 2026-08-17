@@ -7,6 +7,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
@@ -59,6 +60,12 @@ func (n *node) OnHead(ctx context.Context, handler func(ctx context.Context, eve
 	})
 }
 
+func (n *node) OnHeadV2(ctx context.Context, handler func(ctx context.Context, event *v1.HeadEventV2) error) {
+	n.broker.On(topicHeadV2, func(event *v1.HeadEventV2) {
+		n.handleSubscriberError(handler(ctx, event), topicHeadV2)
+	})
+}
+
 func (n *node) OnVoluntaryExit(ctx context.Context, handler func(ctx context.Context, event *phase0.SignedVoluntaryExit) error) {
 	n.broker.On(topicVoluntaryExit, func(event *phase0.SignedVoluntaryExit) {
 		n.handleSubscriberError(handler(ctx, event), topicVoluntaryExit)
@@ -86,6 +93,43 @@ func (n *node) OnDataColumnSidecar(ctx context.Context, handler func(ctx context
 func (n *node) OnSingleAttestation(ctx context.Context, handler func(ctx context.Context, event *electra.SingleAttestation) error) {
 	n.broker.On(topicSingleAttestation, func(event *electra.SingleAttestation) {
 		n.handleSubscriberError(handler(ctx, event), topicSingleAttestation)
+	})
+}
+
+// EIP-7732 ePBS beacon SSE event handlers.
+func (n *node) OnExecutionPayload(ctx context.Context, handler func(ctx context.Context, event *v1.ExecutionPayloadEvent) error) {
+	n.broker.On(topicExecutionPayload, func(event *v1.ExecutionPayloadEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicExecutionPayload)
+	})
+}
+
+func (n *node) OnExecutionPayloadGossip(ctx context.Context, handler func(ctx context.Context, event *v1.ExecutionPayloadEvent) error) {
+	n.broker.On(topicExecutionPayloadGossip, func(event *v1.ExecutionPayloadEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicExecutionPayloadGossip)
+	})
+}
+
+func (n *node) OnExecutionPayloadAvailable(ctx context.Context, handler func(ctx context.Context, event *v1.ExecutionPayloadAvailableEvent) error) {
+	n.broker.On(topicExecutionPayloadAvailable, func(event *v1.ExecutionPayloadAvailableEvent) {
+		n.handleSubscriberError(handler(ctx, event), topicExecutionPayloadAvailable)
+	})
+}
+
+func (n *node) OnExecutionPayloadBid(ctx context.Context, handler func(ctx context.Context, event *gloas.SignedExecutionPayloadBid) error) {
+	n.broker.On(topicExecutionPayloadBid, func(event *gloas.SignedExecutionPayloadBid) {
+		n.handleSubscriberError(handler(ctx, event), topicExecutionPayloadBid)
+	})
+}
+
+func (n *node) OnPayloadAttestationMessage(ctx context.Context, handler func(ctx context.Context, event *gloas.PayloadAttestationMessage) error) {
+	n.broker.On(topicPayloadAttestationMessage, func(event *gloas.PayloadAttestationMessage) {
+		n.handleSubscriberError(handler(ctx, event), topicPayloadAttestationMessage)
+	})
+}
+
+func (n *node) OnProposerPreferences(ctx context.Context, handler func(ctx context.Context, event *gloas.SignedProposerPreferences) error) {
+	n.broker.On(topicProposerPreferences, func(event *gloas.SignedProposerPreferences) {
+		n.handleSubscriberError(handler(ctx, event), topicProposerPreferences)
 	})
 }
 

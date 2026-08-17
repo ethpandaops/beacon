@@ -22,6 +22,14 @@ jobs:
       - name: run tests
         run: go test -json ./... > test.json
 
+      - name: run bounded-memory acceptance tests
+        run: |
+          go test -tags acceptance ./pkg/beacon/api -run Acceptance -count=1 -timeout=20m
+          go test -tags "acceptance acceptance_http2" ./pkg/beacon/api -run TestAcceptanceConcurrentHTTP2BeaconStateStreams -count=1 -timeout=20m
+
+      - name: run race tests
+        run: go test -race ./...
+
       - name: Annotate tests
         if: always()
         uses: guyarb/golang-test-annotations@96fc379b171c49932041d6c789e73331a7bdeec1 # v0.9.0
