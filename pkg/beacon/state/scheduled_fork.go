@@ -14,10 +14,15 @@ type ScheduledFork struct {
 
 // ForkScheduleFromForkEpochs returns a fork schedule from a list of forks.
 func ForkScheduleFromForkEpochs(forks ForkEpochs) ([]*ScheduledFork, error) {
-	// Sort them by Epoch.
-	sort.Slice(forks, func(i, j int) bool {
-		return (forks)[i].Epoch < (forks)[j].Epoch
+	// Sort a copy by Epoch so we don't reorder the caller's backing array.
+	sorted := make(ForkEpochs, len(forks))
+	copy(sorted, forks)
+
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Epoch < sorted[j].Epoch
 	})
+
+	forks = sorted
 
 	scheduled := make([]*ScheduledFork, 0, len(forks))
 
