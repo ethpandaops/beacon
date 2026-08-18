@@ -190,6 +190,7 @@ type node struct {
 	nodeVersionMu   sync.RWMutex
 	peers           types.Peers
 	finality        *v1.Finality
+	finalityMu      sync.RWMutex
 	spec            *state.Spec
 	specMu          sync.RWMutex
 	wallclock       *ethwallclock.EthereumBeaconChain
@@ -387,6 +388,9 @@ func (n *node) Status() *Status {
 }
 
 func (n *node) Finality() (*v1.Finality, error) {
+	n.finalityMu.RLock()
+	defer n.finalityMu.RUnlock()
+
 	if n.finality == nil {
 		return nil, errors.New("finality not available")
 	}

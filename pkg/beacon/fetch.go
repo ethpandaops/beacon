@@ -113,6 +113,8 @@ func (n *node) FetchFinality(ctx context.Context, stateID string) (*v1.Finality,
 	finality := rsp.Data
 
 	if stateID == "head" {
+		n.finalityMu.Lock()
+
 		changed := false
 		if n.finality == nil ||
 			finality.Finalized.Root != n.finality.Finalized.Root ||
@@ -125,6 +127,8 @@ func (n *node) FetchFinality(ctx context.Context, stateID string) (*v1.Finality,
 		}
 
 		n.finality = finality
+
+		n.finalityMu.Unlock()
 
 		if changed {
 			n.publishFinalityCheckpointUpdated(ctx, finality)
