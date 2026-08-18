@@ -117,8 +117,9 @@ func NewSpec(data map[string]any) Spec {
 	if terminalTotalDifficulty, exists := data["TERMINAL_TOTAL_DIFFICULTY"]; exists {
 		ttd := cast.ToString(fmt.Sprintf("%v", terminalTotalDifficulty))
 
-		casted, _ := (*big.NewInt(0)).SetString(ttd, 10)
-		spec.TerminalTotalDifficulty = *casted
+		if casted, ok := new(big.Int).SetString(ttd, 10); ok {
+			spec.TerminalTotalDifficulty = *casted
+		}
 	}
 
 	if maxDeposits, exists := data["MAX_DEPOSITS"]; exists {
