@@ -38,8 +38,6 @@ func (n *node) FetchPeers(ctx context.Context) (*types.Peers, error) {
 		return nil, err
 	}
 
-	n.peers = peers
-
 	n.publishPeersUpdated(ctx, peers)
 
 	return &peers, nil
