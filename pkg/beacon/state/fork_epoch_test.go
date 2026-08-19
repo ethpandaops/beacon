@@ -232,6 +232,49 @@ func TestForkEpochsPreviousFork(t *testing.T) {
 				Name:  spec.DataVersionPhase0,
 			},
 		},
+		{
+			// Mainnet-shaped: genesis fork activates at epoch 0, which every
+			// real chain has. Regression test for a bug where a fork at
+			// epoch 0 could never be selected as the previous fork.
+			name: "returns genesis fork at epoch 0 as the previous fork",
+			forks: state.ForkEpochs{
+				{
+					Epoch: 0,
+					Name:  spec.DataVersionPhase0,
+				},
+				{
+					Epoch: 74240,
+					Name:  spec.DataVersionAltair,
+				},
+			},
+			epoch: 74241,
+			expected: &state.ForkEpoch{
+				Epoch: 0,
+				Name:  spec.DataVersionPhase0,
+			},
+		},
+		{
+			name: "returns the most recent previous fork across three activated forks",
+			forks: state.ForkEpochs{
+				{
+					Epoch: 0,
+					Name:  spec.DataVersionPhase0,
+				},
+				{
+					Epoch: 100,
+					Name:  spec.DataVersionAltair,
+				},
+				{
+					Epoch: 200,
+					Name:  spec.DataVersionBellatrix,
+				},
+			},
+			epoch: 250,
+			expected: &state.ForkEpoch{
+				Epoch: 100,
+				Name:  spec.DataVersionAltair,
+			},
+		},
 	}
 
 	for _, test := range tests {

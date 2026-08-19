@@ -112,7 +112,7 @@ func (f *ForkEpochs) PreviousFork(epoch phase0.Epoch) (*ForkEpoch, error) {
 	}
 
 	for _, fork := range f.Active(epoch) {
-		if fork.Active(epoch) && fork.Name != current.Name && fork.Epoch > largest.Epoch {
+		if fork.Active(epoch) && fork.Name != current.Name && fork.Epoch >= largest.Epoch {
 			found = true
 
 			largest = fork
