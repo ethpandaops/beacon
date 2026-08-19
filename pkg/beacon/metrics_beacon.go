@@ -336,6 +336,15 @@ func (b *BeaconMetrics) handleEmptySlot(ctx context.Context, event *EmptySlotEve
 	return nil
 }
 
+// blockTooOldForProposerDelay reports whether a block's slot is more than
+// 2 slots behind the current wallclock slot. Both slot numbers are
+// uint64, so a block at or ahead of the current slot must be checked
+// separately from the subtraction, otherwise it underflows and looks
+// like a block from far in the past instead of a current or future one.
+func blockTooOldForProposerDelay(currSlotNumber, blockSlotNumber uint64) bool {
+	return currSlotNumber > blockSlotNumber && currSlotNumber-blockSlotNumber > 2
+}
+
 func (b *BeaconMetrics) handleBlock(ctx context.Context, event *v1.BlockEvent) error {
 	syncState, err := b.beaconNode.SyncState()
 	if err != nil {
@@ -354,7 +363,7 @@ func (b *BeaconMetrics) handleBlock(ctx context.Context, event *v1.BlockEvent) e
 	}
 
 	// We don't care about blocks that are more than 2 slots in the past.
-	if currSlot.Number()-slot.Number() > 2 {
+	if blockTooOldForProposerDelay(currSlot.Number(), slot.Number()) {
 		return nil
 	}
 
