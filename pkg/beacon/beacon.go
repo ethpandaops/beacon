@@ -182,23 +182,19 @@ type node struct {
 	broker *emission.Emitter
 
 	// Internal data stores
-	genesis         *v1.Genesis
-	genesisMu       sync.RWMutex
-	lastEventTime   time.Time
-	lastEventTimeMu sync.RWMutex
-	nodeVersion     string
-	nodeVersionMu   sync.RWMutex
-	peers           types.Peers
-	finality        *v1.Finality
-	spec            *state.Spec
-	specMu          sync.RWMutex
-	wallclock       *ethwallclock.EthereumBeaconChain
+	genesis       *v1.Genesis
+	genesisMu     sync.RWMutex
+	nodeVersion   string
+	nodeVersionMu sync.RWMutex
+	peers         types.Peers
+	finality      *v1.Finality
+	spec          *state.Spec
+	specMu        sync.RWMutex
+	wallclock     *ethwallclock.EthereumBeaconChain
 
 	stat *Status
 
 	metrics *Metrics
-
-	Ready bool
 
 	hasEmittedFirstTimeHealthy bool
 	firstHealthyMutex          sync.Mutex
@@ -405,8 +401,6 @@ func (n *node) bootstrap(ctx context.Context) error {
 
 	//nolint:errcheck // we dont care if this errors out since it runs indefinitely in a goroutine
 	go n.ensureBeaconSubscription(ctx)
-
-	n.Ready = true
 
 	go n.publishReady(ctx)
 
