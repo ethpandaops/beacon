@@ -327,7 +327,12 @@ func (s *SpecMetrics) observeSpec(ctx context.Context, spec *state.Spec) error {
 	divided := new(big.Int).Div(&spec.TerminalTotalDifficulty, trillion)
 	asFloat, _ := new(big.Float).SetInt(divided).Float64()
 	s.TerminalTotalDifficultyTrillions.Set(asFloat)
-	s.TerminalTotalDifficulty.Set(float64(spec.TerminalTotalDifficulty.Uint64()))
+
+	// big.Int.Uint64 is undefined when the value doesn't fit in 64 bits,
+	// which mainnet's TTD doesn't. Go through big.Float instead so the
+	// gauge reports the real value rather than a silently wrapped one.
+	ttdAsFloat, _ := new(big.Float).SetInt(&spec.TerminalTotalDifficulty).Float64()
+	s.TerminalTotalDifficulty.Set(ttdAsFloat)
 
 	return nil
 }
