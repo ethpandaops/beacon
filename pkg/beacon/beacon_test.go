@@ -6,6 +6,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/chuckpreslar/emission"
+	eapi "github.com/ethpandaops/go-eth2-client/api"
+	v1 "github.com/ethpandaops/go-eth2-client/api/v1"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/sirupsen/logrus"
 )
 
@@ -122,4 +126,59 @@ func TestLifecycleStartStopSequence(t *testing.T) {
 	case <-time.After(100 * time.Millisecond):
 		t.Error("context was not cancelled after Stop")
 	}
+}
+
+// finalityClient is a minimal eth2client.FinalityProvider used to drive
+// FetchFinality without a real beacon node.
+type finalityClient struct{}
+
+func (f *finalityClient) Name() string    { return "fake" }
+func (f *finalityClient) Address() string { return "fake://" }
+func (f *finalityClient) IsActive() bool  { return true }
+func (f *finalityClient) IsSynced() bool  { return true }
+
+func (f *finalityClient) Finality(
+	_ context.Context, _ *eapi.FinalityOpts,
+) (*eapi.Response[*v1.Finality], error) {
+	return &eapi.Response[*v1.Finality]{
+		Data: &v1.Finality{
+			Finalized:         &phase0.Checkpoint{Epoch: 1, Root: phase0.Root{0x01}},
+			Justified:         &phase0.Checkpoint{Epoch: 2, Root: phase0.Root{0x02}},
+			PreviousJustified: &phase0.Checkpoint{Epoch: 3, Root: phase0.Root{0x03}},
+		},
+	}, nil
+}
+
+// TestFinalityMutex exercises FetchFinality and Finality() concurrently,
+// mirroring the shape of the epoch cron, the finalized_checkpoint event
+// handler and a direct consumer call all hitting finality at once. It
+// should pass cleanly under -race.
+func TestFinalityMutex(t *testing.T) {
+	n := &node{
+		log:    logrus.New(),
+		broker: emission.NewEmitter(),
+		client: &finalityClient{},
+	}
+
+	var wg sync.WaitGroup
+
+	for range 8 {
+		wg.Go(func() {
+			for range 50 {
+				if _, err := n.FetchFinality(context.Background(), "head"); err != nil {
+					t.Error(err)
+				}
+			}
+		})
+	}
+
+	for range 8 {
+		wg.Go(func() {
+			for range 50 {
+				_, _ = n.Finality()
+			}
+		})
+	}
+
+	wg.Wait()
 }
