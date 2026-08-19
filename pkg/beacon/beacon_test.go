@@ -123,3 +123,24 @@ func TestLifecycleStartStopSequence(t *testing.T) {
 		t.Error("context was not cancelled after Stop")
 	}
 }
+
+// TestGenesisErrorsWhenUnset matches Spec()'s behavior: both are cached
+// values that may not be ready yet, and a consumer applying the same
+// err-checking idiom to either one should get the same contract.
+func TestGenesisErrorsWhenUnset(t *testing.T) {
+	n := &node{log: logrus.New()}
+
+	_, err := n.Spec()
+	if err == nil {
+		t.Fatal("expected Spec() to error when unset")
+	}
+
+	g, err := n.Genesis()
+	if err == nil {
+		t.Fatal("expected Genesis() to error when unset, matching Spec()")
+	}
+
+	if g != nil {
+		t.Fatalf("expected a nil genesis alongside the error, got %v", g)
+	}
+}
