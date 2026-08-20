@@ -298,6 +298,8 @@ func (n *node) Start(ctx context.Context) error {
 		return err
 	}
 
+	n.crons = s
+
 	s.StartAsync()
 
 	n.log.Info("Beacon started!")
