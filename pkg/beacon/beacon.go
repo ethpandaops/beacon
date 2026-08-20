@@ -188,7 +188,6 @@ type node struct {
 	lastEventTimeMu sync.RWMutex
 	nodeVersion     string
 	nodeVersionMu   sync.RWMutex
-	peers           types.Peers
 	finality        *v1.Finality
 	spec            *state.Spec
 	specMu          sync.RWMutex
