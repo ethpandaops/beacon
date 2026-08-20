@@ -16,6 +16,8 @@ import (
 )
 
 func (n *node) ensureBeaconSubscription(ctx context.Context) error {
+	subscribed := make(map[string]bool)
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -33,18 +35,36 @@ func (n *node) ensureBeaconSubscription(ctx context.Context) error {
 				continue
 			}
 
-			if err := n.subscribeToBeaconEvents(ctx); err != nil {
+			if err := n.subscribeToBeaconEvents(ctx, subscribed); err != nil {
 				n.log.WithError(err).Error("Failed to subscribe to beacon")
 
 				continue
 			}
 
-			return nil
+			if allTopicsSubscribed(n.options.BeaconSubscription.Topics, subscribed) {
+				return nil
+			}
 		}
 	}
 }
 
-func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
+func allTopicsSubscribed(topics EventTopics, subscribed map[string]bool) bool {
+	for _, topic := range topics {
+		if !subscribed[topic] {
+			return false
+		}
+	}
+
+	return true
+}
+
+// subscribeToBeaconEvents subscribes to any topic in the configured topic
+// list that isn't already marked as subscribed in the subscribed map. A
+// topic that fails to subscribe (for example, one the client doesn't
+// support) is logged and skipped rather than aborting the remaining
+// topics, and a topic that already subscribed successfully on a previous
+// call is never subscribed again.
+func (n *node) subscribeToBeaconEvents(ctx context.Context, subscribed map[string]bool) error {
 	provider, isProvider := n.client.(eth2client.EventsProvider)
 	if !isProvider {
 		return errors.New("client does not implement eth2client.Subscriptions")
@@ -53,8 +73,11 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 	topics := n.options.BeaconSubscription.Topics
 	n.log.WithField("topics", topics).Info("Subscribing to events upstream")
 
-	// Open a new subscription for each topic.
 	for _, topic := range topics {
+		if subscribed[topic] {
+			continue
+		}
+
 		n.log.WithField("topic", topic).Info("Subscribing to event")
 
 		if err := provider.Events(ctx, &api.EventsOpts{
@@ -69,8 +92,12 @@ func (n *node) subscribeToBeaconEvents(ctx context.Context) error {
 				}
 			},
 		}); err != nil {
-			return err
+			n.log.WithError(err).WithField("topic", topic).Error("Failed to subscribe to event topic, skipping")
+
+			continue
 		}
+
+		subscribed[topic] = true
 	}
 
 	return nil
