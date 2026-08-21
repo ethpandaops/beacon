@@ -431,7 +431,12 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 			return
 		}
 
-		_, err := n.FetchBlock(ctx, fmt.Sprintf("%v", slot.Number()-1))
+		previousStateID, ok := previousSlotStateID(slot.Number())
+		if !ok {
+			return
+		}
+
+		_, err := n.FetchBlock(ctx, previousStateID)
 		if err != nil {
 			if strings.Contains(err.Error(), "404") {
 				n.publishEmptySlot(ctx, phase0.Slot(slot.Number()))
@@ -452,6 +457,18 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 	})
 
 	return nil
+}
+
+// previousSlotStateID returns the state ID for the slot before slotNumber,
+// and false for slot 0, which has no previous slot. slotNumber is a
+// uint64, so slotNumber-1 at slot 0 would otherwise underflow to the
+// maximum uint64 value instead of a meaningful state ID.
+func previousSlotStateID(slotNumber uint64) (string, bool) {
+	if slotNumber == 0 {
+		return "", false
+	}
+
+	return fmt.Sprintf("%v", slotNumber-1), true
 }
 
 func (n *node) fetchIsHealthy(ctx context.Context) error {
