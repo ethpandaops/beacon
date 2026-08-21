@@ -372,6 +372,10 @@ func (n *node) Genesis() (*v1.Genesis, error) {
 	n.genesisMu.RLock()
 	defer n.genesisMu.RUnlock()
 
+	if n.genesis == nil {
+		return nil, errors.New("genesis is not available")
+	}
+
 	return n.genesis, nil
 }
 
