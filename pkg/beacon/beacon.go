@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -423,22 +422,7 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 	})
 
 	n.wallclock.OnSlotChanged(func(slot ethwallclock.Slot) {
-		if !n.options.DetectEmptySlots {
-			return
-		}
-
-		if n.stat.Syncing() {
-			return
-		}
-
-		_, err := n.FetchBlock(ctx, fmt.Sprintf("%v", slot.Number()-1))
-		if err != nil {
-			if strings.Contains(err.Error(), "404") {
-				n.publishEmptySlot(ctx, phase0.Slot(slot.Number()))
-			}
-
-			return
-		}
+		n.checkEmptySlot(ctx, slot)
 	})
 
 	n.OnFinalizedCheckpoint(ctx, func(ctx context.Context, ev *v1.FinalizedCheckpointEvent) error {
@@ -452,6 +436,29 @@ func (n *node) subscribeDownstream(ctx context.Context) error {
 	})
 
 	return nil
+}
+
+// checkEmptySlot fetches the block for the previous slot and publishes an
+// empty slot event if the beacon node has no block for it. FetchBlock
+// returns a nil block with a nil error on a 404, so a missing block is
+// detected by checking the returned block rather than the error.
+func (n *node) checkEmptySlot(ctx context.Context, slot ethwallclock.Slot) {
+	if !n.options.DetectEmptySlots {
+		return
+	}
+
+	if n.stat.Syncing() {
+		return
+	}
+
+	block, err := n.FetchBlock(ctx, fmt.Sprintf("%v", slot.Number()-1))
+	if err != nil {
+		return
+	}
+
+	if block == nil {
+		n.publishEmptySlot(ctx, phase0.Slot(slot.Number()))
+	}
 }
 
 func (n *node) fetchIsHealthy(ctx context.Context) error {
