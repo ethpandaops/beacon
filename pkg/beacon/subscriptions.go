@@ -12,6 +12,7 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/altair"
 	"github.com/ethpandaops/go-eth2-client/spec/electra"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
@@ -94,6 +95,8 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 		return n.handleFinalizedCheckpoint(ctx, event)
 	case topicHead:
 		return n.handleHead(ctx, event)
+	case topicHeadV2:
+		return n.handleHeadV2(ctx, event)
 	case topicVoluntaryExit:
 		return n.handleVoluntaryExit(ctx, event)
 	case topicContributionAndProof:
@@ -104,6 +107,18 @@ func (n *node) handleEvent(ctx context.Context, event *v1.Event) error {
 		return n.handleDataColumnSidecar(ctx, event)
 	case topicFastConfirmation:
 		return n.handleFastConfirmation(ctx, event)
+	case topicExecutionPayload:
+		return n.handleExecutionPayload(ctx, event)
+	case topicExecutionPayloadGossip:
+		return n.handleExecutionPayloadGossip(ctx, event)
+	case topicExecutionPayloadAvailable:
+		return n.handleExecutionPayloadAvailable(ctx, event)
+	case topicExecutionPayloadBid:
+		return n.handleExecutionPayloadBid(ctx, event)
+	case topicPayloadAttestationMessage:
+		return n.handlePayloadAttestationMessage(ctx, event)
+	case topicProposerPreferences:
+		return n.handleProposerPreferences(ctx, event)
 
 	default:
 		return fmt.Errorf("unknown event topic %s", event.Topic)
@@ -187,6 +202,17 @@ func (n *node) handleFinalizedCheckpoint(ctx context.Context, event *v1.Event) e
 	return nil
 }
 
+func (n *node) handleHeadV2(ctx context.Context, event *v1.Event) error {
+	head, valid := event.Data.(*v1.HeadEventV2)
+	if !valid {
+		return errors.New("invalid head_v2 event")
+	}
+
+	n.publishHeadV2(ctx, head)
+
+	return nil
+}
+
 func (n *node) handleHead(ctx context.Context, event *v1.Event) error {
 	head, valid := event.Data.(*v1.HeadEvent)
 	if !valid {
@@ -238,6 +264,72 @@ func (n *node) handleDataColumnSidecar(ctx context.Context, event *v1.Event) err
 	}
 
 	n.publishDataColumnSidecar(ctx, dataColumnSidecar)
+
+	return nil
+}
+
+func (n *node) handleExecutionPayload(ctx context.Context, event *v1.Event) error {
+	ev, valid := event.Data.(*v1.ExecutionPayloadEvent)
+	if !valid {
+		return errors.New("invalid execution payload event")
+	}
+
+	n.publishExecutionPayload(ctx, ev)
+
+	return nil
+}
+
+func (n *node) handleExecutionPayloadGossip(ctx context.Context, event *v1.Event) error {
+	ev, valid := event.Data.(*v1.ExecutionPayloadEvent)
+	if !valid {
+		return errors.New("invalid execution payload gossip event")
+	}
+
+	n.publishExecutionPayloadGossip(ctx, ev)
+
+	return nil
+}
+
+func (n *node) handleExecutionPayloadAvailable(ctx context.Context, event *v1.Event) error {
+	available, valid := event.Data.(*v1.ExecutionPayloadAvailableEvent)
+	if !valid {
+		return errors.New("invalid execution payload available event")
+	}
+
+	n.publishExecutionPayloadAvailable(ctx, available)
+
+	return nil
+}
+
+func (n *node) handleExecutionPayloadBid(ctx context.Context, event *v1.Event) error {
+	bid, valid := event.Data.(*gloas.SignedExecutionPayloadBid)
+	if !valid {
+		return errors.New("invalid execution payload bid event")
+	}
+
+	n.publishExecutionPayloadBid(ctx, bid)
+
+	return nil
+}
+
+func (n *node) handlePayloadAttestationMessage(ctx context.Context, event *v1.Event) error {
+	message, valid := event.Data.(*gloas.PayloadAttestationMessage)
+	if !valid {
+		return errors.New("invalid payload attestation message event")
+	}
+
+	n.publishPayloadAttestationMessage(ctx, message)
+
+	return nil
+}
+
+func (n *node) handleProposerPreferences(ctx context.Context, event *v1.Event) error {
+	prefs, valid := event.Data.(*gloas.SignedProposerPreferences)
+	if !valid {
+		return errors.New("invalid proposer preferences event")
+	}
+
+	n.publishProposerPreferences(ctx, prefs)
 
 	return nil
 }
