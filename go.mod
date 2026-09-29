@@ -5,7 +5,7 @@ go 1.26.1
 require (
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethereum/go-ethereum v1.17.6
-	github.com/ethpandaops/ethwallclock v0.2.0
+	github.com/ethpandaops/ethwallclock v0.4.1-0.20260929140616-8d9b2958f41b
 	github.com/ethpandaops/go-eth2-client v0.1.7
 	github.com/go-co-op/gocron v1.16.2
 	github.com/prometheus/client_golang v1.23.2

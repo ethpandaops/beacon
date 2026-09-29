@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	sp "github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
@@ -43,6 +44,10 @@ type Spec struct {
 	MaxDeposits                    uint64           `json:"MAX_DEPOSITS,string"`
 	MinGenesisActiveValidatorCount uint64           `json:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT,string"`
 	Eth1FollowDistance             uint64           `json:"ETH1_FOLLOW_DISTANCE,string"`
+
+	// SlotDurationSchedule is the EIP-8198 SLOT_DURATION_SCHEDULE, normalized
+	// to start at epoch 0 (a single entry on chains without a schedule).
+	SlotDurationSchedule SlotDurationSchedule `json:"-"`
 
 	ForkEpochs   ForkEpochs     `json:"-"`
 	BlobSchedule BlobSchedule   `json:"BLOB_SCHEDULE"`
@@ -108,6 +113,14 @@ func NewSpec(data map[string]any) Spec {
 
 	if secondsPerSlot, exists := data["SECONDS_PER_SLOT"]; exists {
 		spec.SecondsPerSlot = StringerDuration(cast.ToDuration(secondsPerSlot))
+	}
+
+	// SECONDS_PER_SLOT is deprecated in favour of SLOT_DURATION_MS; prefer
+	// the millisecond value when a node serves it.
+	if slotDurationMs, exists := data["SLOT_DURATION_MS"]; exists {
+		if ms := cast.ToUint64(slotDurationMs); ms > 0 {
+			spec.SecondsPerSlot = StringerDuration(time.Duration(ms) * time.Millisecond)
+		}
 	}
 
 	if maxEffectiveBalance, exists := data["MAX_EFFECTIVE_BALANCE"]; exists {
@@ -208,6 +221,12 @@ func NewSpec(data map[string]any) Spec {
 				}
 			}
 		}
+	}
+
+	spec.SlotDurationSchedule = parseSlotDurationSchedule(data["SLOT_DURATION_SCHEDULE"], spec.SecondsPerSlot.AsDuration())
+	if len(spec.SlotDurationSchedule) > 0 {
+		// The schedule's genesis entry is authoritative.
+		spec.SecondsPerSlot = StringerDuration(spec.SlotDurationSchedule[0].Duration)
 	}
 
 	return spec
