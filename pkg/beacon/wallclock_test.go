@@ -7,14 +7,19 @@ import (
 	"github.com/ethpandaops/beacon/pkg/beacon/state"
 )
 
+const (
+	testKeySlotDurationMs = "SLOT_DURATION_MS"
+	testKeySlotsPerEpoch  = "SLOTS_PER_EPOCH"
+)
+
 func TestNewWallclockFollowsSlotDurationSchedule(t *testing.T) {
 	genesis := time.Unix(1_700_000_000, 0)
 	spec := state.NewSpec(map[string]any{
-		"SLOT_DURATION_MS": uint64(12000),
-		"SLOTS_PER_EPOCH":  uint64(32),
+		testKeySlotDurationMs: uint64(12000),
+		testKeySlotsPerEpoch:  uint64(32),
 		"SLOT_DURATION_SCHEDULE": []any{
-			map[string]any{"EPOCH": uint64(0), "SLOT_DURATION_MS": uint64(12000)},
-			map[string]any{"EPOCH": uint64(2), "SLOT_DURATION_MS": uint64(11000)},
+			map[string]any{"EPOCH": uint64(0), testKeySlotDurationMs: uint64(12000)},
+			map[string]any{"EPOCH": uint64(2), testKeySlotDurationMs: uint64(11000)},
 		},
 	})
 
@@ -35,8 +40,8 @@ func TestNewWallclockFollowsSlotDurationSchedule(t *testing.T) {
 func TestNewWallclockWithoutSchedule(t *testing.T) {
 	genesis := time.Unix(1_700_000_000, 0)
 	spec := state.NewSpec(map[string]any{
-		"SECONDS_PER_SLOT": 12 * time.Second,
-		"SLOTS_PER_EPOCH":  uint64(32),
+		"SECONDS_PER_SLOT":   12 * time.Second,
+		testKeySlotsPerEpoch: uint64(32),
 	})
 
 	wallclock := newWallclock(genesis, &spec)

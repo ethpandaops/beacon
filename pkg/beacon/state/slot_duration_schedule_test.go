@@ -7,16 +7,18 @@ import (
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 )
 
+const testKeySlotsPerEpoch = "SLOTS_PER_EPOCH"
+
 func TestNewSpecSlotDurationSchedule(t *testing.T) {
 	// Values as go-eth2-client parses /eth/v1/config/spec.
 	spec := NewSpec(map[string]any{
-		"SECONDS_PER_SLOT": 12 * time.Second,
-		"SLOT_DURATION_MS": uint64(12000),
-		"SLOTS_PER_EPOCH":  uint64(32),
-		"SLOT_DURATION_SCHEDULE": []any{
-			map[string]any{"EPOCH": uint64(4), "SLOT_DURATION_MS": uint64(8000)},
-			map[string]any{"EPOCH": uint64(0), "SLOT_DURATION_MS": uint64(12000)},
-			map[string]any{"EPOCH": uint64(2), "SLOT_DURATION_MS": uint64(11000)},
+		"SECONDS_PER_SLOT":    12 * time.Second,
+		specKeySlotDurationMs: uint64(12000),
+		testKeySlotsPerEpoch:  uint64(32),
+		specKeySlotDurationSchedule: []any{
+			map[string]any{specKeyEpoch: uint64(4), specKeySlotDurationMs: uint64(8000)},
+			map[string]any{specKeyEpoch: uint64(0), specKeySlotDurationMs: uint64(12000)},
+			map[string]any{specKeyEpoch: uint64(2), specKeySlotDurationMs: uint64(11000)},
 		},
 	})
 
@@ -47,8 +49,8 @@ func TestNewSpecSlotDurationSchedule(t *testing.T) {
 
 func TestNewSpecWithoutSlotDurationSchedule(t *testing.T) {
 	spec := NewSpec(map[string]any{
-		"SECONDS_PER_SLOT": 12 * time.Second,
-		"SLOTS_PER_EPOCH":  uint64(32),
+		"SECONDS_PER_SLOT":   12 * time.Second,
+		testKeySlotsPerEpoch: uint64(32),
 	})
 
 	if len(spec.SlotDurationSchedule) != 1 || spec.SlotDurationSchedule[0] != (SlotDurationScheduleEntry{Epoch: 0, Duration: 12 * time.Second}) {
@@ -59,8 +61,8 @@ func TestNewSpecWithoutSlotDurationSchedule(t *testing.T) {
 func TestNewSpecSlotDurationMsOnly(t *testing.T) {
 	// SECONDS_PER_SLOT is deprecated; nodes may only serve SLOT_DURATION_MS.
 	spec := NewSpec(map[string]any{
-		"SLOT_DURATION_MS": uint64(6000),
-		"SLOTS_PER_EPOCH":  uint64(8),
+		specKeySlotDurationMs: uint64(6000),
+		testKeySlotsPerEpoch:  uint64(8),
 	})
 
 	if got := spec.SecondsPerSlot.AsDuration(); got != 6*time.Second {
@@ -74,9 +76,9 @@ func TestNewSpecSlotDurationMsOnly(t *testing.T) {
 
 func TestNewSpecScheduleWithoutGenesisEntry(t *testing.T) {
 	spec := NewSpec(map[string]any{
-		"SLOT_DURATION_MS": uint64(12000),
-		"SLOT_DURATION_SCHEDULE": []any{
-			map[string]any{"EPOCH": uint64(2), "SLOT_DURATION_MS": uint64(11000)},
+		specKeySlotDurationMs: uint64(12000),
+		specKeySlotDurationSchedule: []any{
+			map[string]any{specKeyEpoch: uint64(2), specKeySlotDurationMs: uint64(11000)},
 		},
 	})
 

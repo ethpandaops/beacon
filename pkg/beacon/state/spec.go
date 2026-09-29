@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
-	"time"
 
 	sp "github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
@@ -117,9 +116,9 @@ func NewSpec(data map[string]any) Spec {
 
 	// SECONDS_PER_SLOT is deprecated in favour of SLOT_DURATION_MS; prefer
 	// the millisecond value when a node serves it.
-	if slotDurationMs, exists := data["SLOT_DURATION_MS"]; exists {
-		if ms := cast.ToUint64(slotDurationMs); ms > 0 {
-			spec.SecondsPerSlot = StringerDuration(time.Duration(ms) * time.Millisecond)
+	if slotDurationMs, exists := data[specKeySlotDurationMs]; exists {
+		if duration, ok := millisecondsToDuration(cast.ToUint64(slotDurationMs)); ok {
+			spec.SecondsPerSlot = StringerDuration(duration)
 		}
 	}
 
@@ -223,7 +222,7 @@ func NewSpec(data map[string]any) Spec {
 		}
 	}
 
-	spec.SlotDurationSchedule = parseSlotDurationSchedule(data["SLOT_DURATION_SCHEDULE"], spec.SecondsPerSlot.AsDuration())
+	spec.SlotDurationSchedule = parseSlotDurationSchedule(data[specKeySlotDurationSchedule], spec.SecondsPerSlot.AsDuration())
 	if len(spec.SlotDurationSchedule) > 0 {
 		// The schedule's genesis entry is authoritative.
 		spec.SecondsPerSlot = StringerDuration(spec.SlotDurationSchedule[0].Duration)

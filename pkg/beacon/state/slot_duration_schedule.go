@@ -1,12 +1,30 @@
 package state
 
 import (
+	"math"
 	"sort"
 	"time"
 
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/spf13/cast"
 )
+
+// Spec keys of the EIP-8198 slot duration configuration.
+const (
+	specKeySlotDurationMs       = "SLOT_DURATION_MS"
+	specKeySlotDurationSchedule = "SLOT_DURATION_SCHEDULE"
+	specKeyEpoch                = "EPOCH"
+)
+
+// millisecondsToDuration converts a millisecond count from the spec into a
+// time.Duration. It reports false for zero or values that overflow.
+func millisecondsToDuration(ms uint64) (time.Duration, bool) {
+	if ms == 0 || ms > uint64(math.MaxInt64/int64(time.Millisecond)) {
+		return 0, false
+	}
+
+	return time.Duration(ms) * time.Millisecond, true
+}
 
 // SlotDurationScheduleEntry is one entry of the EIP-8198 SLOT_DURATION_SCHEDULE:
 // slots from Epoch on last Duration.
@@ -44,14 +62,14 @@ func parseSlotDurationSchedule(raw any, genesisDuration time.Duration) SlotDurat
 				continue
 			}
 
-			ms := cast.ToUint64(entryMap["SLOT_DURATION_MS"])
-			if ms == 0 {
+			duration, ok := millisecondsToDuration(cast.ToUint64(entryMap[specKeySlotDurationMs]))
+			if !ok {
 				continue
 			}
 
 			schedule = append(schedule, SlotDurationScheduleEntry{
-				Epoch:    phase0.Epoch(cast.ToUint64(entryMap["EPOCH"])),
-				Duration: time.Duration(ms) * time.Millisecond,
+				Epoch:    phase0.Epoch(cast.ToUint64(entryMap[specKeyEpoch])),
+				Duration: duration,
 			})
 		}
 	}
