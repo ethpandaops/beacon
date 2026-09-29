@@ -578,9 +578,31 @@ func (n *node) initializeState(ctx context.Context) error {
 		return err
 	}
 
-	n.wallclock = ethwallclock.NewEthereumBeaconChain(genesis.GenesisTime, spec.SecondsPerSlot.AsDuration(), uint64(spec.SlotsPerEpoch))
+	n.wallclock = newWallclock(genesis.GenesisTime, spec)
 
 	return nil
+}
+
+// newWallclock builds the wall clock for spec. Chains with an EIP-8198 slot
+// duration schedule get a schedule-aware clock; everything else keeps the
+// fixed-duration clock.
+func newWallclock(genesisTime time.Time, spec *state.Spec) *ethwallclock.EthereumBeaconChain {
+	if len(spec.SlotDurationSchedule) > 1 {
+		schedule := make([]ethwallclock.SlotDuration, 0, len(spec.SlotDurationSchedule))
+		for _, entry := range spec.SlotDurationSchedule {
+			schedule = append(schedule, ethwallclock.SlotDuration{
+				Epoch:    uint64(entry.Epoch),
+				Duration: entry.Duration,
+			})
+		}
+
+		wallclock, err := ethwallclock.NewEthereumBeaconChainWithSchedule(genesisTime, schedule, uint64(spec.SlotsPerEpoch))
+		if err == nil {
+			return wallclock
+		}
+	}
+
+	return ethwallclock.NewEthereumBeaconChain(genesisTime, spec.SecondsPerSlot.AsDuration(), uint64(spec.SlotsPerEpoch))
 }
 
 func (n *node) getBlock(ctx context.Context, blockID string) (*spec.VersionedSignedBeaconBlock, error) {

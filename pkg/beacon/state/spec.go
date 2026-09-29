@@ -44,6 +44,10 @@ type Spec struct {
 	MinGenesisActiveValidatorCount uint64           `json:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT,string"`
 	Eth1FollowDistance             uint64           `json:"ETH1_FOLLOW_DISTANCE,string"`
 
+	// SlotDurationSchedule is the EIP-8198 SLOT_DURATION_SCHEDULE, normalized
+	// to start at epoch 0 (a single entry on chains without a schedule).
+	SlotDurationSchedule SlotDurationSchedule `json:"-"`
+
 	ForkEpochs   ForkEpochs     `json:"-"`
 	BlobSchedule BlobSchedule   `json:"BLOB_SCHEDULE"`
 	FullSpec     map[string]any `json:"-"`
@@ -108,6 +112,14 @@ func NewSpec(data map[string]any) Spec {
 
 	if secondsPerSlot, exists := data["SECONDS_PER_SLOT"]; exists {
 		spec.SecondsPerSlot = StringerDuration(cast.ToDuration(secondsPerSlot))
+	}
+
+	// SECONDS_PER_SLOT is deprecated in favour of SLOT_DURATION_MS; prefer
+	// the millisecond value when a node serves it.
+	if slotDurationMs, exists := data[specKeySlotDurationMs]; exists {
+		if duration, ok := millisecondsToDuration(cast.ToUint64(slotDurationMs)); ok {
+			spec.SecondsPerSlot = StringerDuration(duration)
+		}
 	}
 
 	if maxEffectiveBalance, exists := data["MAX_EFFECTIVE_BALANCE"]; exists {
@@ -208,6 +220,12 @@ func NewSpec(data map[string]any) Spec {
 				}
 			}
 		}
+	}
+
+	spec.SlotDurationSchedule = parseSlotDurationSchedule(data[specKeySlotDurationSchedule], spec.SecondsPerSlot.AsDuration())
+	if len(spec.SlotDurationSchedule) > 0 {
+		// The schedule's genesis entry is authoritative.
+		spec.SecondsPerSlot = StringerDuration(spec.SlotDurationSchedule[0].Duration)
 	}
 
 	return spec
