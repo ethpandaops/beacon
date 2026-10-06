@@ -78,6 +78,27 @@ func (n *node) FetchRawExecutionPayloadEnvelope(ctx context.Context, blockID str
 	return n.api.RawExecutionPayloadEnvelope(ctx, blockID, contentType)
 }
 
+func (n *node) FetchExecutionPayloadEnvelope(ctx context.Context, blockID string) (*spec.VersionedSignedExecutionPayloadEnvelope, error) {
+	provider, isProvider := n.client.(eth2client.ExecutionPayloadProvider)
+	if !isProvider {
+		return nil, errors.New("client does not implement eth2client.ExecutionPayloadProvider")
+	}
+
+	rsp, err := provider.SignedExecutionPayloadEnvelope(ctx, &eapi.SignedExecutionPayloadEnvelopeOpts{
+		Block: blockID,
+	})
+	if err != nil {
+		var apiErr *eapi.Error
+		if errors.As(err, &apiErr) && apiErr.StatusCode == 404 {
+			return nil, nil //nolint:nilnil // a missing envelope is an expected outcome, not an error.
+		}
+
+		return nil, err
+	}
+
+	return rsp.Data, nil
+}
+
 func (n *node) OpenRawBeaconState(ctx context.Context, stateID string, contentType string) (*beaconapi.RawResponse, error) {
 	return n.api.OpenRawDebugBeaconState(ctx, stateID, contentType)
 }

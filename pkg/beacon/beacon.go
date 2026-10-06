@@ -71,6 +71,10 @@ type Node interface {
 	// FetchRawExecutionPayloadEnvelope fetches the raw, unparsed signed execution
 	// payload envelope for the given block id (gloas onwards).
 	FetchRawExecutionPayloadEnvelope(ctx context.Context, blockID string, contentType string) ([]byte, error)
+	// FetchExecutionPayloadEnvelope fetches the signed execution payload envelope for
+	// the given block id (gloas onwards). Returns nil without an error when the node
+	// has no envelope for the block, e.g. a withheld payload.
+	FetchExecutionPayloadEnvelope(ctx context.Context, blockID string) (*spec.VersionedSignedExecutionPayloadEnvelope, error)
 	// FetchBlockRoot fetches the block root for the given state id.
 	FetchBlockRoot(ctx context.Context, stateID string) (*phase0.Root, error)
 	// FetchBeaconState fetches the beacon state for the given state id.

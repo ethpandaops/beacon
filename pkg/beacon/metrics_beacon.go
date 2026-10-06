@@ -5,10 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sync"
 	"time"
 
+	"github.com/ethpandaops/ethwallclock"
 	v1 "github.com/ethpandaops/go-eth2-client/api/v1"
 	"github.com/ethpandaops/go-eth2-client/spec"
+	"github.com/ethpandaops/go-eth2-client/spec/bellatrix"
+	"github.com/ethpandaops/go-eth2-client/spec/capella"
+	"github.com/ethpandaops/go-eth2-client/spec/gloas"
+	"github.com/ethpandaops/go-eth2-client/spec/phase0"
 	"github.com/go-co-op/gocron"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/sirupsen/logrus"
@@ -38,8 +44,28 @@ type BeaconMetrics struct {
 	currentVersionHead      string
 	currentVersionFinalized string
 
+	gloasHeadMu  sync.Mutex
+	gloasHead    *gloasHeadBlock
+	slotHookOnce sync.Once
+
 	crons *gocron.Scheduler
 }
+
+// gloasHeadBlock is the current Gloas head block. Its payload is revealed after
+// the block, so payload metrics are read once its slot has passed.
+type gloasHeadBlock struct {
+	root     phase0.Root
+	slot     phase0.Slot
+	version  string
+	attempts int
+	inFlight bool
+	resolved bool
+}
+
+// gloasHeadPayloadAttempts is how many slot boundaries a head block's envelope is
+// looked for before its payload is treated as withheld. Reveals can land late in
+// the slot and reach the node after the next boundary.
+const gloasHeadPayloadAttempts = 3
 
 const (
 	metricsJobNameBeacon = "beacon"
@@ -262,6 +288,12 @@ func (b *BeaconMetrics) Name() string {
 // Start starts the job.
 func (b *BeaconMetrics) Start(ctx context.Context) error {
 	b.beaconNode.OnReady(ctx, func(ctx context.Context, event *ReadyEvent) error {
+		b.slotHookOnce.Do(func() {
+			b.beaconNode.Wallclock().OnSlotChanged(func(slot ethwallclock.Slot) {
+				b.recordGloasHeadPayload(ctx, phase0.Slot(slot.Number()))
+			})
+		})
+
 		time.Sleep(3 * time.Second)
 
 		return b.updateFinality(ctx)
@@ -301,7 +333,7 @@ func (b *BeaconMetrics) setupSubscriptions(ctx context.Context) error {
 			return err
 		}
 
-		if err := b.handleSingleBlock("head", block); err != nil {
+		if err := b.handleSingleBlock(ctx, "head", block); err != nil {
 			return err
 		}
 
@@ -378,7 +410,7 @@ func (b *BeaconMetrics) GetSignedBeaconBlock(ctx context.Context, blockID string
 		return err
 	}
 
-	if err := b.handleSingleBlock(blockID, block); err != nil {
+	if err := b.handleSingleBlock(ctx, blockID, block); err != nil {
 		return err
 	}
 
@@ -415,19 +447,30 @@ func (b *BeaconMetrics) updateFinality(ctx context.Context) error {
 	return nil
 }
 
-func (b *BeaconMetrics) handleSingleBlock(blockID string, block *spec.VersionedSignedBeaconBlock) error {
+func (b *BeaconMetrics) handleSingleBlock(ctx context.Context, blockID string, block *spec.VersionedSignedBeaconBlock) error {
 	if block == nil {
 		return errors.New("block is nil")
 	}
 
 	if blockID == topicHead && b.currentVersionHead != block.Version.String() ||
 		blockID == topicFinalized && b.currentVersionFinalized != block.Version.String() {
-		b.Transactions.Reset()
-		b.Slashings.Reset()
-		b.Attestations.Reset()
-		b.Deposits.Reset()
-		b.VoluntaryExits.Reset()
-		b.Slot.Reset()
+		blockLabels := prometheus.Labels{metricLabelBlockID: blockID}
+
+		for _, vec := range []*prometheus.GaugeVec{
+			&b.Transactions,
+			&b.Slashings,
+			&b.Attestations,
+			&b.Deposits,
+			&b.VoluntaryExits,
+			&b.Slot,
+			&b.Withdrawals,
+			&b.WithdrawalsAmount,
+			&b.WithdrawalsIndexMax,
+			&b.WithdrawalsIndexMin,
+			&b.BlobKZGCommitments,
+		} {
+			vec.DeletePartialMatch(blockLabels)
+		}
 
 		if blockID == topicFinalized {
 			b.currentVersionFinalized = block.Version.String()
@@ -440,7 +483,177 @@ func (b *BeaconMetrics) handleSingleBlock(blockID string, block *spec.VersionedS
 
 	b.recordNewBeaconBlock(blockID, block)
 
+	if block.Version >= spec.DataVersionGloas {
+		b.handleGloasBlockPayload(ctx, blockID, block)
+	} else if blockID == topicHead {
+		b.gloasHeadMu.Lock()
+		b.gloasHead = nil
+		b.gloasHeadMu.Unlock()
+	}
+
 	return nil
+}
+
+// handleGloasBlockPayload records payload metrics for a Gloas block. The block no
+// longer carries its execution payload: transactions and withdrawals live in an
+// envelope revealed after the block, which a builder can also withhold.
+func (b *BeaconMetrics) handleGloasBlockPayload(ctx context.Context, blockID string, block *spec.VersionedSignedBeaconBlock) {
+	version := block.Version.String()
+
+	root, err := block.Root()
+	if err != nil {
+		b.log.WithError(err).WithField(metricLabelBlockID, blockID).Error("Failed to get root from block")
+
+		return
+	}
+
+	if blockID != topicHead {
+		b.applyPayload(blockID, version, b.fetchPayload(ctx, blockID, root))
+
+		return
+	}
+
+	slot, err := block.Slot()
+	if err != nil {
+		b.log.WithError(err).WithField(metricLabelBlockID, blockID).Error("Failed to get slot from block")
+
+		return
+	}
+
+	b.gloasHeadMu.Lock()
+	defer b.gloasHeadMu.Unlock()
+
+	if b.gloasHead != nil && b.gloasHead.root == root {
+		return
+	}
+
+	b.gloasHead = &gloasHeadBlock{
+		root:    root,
+		slot:    slot,
+		version: version,
+	}
+}
+
+// recordGloasHeadPayload records the head block's payload metrics once the chain
+// has moved past the head block's slot, after the payload reveal deadline. Until
+// then the metrics keep describing the previous head's payload. A missing envelope
+// is looked for again on later slots while the block stays head, and only treated
+// as withheld once the attempts run out.
+func (b *BeaconMetrics) recordGloasHeadPayload(ctx context.Context, currentSlot phase0.Slot) {
+	b.gloasHeadMu.Lock()
+
+	head := b.gloasHead
+	if head == nil || head.resolved || head.inFlight || head.slot >= currentSlot {
+		b.gloasHeadMu.Unlock()
+
+		return
+	}
+
+	head.inFlight = true
+	head.attempts++
+	root, version := head.root, head.version
+
+	b.gloasHeadMu.Unlock()
+
+	payload := b.fetchPayload(ctx, topicHead, root)
+
+	b.gloasHeadMu.Lock()
+	defer b.gloasHeadMu.Unlock()
+
+	head.inFlight = false
+
+	if b.gloasHead != head {
+		return
+	}
+
+	if payload == nil && head.attempts < gloasHeadPayloadAttempts {
+		return
+	}
+
+	head.resolved = true
+
+	b.applyPayload(topicHead, version, payload)
+}
+
+// applyPayload records the payload metrics, or removes them when the block has no
+// payload, so a withheld payload never reports the previous block's values.
+func (b *BeaconMetrics) applyPayload(blockID, version string, payload *gloas.ExecutionPayload) {
+	if payload == nil {
+		b.deletePayloadMetrics(blockID, version)
+
+		return
+	}
+
+	b.recordPayload(blockID, version, payload.Transactions, payload.Withdrawals)
+}
+
+// fetchPayload returns the execution payload of the block with the given root, or
+// nil when the node has none for it.
+func (b *BeaconMetrics) fetchPayload(ctx context.Context, blockID string, root phase0.Root) *gloas.ExecutionPayload {
+	envelope, err := b.beaconNode.FetchExecutionPayloadEnvelope(ctx, fmt.Sprintf("%#x", root))
+	if err != nil {
+		b.log.WithError(err).WithField(metricLabelBlockID, blockID).Warn("Failed to fetch execution payload envelope")
+
+		return nil
+	}
+
+	if envelope == nil {
+		return nil
+	}
+
+	payload, err := envelope.Payload()
+	if err != nil {
+		b.log.WithError(err).WithField(metricLabelBlockID, blockID).Warn("Failed to get payload from execution payload envelope")
+
+		return nil
+	}
+
+	return payload
+}
+
+func (b *BeaconMetrics) deletePayloadMetrics(blockID, version string) {
+	b.Transactions.DeleteLabelValues(blockID, version)
+	b.Withdrawals.DeleteLabelValues(blockID, version)
+	b.WithdrawalsAmount.DeleteLabelValues(blockID, version)
+	b.WithdrawalsIndexMax.DeleteLabelValues(blockID, version)
+	b.WithdrawalsIndexMin.DeleteLabelValues(blockID, version)
+}
+
+func (b *BeaconMetrics) recordPayload(blockID, version string, transactions []bellatrix.Transaction, withdrawals []*capella.Withdrawal) {
+	b.Transactions.WithLabelValues(blockID, version).Set(float64(len(transactions)))
+	b.recordWithdrawals(blockID, version, withdrawals)
+}
+
+func (b *BeaconMetrics) recordWithdrawals(blockID, version string, withdrawals []*capella.Withdrawal) {
+	var gwei uint64
+
+	var indexMax uint64
+
+	indexMin := uint64(math.MaxUint64)
+
+	for _, withdrawal := range withdrawals {
+		gwei += uint64(withdrawal.Amount)
+
+		index := uint64(withdrawal.Index)
+		if index > indexMax {
+			indexMax = index
+		}
+
+		if index < indexMin {
+			indexMin = index
+		}
+	}
+
+	b.WithdrawalsAmount.WithLabelValues(blockID, version).Set(float64(gwei))
+	b.Withdrawals.WithLabelValues(blockID, version).Set(float64(len(withdrawals)))
+
+	if indexMax > 0 {
+		b.WithdrawalsIndexMax.WithLabelValues(blockID, version).Set(float64(indexMax))
+	}
+
+	if indexMin < math.MaxUint64 {
+		b.WithdrawalsIndexMin.WithLabelValues(blockID, version).Set(float64(indexMin))
+	}
 }
 
 func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.VersionedSignedBeaconBlock) {
@@ -480,39 +693,12 @@ func (b *BeaconMetrics) recordNewBeaconBlock(blockID string, block *spec.Version
 	voluntaryExits := GetVoluntaryExitsFromBeaconBlock(block)
 	b.VoluntaryExits.WithLabelValues(blockID, version).Set(float64(voluntaryExits))
 
-	transactions := GetTransactionsCountFromBeaconBlock(block)
-	b.Transactions.WithLabelValues(blockID, version).Set(float64(transactions))
+	if block.Version < spec.DataVersionGloas {
+		transactions := GetTransactionsCountFromBeaconBlock(block)
+		b.Transactions.WithLabelValues(blockID, version).Set(float64(transactions))
 
-	withdrawals, err := block.Withdrawals()
-	if err == nil {
-		var gwei uint64
-
-		var indexMax uint64
-
-		indexMin := uint64(math.MaxUint64)
-
-		for _, withdrawal := range withdrawals {
-			gwei += uint64(withdrawal.Amount)
-
-			index := uint64(withdrawal.Index)
-			if index > indexMax {
-				indexMax = index
-			}
-
-			if index < indexMin {
-				indexMin = index
-			}
-		}
-
-		b.WithdrawalsAmount.WithLabelValues(blockID, version).Set(float64(gwei))
-		b.Withdrawals.WithLabelValues(blockID, version).Set(float64(len(withdrawals)))
-
-		if indexMax > 0 {
-			b.WithdrawalsIndexMax.WithLabelValues(blockID, version).Set(float64(indexMax))
-		}
-
-		if indexMin < math.MaxUint64 {
-			b.WithdrawalsIndexMin.WithLabelValues(blockID, version).Set(float64(indexMin))
+		if withdrawals, withdrawalsErr := block.Withdrawals(); withdrawalsErr == nil {
+			b.recordWithdrawals(blockID, version, withdrawals)
 		}
 	}
 
