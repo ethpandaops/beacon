@@ -6,7 +6,7 @@ require (
 	github.com/chuckpreslar/emission v0.0.0-20170206194824-a7ddd980baf9
 	github.com/ethereum/go-ethereum v1.17.6
 	github.com/ethpandaops/ethwallclock v0.5.0
-	github.com/ethpandaops/go-eth2-client v0.1.7
+	github.com/ethpandaops/go-eth2-client v0.1.11
 	github.com/go-co-op/gocron v1.16.2
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
@@ -33,8 +33,8 @@ require (
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/pk910/dynamic-ssz v1.3.3-0.20260812091520-ef568569f9c1 // indirect
-	github.com/pk910/hashtree-bindings v0.2.5 // indirect
+	github.com/pk910/dynamic-ssz v1.3.3-0.20260921152246-990798fa9718 // indirect
+	github.com/pk910/hashtree-bindings v0.2.6 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
