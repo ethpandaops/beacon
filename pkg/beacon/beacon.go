@@ -582,12 +582,14 @@ func (n *node) initializeState(ctx context.Context) error {
 		return err
 	}
 
-	n.wallclock = newWallclock(genesis.GenesisTime, spec)
+	n.wallclock = NewWallclock(genesis.GenesisTime, spec)
 
 	return nil
 }
 
-func newWallclock(genesisTime time.Time, chainSpec *state.Spec) *ethwallclock.EthereumBeaconChain {
+// NewWallclock builds the wall clock for the chain, following the Heze slot
+// duration from HEZE_FORK_EPOCH onwards.
+func NewWallclock(genesisTime time.Time, chainSpec *state.Spec) *ethwallclock.EthereumBeaconChain {
 	var opts []ethwallclock.Option
 
 	if heze, err := chainSpec.ForkEpochs.GetByName(spec.DataVersionHeze.String()); err == nil {

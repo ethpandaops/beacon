@@ -19,7 +19,7 @@ func TestNewWallclockFollowsHezeSlotDuration(t *testing.T) {
 		testKeySlotsPerEpoch:    uint64(32),
 	})
 
-	wallclock := newWallclock(genesis, &spec)
+	wallclock := NewWallclock(genesis, &spec)
 	defer wallclock.Stop()
 
 	forkTime := genesis.Add(160 * 12 * time.Second)
@@ -47,7 +47,7 @@ func TestNewWallclockHezeWithoutSlotDurationChange(t *testing.T) {
 		testKeySlotsPerEpoch:    uint64(32),
 	})
 
-	wallclock := newWallclock(genesis, &spec)
+	wallclock := NewWallclock(genesis, &spec)
 	defer wallclock.Stop()
 
 	if slot := wallclock.Slots().FromTime(genesis.Add(21900 * 12 * time.Second)); slot.Number() != 21900 {
@@ -62,7 +62,7 @@ func TestNewWallclockWithoutHeze(t *testing.T) {
 		testKeySlotsPerEpoch: uint64(32),
 	})
 
-	wallclock := newWallclock(genesis, &spec)
+	wallclock := NewWallclock(genesis, &spec)
 	defer wallclock.Stop()
 
 	if slot := wallclock.Slots().FromTime(genesis.Add(100 * 12 * time.Second)); slot.Number() != 100 {
