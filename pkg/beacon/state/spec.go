@@ -3,8 +3,10 @@ package state
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"math/big"
 	"strings"
+	"time"
 
 	sp "github.com/ethpandaops/go-eth2-client/spec"
 	"github.com/ethpandaops/go-eth2-client/spec/phase0"
@@ -43,6 +45,7 @@ type Spec struct {
 	MaxDeposits                    uint64           `json:"MAX_DEPOSITS,string"`
 	MinGenesisActiveValidatorCount uint64           `json:"MIN_GENESIS_ACTIVE_VALIDATOR_COUNT,string"`
 	Eth1FollowDistance             uint64           `json:"ETH1_FOLLOW_DISTANCE,string"`
+	SlotDurationHeze               StringerDuration `json:"-"`
 
 	ForkEpochs   ForkEpochs     `json:"-"`
 	BlobSchedule BlobSchedule   `json:"BLOB_SCHEDULE"`
@@ -108,6 +111,18 @@ func NewSpec(data map[string]any) Spec {
 
 	if secondsPerSlot, exists := data["SECONDS_PER_SLOT"]; exists {
 		spec.SecondsPerSlot = StringerDuration(cast.ToDuration(secondsPerSlot))
+	}
+
+	if slotDurationMs, exists := data["SLOT_DURATION_MS"]; exists {
+		if duration, ok := millisecondsToDuration(cast.ToUint64(slotDurationMs)); ok {
+			spec.SecondsPerSlot = StringerDuration(duration)
+		}
+	}
+
+	if slotDurationMsHeze, exists := data["SLOT_DURATION_MS_HEZE"]; exists {
+		if duration, ok := millisecondsToDuration(cast.ToUint64(slotDurationMsHeze)); ok {
+			spec.SlotDurationHeze = StringerDuration(duration)
+		}
 	}
 
 	if maxEffectiveBalance, exists := data["MAX_EFFECTIVE_BALANCE"]; exists {
@@ -213,6 +228,17 @@ func NewSpec(data map[string]any) Spec {
 	return spec
 }
 
+// GetSlotDuration returns the slot duration in effect at the given epoch.
+func (s *Spec) GetSlotDuration(epoch phase0.Epoch) time.Duration {
+	if s.SlotDurationHeze > 0 {
+		if heze, err := s.ForkEpochs.GetByName(sp.DataVersionHeze.String()); err == nil && heze.Active(epoch) {
+			return s.SlotDurationHeze.AsDuration()
+		}
+	}
+
+	return s.SecondsPerSlot.AsDuration()
+}
+
 // Validate performs basic validation of the spec.
 func (s *Spec) Validate() error {
 	return nil
@@ -221,6 +247,14 @@ func (s *Spec) Validate() error {
 // GetMaxBlobsPerBlock returns the maximum number of blobs that can be included in a block for a given epoch.
 func (s *Spec) GetMaxBlobsPerBlock(epoch phase0.Epoch) uint64 {
 	return s.BlobSchedule.GetMaxBlobsPerBlock(epoch)
+}
+
+func millisecondsToDuration(ms uint64) (time.Duration, bool) {
+	if ms == 0 || ms > uint64(math.MaxInt64/int64(time.Millisecond)) {
+		return 0, false
+	}
+
+	return time.Duration(ms) * time.Millisecond, true
 }
 
 func dataVersionFromString(name string) (sp.DataVersion, error) {
